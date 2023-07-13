@@ -37,4 +37,4 @@ Here is a list of contributors to PyMoosh (one way or another) so far:
 * Antoine Moreau, UGA, France  (@AnMoreau)
 * Andrey Soum-Glaude, PROMES-CNRS, France
 
-Manuy thank to Thalita Drumond, EPF, France and Antoine Gademer, EPF, France
+Many thank to Thalita Drumond, EPF, France (thalitadru) and Antoine Gademer, EPF, France
