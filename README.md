@@ -1,15 +1,15 @@
 ## COPS
-About COPS
+## About COPS
 
-Installation
+## Installation
 
-What COPS can do
+## What COPS can do
 
-What COPS cannot do
+## What COPS cannot do
 
-For specialists
+## For specialists
 
-References
+## References
 If you use COPS and if this is relevant, please cite the papers associated with. Another paper, just for COPS is on way
 cff-version 1.2.0
 
@@ -25,7 +25,7 @@ url = "http://www.theses.fr/2018PERP0002/document",
 
 COPS is quite simple code, this is a research-grade program. We actually do research with it. Do not hesite to contact us, for help, academic projet or cited to current version of our work
 
-Contributors
+## Contributors
 Here is a list of contributors to PyMoosh (one way or another) so far:
 * Pauline Bennet, UGA, France (@Ellawin)
 * Antoine Moreau, UGA, France  (@AnMoreau)
