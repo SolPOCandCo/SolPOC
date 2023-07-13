@@ -16,7 +16,7 @@ This version is actualy under developpement. COPS are tested under Windows, usin
 
 ## Installation
 
-Currently, a command such as pip install cops is not available. 
+Currently, a command such as `pip install cops` is not available. 
 
 Installing COPS means downloading the entire project, including the /Materials folder, which contains the optical indices of the materials as txt files. Then open the file "optimisation_multiprocess.py" from an IDE who can run Python code. The "function_COPS.py" file contains all COPS functions and must be visible to optimisation_multiprocess.py file. All the code in "function_COPS.py" does not need to be modified for run a optimisation process. 
 
