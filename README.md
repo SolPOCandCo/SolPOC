@@ -32,7 +32,7 @@ url = "http://www.theses.fr/2018PERP0002/document",
 Even if COPS is quite simple code, this is a research-grade program. We actually do research with it. Do not hesite to contact us, for help, academic projet or cited to current version of our work
 
 ## Contributors
-Here is a list of contributors to PyMoosh (one way or another) so far:
+Here is a list of contributors to COPS : 
 * Pauline Bennet, UGA, France (@Ellawin)
 * Antoine Moreau, UGA, France  (@AnMoreau)
 * Andrey Soum-Glaude, PROMES-CNRS, France
