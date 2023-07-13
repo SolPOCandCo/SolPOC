@@ -11,6 +11,7 @@ For specialists
 
 References
 If you use COPS and if this is relevant, please cite the papers associated with. Another paper, just for COPS is on way
+cff-version 1.2.0
 @PHDTHESIS{grosj2018,
 url = "http://www.theses.fr/2018PERP0002",
 title = "Etude, modélisation et optimisation de surfaces fonctionnelles pour les collecteurs solaires thermiques à concentration",
