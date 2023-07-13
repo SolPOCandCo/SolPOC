@@ -17,8 +17,7 @@ COPS can be used from optimisation_multiprocess.py simply by modifying the code 
 ## For specialists
 
 ## References
-If you use COPS and if this is relevant, please cite the papers associated with. Another paper, just for COPS is on way
-cff-version 1.2.0
+If you use COPS and if this is relevant, please cite the papers associated with. Another paper, just for COPS, is on way
 
 @PHDTHESIS{grosj2018,
 url = "http://www.theses.fr/2018PERP0002",
