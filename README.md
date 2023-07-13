@@ -4,7 +4,7 @@ COPS (from French : "Code d'Optimisation des Performances Solaires") is a simple
 This version is actualy under developpement. COPS are tested under Windows, using Spyder as IDE. Most comment are in French, please forgive us !
 
 ## About COPS
-- Study the optical behavior of thin-film stacks, calculating reflectivity, transmissivity and absorptivity over the solar spectrum and beyond.
+- Study the optical behavior of thin-film stacks, calculating reflectivity, transmissivity and absorptivity over the solar spectrum (280 - 2500 nm) and beyond.
 - Working with stacks ranging from a substrate (without thin film) to an infinite stack of thin films
 - Optimize stack optical performance according to numerous cost functions, including solar thermal. 
 - Propose 6 different  optimization methods based on genetic algorithms 
