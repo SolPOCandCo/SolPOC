@@ -11,20 +11,21 @@ from scipy.integrate import trapz
 import random
 import datetime
 
-def RTA(l, d, n, k, Ang=0):
+def RTA3C(l, d, n, k, Ang=0):
     """_________________________________________________
-    Lancement de RTA
+    Exemple of RTA
+    RTA is the key function : it's allow us to calcul reflectivity (R) transmissivity (T) and absorptivity(A)
+    This function is a exemple working only with 3 thin layer on the substrat
+    This tutorial functions is not used in the code
+    """
 
-    Version du code : 24-01-2023
-    Auteur : A.Grosjean (EPF) and A.Soum-Glaude (CNRS - PROMES)
-    contact : antoine.grosjean@epf.fr
-
-    Chaque code RTA calcule la refléctivité, la transmissivité et l'absorptivité d'un ensemble de couches minces déposées sur un substrat
+    """
+    La function RTA calcule la refléctivité, la transmissivité et l'absorptivité d'un ensemble de couches minces déposées sur un substrat
     tel que refléctivité + transmissivité + absorptivité  = 1 
     Le chiffre apres 'RTA' 'désigne le nombre de couche mince déposée sur le substrat INCLUT. Le code RTA 3C est donc pour 1 substrat et 2 couches minces max
-    Il y'a plusieurs code RTA pour des gains de temps de calcul afin de lancer un code RTA adapté aux nombres de couches minces
-    le justificatif np permet de signaler que la bibliothéque numpy est fortement utilisé. Cela permet un gain de temps sur le lancement
-    => le gain de temps par rapport au lancement d'une fonction RTA écrite pour une longueur d'onde dans une boucle for est de l'ordre de 100 fois
+
+    l'utilisation de numpy (np) permet un gain de temps sur le lancement
+    => le gain de temps par rapport au lancement d'une fonction RTA écrite pour une seule longueur d'onde dans une boucle for est de l'ordre de 100 fois
 
     Arguments d'entrée : 
     l : la longueur d'onde en nm, de type vecteur
@@ -38,7 +39,7 @@ def RTA(l, d, n, k, Ang=0):
     Trans, un vecteur colonne qui contient la transmivité. Les indices en colone correspondent aux longueur d'onde'
     Abs, un vecteur colonne qui contient l'absorptivité. Les indices en colone correspondent aux longueur d'onde'
 
-    Test
+    Test : 
     Ecire les variables suivante : 
     l = np.arange(600,750,100). Note que ici deux longueurs sont calculer : 600 et 700 nm
     d = np.array([[1000000, 150, 180]]). 1 mm de substrat, 150 nm de couche n°1, 180 de n°2 puit du vide (n=1, k=0)
@@ -46,9 +47,9 @@ def RTA(l, d, n, k, Ang=0):
     k = np.array([[0, 0.1,0.05], [0, 0.1, 0.05]])
     Ang = 0 
 
-    Exécuter la fonction
+    # Exécuter la fonction
     Refl, Trans, Abs = RTA3C(l, d, n, k , Ang)
-
+    
     Pour la notation des indices n et k, comprendre que 
     @ 600 nm n = 1.5 pour le substrat , n = 1.23 pour la couche n°1 et n = 1.14 pour la couche n°2
     @ 700 nm n = 1.5 pour le substrat , n = 1.20 pour la couche n°1 et n = 1.1 pour la couche n°2
@@ -56,15 +57,11 @@ def RTA(l, d, n, k, Ang=0):
     @ 700 nm k = 0 pour le substrat , n = 0.1 pour la couche n°1 et k = 0.05 pour la couche n°2
 
     Cela permet d'obtenir : Refl = array([0.00767694, 0.00903544]), Trans = array([0.60022613, 0.64313401]), Abs = array([0.39209693, 0.34783055])
-    => La réflectivité vaut 0.00767694 (nombre en 0 et 1) à 600 nm et 0.00903544 à 700 nm
+    => La réflectivité vaut 0.00767694 (nombre entre 0 et 1) à 600 nm et 0.00903544 à 700 nm
     """
-    """
-    Ultime version de RTA ! 
-    """
-
     # Add an air layer on top
-    n = np.append(n, np.ones((len(l), 1)), axis=1)
-    k = np.append(k, np.zeros((len(l), 1)), axis=1)
+    n = np.append(n, np.ones((len(l), 1)), axis=1) # remplacement de 2 par len(l)
+    k = np.append(k, np.zeros((len(l), 1)), axis=1) # remplacement de 2 par len(l)
     d = np.append(d, np.zeros((1, 1)), axis=1)
 
     # Incidence angle of solar radiation on the absorber = normal incidence
@@ -100,6 +97,157 @@ def RTA(l, d, n, k, Ang=0):
     Etape suplémentaire par rapport à Scilab. 
     Je doit définir mes variables tableau avant de les éditer
     """
+    numlayers = nj.shape[1] # nj est un tableau 
+    Nj = np.zeros((numlayers,1,len(l)), dtype=complex) # OK
+    """colone dans Scilab, tableau 3D ici. 
+    l'axe z correspond aux différentes longueurs d'ondes
+    """
+    # colone dans Scilab, ligne ici
+    Phij = np.zeros((numlayers,1,len(l)), dtype=complex)
+    qjPolaS = np.zeros((numlayers,1,len(l)), dtype=complex)
+    qjPolaP = np.zeros((numlayers,1,len(l)), dtype=complex)
+    thetaj = np.zeros((numlayers,1,len(l)), dtype=complex)
+    MpolaS = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
+    MpolaP = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
+    Ms = np.zeros((2, 2,len(l)), dtype=complex)
+    Mp = np.zeros((2, 2,len(l)), dtype=complex)
+    """redimensionnement de nj et kj
+    nj = nj.reshape(3,1,2) kj = kj.reshape(3,1,2) ne marche.
+    La dimension est bonne, mais les données sont inversée. 
+    Donc faire cette méthode
+    """
+    sous_tableaux = np.split(nj,nj.shape[1],axis=1)
+    nj = np.array([el.reshape(1,len(l)) for el in sous_tableaux]) # el.reshape(1,2) devient el.reshape(1,len(l))
+    sous_tableaux = np.split(kj,kj.shape[1],axis=1)
+    kj = np.array([el.reshape(1,len(l)) for el in sous_tableaux])
+    """
+    Ligne nécessaire. Cela transforme un vecteur (1,3) en vecteur (3,)
+    Cette fonction permet de supprimer les dimensions ayant une taille de 1 dans un tableau numpy
+    """
+    dj = np.squeeze(dj) #
+    # Note  : inverser un tableau avec numpy.transpose()
+    for LayerJ in range(numlayers): 
+        Nj[LayerJ] = nj[LayerJ] + 1j * kj[LayerJ]
+        Phij[LayerJ] = np.arcsin(N0 * np.sin(Phi0) / Nj[LayerJ])
+        qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
+        qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
+        thetaj[LayerJ] = (2 * np.pi / l) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
+        """Changement par rapport à Scilab, du au index de Python. La 1er case est noté 0,0 dans Python et 
+        1,1 dans Scilab. Ici LayerJ commence à 0 et non plus à 1 mais l'arret de la boucle for reste le même (dernier interval 
+        exclus dans Python.
+        Chaque index x de Mpola doit être réduit de 1. L'Index y doit être augmenter de  +1 le LayerJ-1 devient LayerJ 
+        t LayerJ deient LayerJ+1 
+        """
+        # Characteristic matrix of layer j
+        """ Calcul de MpolaS"""
+        MpolaS[0, 2*LayerJ] = np.cos(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ-1)
+        MpolaS[0, 2*LayerJ+1] = -1j/qjPolaS[LayerJ]*np.sin(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ)
+        MpolaS[1, 2*LayerJ] = -1j*qjPolaS[LayerJ]*np.sin(thetaj[LayerJ])
+        MpolaS[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
+        """ Calcul de MpolaP"""
+        MpolaP[0, 2*LayerJ] = np.cos(thetaj[LayerJ])
+        MpolaP[0, 2*LayerJ+1] = -1j/qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
+        MpolaP[1, 2*LayerJ] = -1j*qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
+        MpolaP[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
+        #print(MpolaS)
+    
+    # Global characteristic (transfer) matrix [Furman92, Andersson80]
+    if numlayers == 1: # Substrat seul
+        M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
+        M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
+        Ms = M1s
+        Mp = M1p
+    elif numlayers == 2: # Substrat + 1 couche
+        M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
+        M2s = np.array([[MpolaS[0,2], MpolaS[0,3]], [MpolaS[1,2], MpolaS[1,3]]])
+        M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
+        M2p = np.array([[MpolaP[0,2], MpolaP[0,3]], [MpolaP[1,2], MpolaP[1,3]]])
+        # Multiplication de matrice en gardant le 3eme axe (z dans un rep ortho, ici nommé l ) constant
+        Ms = np.einsum('nkl,kml->nml', M2s, M1s)
+        Mp = np.einsum('nkl,kml->nml', M2p, M1p)
+    elif numlayers == 3: # Substrat + 2 couches
+        M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
+        M2s = np.array([[MpolaS[0,2], MpolaS[0,3]], [MpolaS[1,2], MpolaS[1,3]]])
+        M3s = np.array([[MpolaS[0,4], MpolaS[0,5]], [MpolaS[1,4], MpolaS[1,5]]])
+        M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
+        M2p = np.array([[MpolaP[0,2], MpolaP[0,3]], [MpolaP[1,2], MpolaP[1,3]]])
+        M3p = np.array([[MpolaP[0,4], MpolaP[0,5]], [MpolaP[1,4], MpolaP[1,5]]])
+        Ms = np.einsum('nkl,kml->nml', M3s, np.einsum('nkl,kml->nml', M2s, M1s))
+        Mp = np.einsum('nkl,kml->nml', M3p, np.einsum('nkl,kml->nml', M2p, M1p))
+        
+    # Matrix element
+    m11s = Ms[0,0]
+    m12s = Ms[0,1]
+    m21s = Ms[1,0]
+    m22s = Ms[1,1]
+        
+    m11p = Mp[0,0]
+    m12p = Mp[0,1]
+    m21p = Mp[1,0]
+    m22p = Mp[1,1]
+        
+    # Fresnel total reflexion and transmission coefficient
+    rs = (q0PolaS*m11s-qSPolaS*m22s+q0PolaS*qSPolaS*m12s-m21s)/(q0PolaS*m11s+qSPolaS*m22s+q0PolaS*qSPolaS*m12s+m21s)
+    rp = (q0PolaP*m11p-qSPolaP*m22p+q0PolaP*qSPolaP*m12p-m21p)/(q0PolaP*m11p+qSPolaP*m22p+q0PolaP*qSPolaP*m12p+m21p)
+    ts = 2*q0PolaS/(q0PolaS*m11s+qSPolaS*m22s+q0PolaS*qSPolaS*m12s+m21s)
+    tp = 2*q0PolaP/(q0PolaP*m11p+qSPolaP*m22p+q0PolaP*qSPolaP*m12p+m21p)
+    
+    # Power transmittance
+    Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
+    Rp = (np.real(rs)) ** 2 + (np.imag(rp)) ** 2;
+    Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
+        
+    # Power transmittance
+    #Transmittance of the multilayer stack only (substrate transmittance is not taken into account !)
+    Ts = np.real(qSPolaS) / np.real(q0PolaS) * ((np.real(ts) ** 2) + (np.imag(ts) ** 2))
+    Tp = np.real(qSPolaP) / np.real(q0PolaP) * ((np.real(tp) ** 2) + (np.imag(tp) ** 2))
+    TransMultilayer = (Ts + Tp) / 2 # This stands only when the incident light is unpolarized (ambient)
+        
+    # Transmittance of the substrate
+    d = np.squeeze(d)
+    TransSub = np.exp((-4*np.pi*kS*d[0])/l)
+        
+    # Transmittance of the substrate + multilayer stack
+    Trans = TransMultilayer * TransSub
+        
+    # Power absorptance
+    Abs = 1 - Refl - Trans
+    return Refl, Trans, Abs
+
+def RTA(l, d, n, k, Ang=0):
+    """
+    The Ultimate version de RTA : work for an "infinite" numer of thin layers
+    
+    """
+
+    # Add an air layer on top
+    n = np.append(n, np.ones((len(l), 1)), axis=1)
+    k = np.append(k, np.zeros((len(l), 1)), axis=1)
+    d = np.append(d, np.zeros((1, 1)), axis=1)
+
+    # Incidence angle of solar radiation on the absorber = normal incidence
+    Phi0 = Ang*math.pi/180
+    
+    # Ambient medium = vaccum
+    n0 = 1
+    k0 = 0
+    N0 = n0 + 1j*k0
+    q0PolaS = N0*np.cos(Phi0)
+    q0PolaP = N0/np.cos(Phi0)
+    
+    # Substrate
+    nS = n[:,0] # Je prend la 1er colone, qui contient le n du substrat pour les longueurs d'onde
+    kS = k[:,0]
+    Ns = nS + 1j*kS
+    PhiS = np.arcsin(N0*np.sin(Phi0)/Ns)
+    qSPolaS = Ns*np.cos(PhiS)
+    qSPolaP = Ns/np.cos(PhiS) # Ok jusque là 
+    
+    # Multilayers (layer 1 is the one closest to the substrate)
+    nj= np.delete(n,0, axis=1)
+    kj= np.delete(k,0, axis=1)
+    dj= np.delete(d,0, axis=1)
+
     numlayers = nj.shape[1] # nj est un tableau 
     Nj = np.zeros((numlayers,1,len(l)), dtype=complex) # OK
     """Matrice tableau 3D ici. 
@@ -315,7 +463,7 @@ def Made_Stack(Mat_Stack, Wl):
 
 def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
     """
-    n_Stack_vf, ou k_stack_vf veut dire un n et k calculer par une fonction de Bruggeman
+    n_Stack_vf, ou k_stack_vf veut dire un n et k calculé par une fonction de Bruggeman (loi de mélange EMA)
     Ce sont les valeurs à injecter dans RTA
     Si vf = 0 pour tout les matériaux, alors n_Stack_vf = n_Stack (idem pour k)
     Sinon il faut le calculer 
@@ -369,7 +517,8 @@ def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
 
 def Bruggeman(nM, kM, nI, kI, VF):
     """
-    Fonction de Bruggemann. Elle permet de calculer les indices de réfraction complexe d'un matériau issue d'un mélange entre deux materiaux
+    Fonction de Bruggemann. 
+    Allow us to calcalted the complexe refractive index of a mixture of two materials, using a EMA
     
     nM, kM = Refractive index of host Matrix
     nI, kI = Refractive index of embedded particles (Inclusions)
@@ -815,13 +964,13 @@ def Wl_selectif():
     Wl = np.concatenate((Wl_1,Wl_2))
     return Wl
 
-    """_________________________________________________
-    Fonction for optimization 
-    
-    Fixation du seed dans les fonctions d'optimisation, pour éviter les soucis avec des serveurs
-    ou des VM dans le cas d'un lancement en multiprocessing
-    np.random.seed(np.random.randint(1,2**32 - 1))
-    """
+"""_________________________________________________
+Fonction for optimization 
+
+Fixation du seed dans les fonctions d'optimisation, pour éviter les soucis avec des serveurs
+ou des VM dans le cas d'un lancement en multiprocessing
+np.random.seed(np.random.randint(1,2**32 - 1))
+"""
 
 def exemple_evaluate(individual):
     """
@@ -835,17 +984,7 @@ def exemple_evaluate(individual):
         score += sub_list*sub_list
     return score
 
-def evaluate_R_s(individual, conteneur):
-    # Calcul la reflectance solaire
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
-    
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
-    n_Stack = conteneur.get('n_Stack')
-    k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
-    Mat_Stack = conteneur.get('Mat_Stack')
+def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur) :
     
     # Ajout dans le travail avec des vf
     if 'nb_layer' in conteneur:
@@ -879,6 +1018,22 @@ def evaluate_R_s(individual, conteneur):
     else : 
         d_Stack = np.array(individual)
         d_Stack = d_Stack.reshape(1, len(individual))
+    
+    return d_Stack, n_Stack, k_Stack
+
+def evaluate_R_s(individual, conteneur):
+    # Calcul la reflectance solaire
+    #Chaque individu est une liste d'épaisseur. 
+    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
+    
+    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
+    Ang = conteneur.get('Ang')#, 0)
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('SolSpec')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     # Je calcul Rs
     R_s = 0
@@ -898,49 +1053,66 @@ def evaluate_T_s(individual, conteneur):
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     T_s = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     T_s = SolarProperties(Wl, T, Sol_Spec)
     return T_s
 
-def evaluate_A_s(individual, conteneur):
-    # Calcul l'absorptance solaire
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
+def evaluate_T_PV(individual, conteneur):
+    """
+    Calculate the solar transmissivity WITH a PV cells signal
+    With the following ligne code in the main script
     
+    if evaluate.__name__ == "evaluate_T_PV":
+        conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
+    """
+
+    Wl = conteneur.get('Wl')#,
+    Ang = conteneur.get('Ang')#
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('Sol_Spec_with_PV')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+    
+    T_s_PV = 0
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    T_s_PV = SolarProperties(Wl, T, Sol_Spec)
+    return T_s_PV
+
+def evaluate_T_Human_eye(individual, conteneur):
+    """
+    Calculate the optical transmittance with a human eye input
+    The solar spectrum (Sol_Spec) has been remplaced by a human eye sensivity to wavelenght during the process
+    See the following code lines in the main script
+    
+    Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
+    Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye) # Interpolate the signal
+    
+    conteneur["Sol_Spec_with_Human_eye"] = Signal_H_eye 
+    """
+    Wl = conteneur.get('Wl')#,
+    Ang = conteneur.get('Ang')#
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('Sol_Spec_with_Human_eye')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+    
+    T_H_eye = 0
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    T_H_eye = SolarProperties(Wl, T, Sol_Spec)
+    return T_H_eye
+
+def evaluate_A_s(individual, conteneur):
+    """
+    Cost function for the solar absorptance
+    """
+
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
@@ -948,38 +1120,7 @@ def evaluate_A_s(individual, conteneur):
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     A_s = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -987,9 +1128,9 @@ def evaluate_A_s(individual, conteneur):
     return A_s
 
 def evaluate_R(individual, conteneur):
-    # Calcul la reflectance moyenne, sur une plage de longueur d'onde
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
+    """
+    Cost function for the average reflectivity at one or several wavelength
+    """
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
@@ -998,42 +1139,31 @@ def evaluate_R(individual, conteneur):
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))  
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur)
 
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     R_mean = np.mean(R)
     return R_mean
+
+def evaluate_T(individual, conteneur):
+    """
+    Cost function for the average transmissivity at one or several wavelength
+    """
+    
+    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
+    Ang = conteneur.get('Ang')#, 0)
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('SolSpec')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
+    # change 
+    T_mean = np.mean(T)
+    return T_mean
 
 def evaluate_low_e(individual, conteneur):
     # Calcul la reflectance solaire selon un profil low-e
@@ -1055,38 +1185,7 @@ def evaluate_low_e(individual, conteneur):
     Wl_2 = np.arange(Lambda_cut, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
 
     # Calcul du RTA
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1116,38 +1215,7 @@ def evaluate_rh(individual, conteneur):
     d_Stack = np.array(individual)
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
 
     # Calcul du RTA
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1182,38 +1250,7 @@ def evaluate_RTR(individual, conteneur):
     # traitemement de l'optimisation des n
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     # Calcul des domaines 
     # Va de min à Lambda_cut_min inclu
@@ -1244,38 +1281,7 @@ def evaluate_RTA_s(individual, conteneur):
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     R_s, T_s, A_s = 0 , 0 , 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1330,39 +1336,7 @@ def evaluate_netW_PV_CSP(individual, conteneur):
     Wl_Th = conteneur.get('Wl_Th')
     Signal_Th = conteneur.get('Signal_Th')
   
-    
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     # Je calcul Rs
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1409,38 +1383,7 @@ def RTA_curve(individual, conteneur):
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
-    # Ajout dans le travail avec des vf
-    if 'nb_layer' in conteneur:
-        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
-    
-    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        vf = []
-        vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
-        del individual_list[len(Mat_Stack):len(individual)]
-        individual = np.array(individual_list)  # Conversion en tableau
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-        vf= np.array(vf)
-        n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
-    
-    if 'nb_layer' in conteneur:
-        nb_layer = conteneur.get('nb_layer')
-        for i in range(nb_layer):
-            # Je vais chercher la valeur de l'indice de la couche
-            n = individual[nb_layer + len(Mat_Stack)]
-            # J'ajoute au Stack la couche d'indice n et k = 0
-            n_Stack = np.insert(n_Stack, len(Mat_Stack) + i, n, axis = 1)
-            k_Stack = np.insert(k_Stack, len(Mat_Stack) + i, 0, axis = 1)
-            index_to_remove = np.where(individual == n)[0][0]
-            individual = np.delete(individual, index_to_remove)
-        # Comme dans les versions précédante, je transforme d_Strack en array
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
-    else : 
-        d_Stack = np.array(individual)
-        d_Stack = d_Stack.reshape(1, len(individual))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     return R , T , A
@@ -1535,6 +1478,9 @@ def selection_max(population, evaluate, evaluate_rate, conteneur):
 
 # Nouvelle version du crossover, par mask. # On mélange complétement les gènes
 def crossover(parents, crossover_rate , pop_size):
+    """
+    See : optimize_agn
+    """
     children = []
     for i in range((pop_size-len(parents))//2): # On fait deux enfants par parents
         parent1 = parents[np.random.randint(0,len(parents)-1)]
