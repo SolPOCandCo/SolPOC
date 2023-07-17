@@ -48,7 +48,7 @@ The code uses a conventional method known as the Transfer Matrix Method (TMM) fo
 ```
 RefractiveIndex.INFO - Refractive index database
 ```
-The complex refractive indices of composite layer, such as cermet (W-Al2O3) or porous materials (air-SiO2) were estimated by applying an Effective Medium Approximation (EMA) method. Such methods consider a macroscopically inhomogeneous medium where quantities such as the dielectric function vary in space. Different EMA theories have been reported in the literature, and the Bruggeman method is used here. 
+The complex refractive indix of composite layers, such as cermet (W-Al2O3, mixture of dieliectric and metal) or porous materials (such as mixture of air and dielectric, like air-SiO2) were estimated by applying an Effective Medium Approximation (EMA) method. Such EMA methods consider a macroscopically inhomogeneous medium where quantities such as the dielectric function vary in space, and are often used in materials sciences. Different EMA theories have been reported in the literature, and the Bruggeman method is used here. 
 
 COPS code (in a later version written in Scilab) has already provided scientific publication: 
 - A.Grosjean et al, Influence of operating conditions on the optical optimization of solar selective absorber coatings, Solar Energy Materials and Solar Cells, Volume 230, 2021, 111280, ISSN 0927-0248, https://doi.org/10.1016/j.solmat.2021.111280.
