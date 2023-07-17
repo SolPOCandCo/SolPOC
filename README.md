@@ -45,9 +45,9 @@ See the tutorial folder for more details.
 
 The code uses a conventional method known as the Transfer Matrix Method (TMM) for calculation of the stack optical properties (Reflectance, Transmittance and Absorptance), in all wavelenghts with a incidence angle. This method based on Fresnel equations has been detailed in the scientifique literature. The TMM method is used in key function named RTA, using the complex refractive index and thickness of thin layers deposited on a substrate. The complex refractive index of materials are available in folder “Materials”, and mainly come from of the RefractiveInde.info website. The website share refractive index of materials in peer-reviewed papers. 
 
-'''
+```
 RefractiveIndex.INFO - Refractive index database
-'''
+```
 The complex refractive indices of composite layer, such as cermet (W-Al2O3) or porous materials (air-SiO2) were estimated by applying an Effective Medium Approximation (EMA) method. Such methods consider a macroscopically inhomogeneous medium where quantities such as the dielectric function vary in space. Different EMA theories have been reported in the literature, and the Bruggeman method is used here. 
 
 COPS code (in a later version written in Scilab) has already provided scientific publication: 
