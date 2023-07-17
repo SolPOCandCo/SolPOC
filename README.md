@@ -1,7 +1,8 @@
 ## COPS
-COPS (from French : "Code d'Optimisation des Performances Solaires", Optimisation Code for Solar Performances in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. Just from complex refractive indices of real materials, the code COPS can models and optimizes with advenced methode the optical behavior (reflectivity, transmissivity or absorptivity) of a thin layers stack deposited on a solid substrate.
+COPS (from French "Code d'Optimisation des Performances Solaires", Optimisation Code for Solar Performances in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. Just from complex refractive indices of real materials, the code COPS can models and optimizes with advenced methode the optical behavior (reflectivity, transmissivity or absorptivity) of a thin layers stack deposited on a solid substrate.
 
 This version is actualy under developpement. COPS are tested under Windows, using Spyder as IDE. Most comment are in French, please forgive us !
+This code can be used for scientific research or academic educations. 
 
 ## About COPS
 - Study the optical behavior of thin-film stacks, calculating reflectivity, transmissivity and absorptivity over the solar spectrum (280 - 2500 nm) and beyond.
@@ -12,7 +13,7 @@ This version is actualy under developpement. COPS are tested under Windows, usin
 - Work with a spectral range from UV to IR (typically 280 nm to 30 µm, can be modified by the users) 
 - Automatically write results (.txt files and .png images) to a folder 
 - Use effective medium approximatio (EMA) to model the optical behavior of material mixtures (dielectric mixtures, metal-ceramic composites, porous materials, etc.). 
-- Propose a simplified user interface, and consolidate all useful parameters into a few lines of code.
+- Propose a simplified user interface, bringing together all useful variables in a few lines of code.
 
 ## Installation
 
@@ -28,8 +29,16 @@ A User Guide and differents tutorial are present in the tutorial folders. As fir
 
 ## Example of COPS use
 
+COPS can be used for sevaral purposes, but not limited : 
+- antireflective coatings for human eye vision, PV cells or solar thermal application*
+- coatings radiative cooling
+- dielectric / Bragg mirror
+- low-e coatings (solar control glass) for building application 
+- reflective coatings, using metalic or dielectric coating 
+- selective coatings for solar thermal applications
+- PV mirrors
 
-
+See the tutorial folder more details. 
 
 ## For specialists
 
