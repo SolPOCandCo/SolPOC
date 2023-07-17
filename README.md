@@ -26,7 +26,9 @@ COPS can be used from optimisation_multiprocess.py simply by modifying the code 
 
 A User Guide and differents tutorial are present in the tutorial folders. As first users, give us any feedback that will help us make the code easier for others to understand
 
-## Exemple of COPS utilisation 
+## Example of COPS use
+
+
 
 
 ## For specialists
