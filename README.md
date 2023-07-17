@@ -1,5 +1,5 @@
 ## COPS
-COPS (from French : "Code d'Optimisation des Performances Solaires") is a simple and fast code running under Python 3.9. The code has been developement during the author Ph.D Thesis at PROMES CNRS, Perpignan, France. Just from complex refractive indices of real materials, the code can models and optimizes with advenced methode the optical behavior of a simple or highly complex stack of thin layers deposited on a solid substrate.
+COPS (from French : "Code d'Optimisation des Performances Solaires", Optimisation Code for Solar Performances in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. Just from complex refractive indices of real materials, the code COPS can models and optimizes with advenced methode the optical behavior (reflectivity, transmissivity or absorptivity) of a thin layers stack deposited on a solid substrate.
 
 This version is actualy under developpement. COPS are tested under Windows, using Spyder as IDE. Most comment are in French, please forgive us !
 
