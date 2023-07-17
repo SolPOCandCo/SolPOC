@@ -61,8 +61,8 @@ Even if COPS is quite simple code, this is a research-grade program. We actually
 
 ## Contributors
 Here is a list of contributors to COPS : 
-* Pauline Bennet, UGA, France (@Ellawin)
-* Antoine Moreau, UGA, France  (@AnMoreau)
+* Pauline Bennet, UCA, France (@Ellawin)
+* Antoine Moreau, UCA, France  (@AnMoreau)
 * Andrey Soum-Glaude, PROMES-CNRS, France
 
 Many thank to Thalita Drumond, EPF, France (@thalitadru) and Antoine Gademer, EPF, France
