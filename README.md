@@ -32,8 +32,9 @@ A User Guide and differents tutorial are present in the tutorial folders. As fir
 COPS can be used for sevaral purposes, but not limited : 
 - antireflective coatings for human eye vision, PV cells or solar thermal application
 - coatings for radiative cooling
+- coatings for optical instrument 
 - dielectric / Bragg mirror
-- low-e coatings (solar control glass) for building application 
+- low-e coatings (for solar control glass) for building application 
 - reflective coatings, using metalic or dielectric coating 
 - selective coatings for solar thermal applications
 - PV mirrors
