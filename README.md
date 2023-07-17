@@ -30,15 +30,15 @@ A User Guide and differents tutorial are present in the tutorial folders. As fir
 ## Example of COPS use
 
 COPS can be used for sevaral purposes, but not limited : 
-- antireflective coatings for human eye vision, PV cells or solar thermal application*
-- coatings radiative cooling
+- antireflective coatings for human eye vision, PV cells or solar thermal application
+- coatings for radiative cooling
 - dielectric / Bragg mirror
 - low-e coatings (solar control glass) for building application 
 - reflective coatings, using metalic or dielectric coating 
 - selective coatings for solar thermal applications
 - PV mirrors
 
-See the tutorial folder more details. 
+See the tutorial folder for more details. 
 
 ## For specialists
 
