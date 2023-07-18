@@ -9,7 +9,6 @@ import numpy as np
 import math
 from scipy.integrate import trapz
 import random
-import datetime
 
 def RTA3C(l, d, n, k, Ang=0):
     """_________________________________________________
@@ -193,8 +192,8 @@ def RTA3C(l, d, n, k, Ang=0):
 def RTA(l, d, n, k, Ang=0):
     """
     See the function RTA3C for a example / tutoral and the version of the function write for 3 layer (2 thin layer + the substrat)
-    RTA calcul the reflectivity, transmissivty and absorptivity using Abélès matrices
-    The Abélès matrices provide the best ratio accurency / speed for stack below 100 thin layers
+    RTA calcul the reflectivity, transmissivty and absorptivity using Abélès matrix formalism
+    The Abélès matrix formalism provide the best ratio accurency / speed for stack below 100 thin layers
     The present version of RTA work for a infinit number of thin layer, but we not recommand to go over 100
     Parameters
     ----------
@@ -463,18 +462,19 @@ def Made_Stack(Mat_Stack, Wl):
 
 def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
     """
-    n_Stack_vf, ou k_stack_vf veut dire un n et k calculé par une fonction de Bruggeman (loi de mélange EMA)
-    Ce sont les valeurs à injecter dans RTA
-    Si vf = 0 pour tout les matériaux, alors n_Stack_vf = n_Stack (idem pour k)
-    Sinon il faut le calculer 
+    n_Stack_vf, or k_stack_vf means an n and k calculated by a Bruggeman function (EMA mixing law).
+    These are the values to be injected into RTA
+    If vf = 0 for all materials, then n_Stack_vf = n_Stack (idem for k)
+    Otherwise, calculate : 
+    
     Parameters
     ----------
-    n_Stack : array, in 2 or 3 dimensional
-        DESCRIPTION.
-    k_Stack : array, in 2 or 3 dimensional
-        DESCRIPTION.
-    vf : TYPE, optional
-        DESCRIPTION. The default is [0].
+    n_Stack : array, in  3 dimensional
+        The real part of the refractive index
+    k_Stack : array, in 3 dimensional
+        The complexe part of the refractive index
+    vf : list of int, optional
+        The volumic fraction of all thin layer, as a list. The default is [0].
 
     Returns
     -------
@@ -575,13 +575,13 @@ def Bruggeman(nM, kM, nI, kI, VF):
     
     return nEffective , kEffective
 
-def BB(T, l):
+def BB(T, Wl):
     """
     Parameters
     ----------
     T : Int
         Black Body Temperature , in Kelvin
-    l : 1D vector, array of int
+    Wl : 1D vector, array of int
         Wavelenght, in nm 
     Returns
     -------
@@ -592,17 +592,17 @@ def BB(T, l):
     h = 6.62607015e-34 # Planck constant
     c = 299792458 # Speed of light
     k = 1.380649e-23 # Boltzmann constant
-    BB_spec = 2 * np.pi * h * c**2 / (l * 1e-9)**5 / (np.exp(h * c / (l * 1e-9 * k * T)) - 1) * 1e-9
+    BB_spec = 2 * np.pi * h * c**2 / (Wl * 1e-9)**5 / (np.exp(h * c / (Wl * 1e-9 * k * T)) - 1) * 1e-9
     return BB_spec
 
-def SolarProperties(l, R, SolSpec):
+def SolarProperties(Wl, R, SolSpec):
     """
     Parameters
     ----------
     R : array
         Stack Optical Properties, for different Wavelength, properly intepoled
         Not than R is not necessary the reflectivity, can be transmissivity or absorptivity
-    L : array
+    Wl : array
         Wavelength, in nm
     SolSpec : Vector. SolarSpectrum used, properly intepoled in W.m2nm-1
     R and SolSpec must have the same length
@@ -612,13 +612,13 @@ def SolarProperties(l, R, SolSpec):
         Solar Properties, accorting to the Strack Optical Properties
         => not necessary Solar Reflectance. 
     """
-    if len(l) != len(R) or len(l) != len(SolSpec) or len(R) != len(SolSpec):
+    if len(Wl) != len(R) or len(Wl) != len(SolSpec) or len(R) != len(SolSpec):
         raise ValueError("Vectors l, R, and SolSpec must have the same length.")
     try:
         R_Spec = []
         R_Spec = R * SolSpec
-        SolSpec_int = trapz(SolSpec, l)
-        R_int = trapz(R_Spec, l)
+        SolSpec_int = trapz(SolSpec, Wl)
+        R_int = trapz(R_Spec, Wl)
         R_s = R_int / SolSpec_int
     except:
             raise ValueError("Vectors l, R, and SolSpec must be a numpy array.")
@@ -798,10 +798,26 @@ def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):
 
     return Wl, spec, name
 
-def open_Spec_Signal(name, nb_col):     
+def open_Spec_Signal(name, nb_col):  
+    """
+    open a spectral respond into a file
+    Parameters
+    ----------
+    name : The name of a file
+    nb_col : Int
+        The number of read colone in the file.
+
+    Returns
+    -------
+    Wl : array
+        Wavelenght, must be in nm into the file
+    spec : array
+        The value present in the file, according the Wavelength
+    name_f : string
+        The name of the file open, with the number of the colomun used
+        As :  name + " ,col n° " + str(nb_col)
     """
 
-    """
     # Initialiser un tableau vide
     tableau3D = []
     try: 
@@ -864,25 +880,45 @@ def eliminate_duplicates(lst):
 
 def Write_Stack_Periode (Subtrat, Mat_Periode, nb_periode):
     """
-    Subtrat : a list of a string. Each elements of this list is a string as valid material (a material with an associate texte files in Material/)
-    see : open_material fonction 
-    Mat Periode : a list of a string. Each elements of this list is a string as valid material
-    nb_periode : the number of time were the Mat_Periode must be repeted
-    
-    Write the stack 
-    Exemple 1 : 
-    Mat_Stack = Ecrit_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3)
-    Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
-    
-    Exemple 2:
-    Mat_Stack = Ecrit_Stack_Periode(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
-    Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
+    Builds a stack by repeating a material period multiple times on top of a substrate.
+        Exemple 1 : 
+        Mat_Stack = Ecrit_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3)
+        Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
+        Exemple 2:
+        Mat_Stack = Ecrit_Stack_Periode(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
+        Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
+
+    Parameters
+    ----------
+    Subtrat : List of string
+         Each elements of this list is a string as valid material (a material with an associate texte files in Material/).
+    Mat_Periode : List of string
+        a list of a string. Each elements of this list is a string as valid material
+    nb_periode : Int 
+        the number of time were the Mat_Periode must be repeted
+
+    Returns
+    -------
+    Subtrat : List of string
+        DESCRIPTION.
     """
     for i in range(nb_periode):
         Subtrat += Mat_Periode 
     return Subtrat
 
 def equidistant_values(lst):
+    """
+    Returns a small list of y equidistant values from a large list lst.
+    Parameters
+    ----------
+    lst : List
+        Returns a small list of y equidistant values from a large list lst
+    Returns
+    -------
+    result : list
+        Returns a small list of y equidistant values from a large list lst.
+
+    """
     # Permet de renvoyer une petite liste result de y valeur équidistante à partir d'une grande liste lst
     x = 5
     n = len(lst)
@@ -892,18 +928,19 @@ def equidistant_values(lst):
 
 def valeurs_equidistantes(liste, n=5):
     """
-    A partir d'une grande liste, renvoie une petite liste avec des valeurs équidistante'
+    From a large list, returns a small list with equidistant values
+
     Parameters
     ----------
-    liste : TYPE
-        Une grande liste.
+    liste : list or array
+        A large list 
     n : Int number, optional
         DESCRIPTION. The default is 5.
 
     Returns
     -------
-    petite_liste : TYPE : List
-
+    petite_liste : list or array
+        Returns a small list of y equidistant values from a large list lst.
     """
     # déterminer la distance entre chaque valeur
     distance = len(liste) / (n - 1)
@@ -934,24 +971,105 @@ def Wl_selectif():
     Wl = np.concatenate((Wl_1,Wl_2))
     return Wl
 
-def exemple_evaluate(individual):
+def exemple_evaluate(individual): 
     """
-    Exemple de fonction evaluate. L'individu est une liste. 
-    On cherche la somme des carrés de chaque termes de la liste. 
-    Fontion d'évaluation d'exemple pour un algo génétique
+    Example of an evaluate function. The individual is a list. 
+    The sum of squares of each term in the list is sought. 
+    Example of evaluate function (= cost function) for a optimisation method
+   
+    Parameters
+    ----------
+    individual : List
+        A list representing an individual solution.
+
+    Returns
+    -------
+    score : Float
+        The score calculated based on the squares of the values in the individual.
     """
+
     # convertir une liste en array np.array(population[1])
     score = 0
     for sub_list in individual:
         score += sub_list*sub_list
     return score
 
+
 def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur) :
+    """
+    For understand Individual_to_Stack work, we sudjet to run a lunche the main script with the following : 
+    Mat_Stack : ['BK7', 'W-Al2O3', 'SiO2']
+    Wl = np.arange(400 , 600, 50)
+    
+    Know note than the first thin layer is a composite layer, made of W and Al2O3 (BK7 is the stack):
+    We need the refractive index of W AND Al2O3 for the layer 1, and we need to optimise the tickness AND volumic fraction in the W-Al2O3 layer 
+    See EMA or Brugeman function for definition of volumuc fraction
+    Each individual is now a array of lenght 6, as exemple : 
+    individual : [1.00000000e+06, 40, 125, 0, 0.3, 0]
+        The [1.00000000e+06, 40, 125] part of the list contain the thickness, in nm
+        The [0, 0.3, 0] part of the list contain the volumic fraction, between 0 and 1
+    k_Stack and n_Stack are array of float, of size (4, 3, 2), noted here (x, y, z) dimension
+        x dimension is for wavelenght
+        y dimension is for each layer
+        z dimension is for stored the value of W AND Al2O3 with the same x and y dimension
+        
+    As exemple : 
+    n_Stack : 
+        array([[[1.5309    , 0.        ],
+                [3.39      , 1.66518263],
+                [1.48408   , 0.        ]],
+
+               [[1.5253    , 0.        ],
+                [3.30888889, 1.65954554],
+                [1.479844  , 0.        ]],
+
+               [[1.5214    , 0.        ],
+                [3.39607843, 1.65544143],
+                [1.476849  , 0.        ]],
+
+               [[1.5185    , 0.        ],
+                [3.5       , 1.65232045],
+                [1.474652  , 0.        ]]])
+    
+    The purpose of Individual_to_Stack is to transform in such case the individual, n_Stack and k_Stack
+    
+    Parameters
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index 
+    n_Stack : array 
+        The real part of refractive index. 
+        Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer
+    k_Stack : array
+        The complexe part of refractive index
+        Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer
+    Mat_Stack : List of string
+        List of materials.
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Raises
+    ------
+    ValueError
+        It is not possible to work with theoretical and composite layers at the same time.
+
+    Returns
+    -------
+    d_Stack : 
+        List of only thickness in nm
+    n_Stack : array
+        The real part of refractive index. 
+        Must be size of (x, y) with x the len of wavelenght and y the number of layer    
+    k_Stack : array
+        The comlexe part of refractive index
+        Must be size of (x, y) with x the len of wavelenght and y the number of layer  
+    """
     
     # Ajout dans le travail avec des vf
     if 'nb_layer' in conteneur:
         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-            raise ValueError("Il n'est pas possible de travailler avec des couches théorique et composite en même temps")
+            raise ValueError("It is not possible to work with theoretical and composite layers at the same time.")
     
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
         vf = []
@@ -986,6 +1104,23 @@ def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur) :
 def evaluate_R(individual, conteneur):
     """
     Cost function for the average reflectivity at one or several wavelength
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
+        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
+        The 70 nm thick layer is in contact with air
+        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
+        1 individual = 1 stack = 1 possible solution 
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    R_mean : Int (float)
+        The average reflectance
     """
     Wl = conteneur.get('Wl')
     Ang = conteneur.get('Ang')
@@ -1002,6 +1137,18 @@ def evaluate_R(individual, conteneur):
 def evaluate_T(individual, conteneur):
     """
     Cost function for the average transmissivity at one or several wavelength
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    T_mean: Int (float)
+        The average transmittance
     """
     Wl = conteneur.get('Wl')
     Ang = conteneur.get('Ang')
@@ -1019,18 +1166,19 @@ def evaluate_T(individual, conteneur):
 
 def evaluate_R_s(individual, conteneur):
     """
-    Parameters
+    Calcul the solar reflectance of an individual
+    1 individual = 1 output of one optimization function = 1 possible solution
     ----------
-    individual : TYPE
-        DESCRIPTION.
-    conteneur : TYPE
-        DESCRIPTION.
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
 
     Returns
     -------
-    R_s : TYPE
-        DESCRIPTION.
-
+    R_s : Int (float)
+        The solar reflectance
     """
     Wl = conteneur.get('Wl')
     Ang = conteneur.get('Ang')
@@ -1038,24 +1186,46 @@ def evaluate_R_s(individual, conteneur):
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
-    # Je calcul Rs
+    # Calcul
     R_s = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     R_s = SolarProperties(Wl, R, Sol_Spec)
     return R_s
 
 def evaluate_T_s(individual, conteneur):
-    
+    """
+    Calcul the solar transmittance of an individual
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    T_s : Int (float)
+        The solar transmittance
+    """
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     T_s = 0
@@ -1065,7 +1235,19 @@ def evaluate_T_s(individual, conteneur):
 
 def evaluate_A_s(individual, conteneur):
     """
-    Cost function for the solar absorptance
+    Calcul the solar absoptance of an individual
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    A_s : Int (float)
+        The solar absoptance
     """
 
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
@@ -1074,7 +1256,11 @@ def evaluate_A_s(individual, conteneur):
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
     A_s = 0
@@ -1086,9 +1272,21 @@ def evaluate_T_pv(individual, conteneur):
     """
     Calculate the solar transmissivity WITH a PV cells signal
     With the following ligne code in the main script
-    
     if evaluate.__name__ == "evaluate_T_PV":
         conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
+    
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    T_PV: Int (float)
+        Solar transmissivity WITH a PV cells signal
     """
 
     Wl = conteneur.get('Wl')#,
@@ -1097,13 +1295,18 @@ def evaluate_T_pv(individual, conteneur):
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('Sol_Spec_with_PV')
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
-    T_s_PV = 0
+    T_PV = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    T_s_PV = SolarProperties(Wl, T, Sol_Spec)
-    return T_s_PV
+    # Sol_Spec is Sol_Spec_with_PV
+    T_PV = SolarProperties(Wl, T, Sol_Spec)
+    return T_PV
 
 def evaluate_T_vis(individual, conteneur):
     """
@@ -1115,23 +1318,55 @@ def evaluate_T_vis(individual, conteneur):
     Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye) # Interpolate the signal
     
     conteneur["Sol_Spec_with_Human_eye"] = Signal_H_eye 
+    
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    T_PV: Int (float)
+        Solar transmissivity WITH a PV cells signal
     """
+    
     Wl = conteneur.get('Wl')#,
     Ang = conteneur.get('Ang')#
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('Sol_Spec_with_Human_eye')
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
-    T_H_eye = 0
+    T_vis = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    T_H_eye = SolarProperties(Wl, T, Sol_Spec)
-    return T_H_eye
+    T_vis = SolarProperties(Wl, T, Sol_Spec)
+    return T_vis
 
 def evaluate_low_e(individual, conteneur):
-    
+    """
+    Calculate the low_e performances
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    P_low_e: Int (float)
+        Low_e performances 
+    """
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
@@ -1144,7 +1379,11 @@ def evaluate_low_e(individual, conteneur):
     # Calcul des domaines 
     Wl_1 = np.arange(min(Wl),Lambda_cut,(Wl[1]-Wl[0]))
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
 
     # Calcul du RTA
@@ -1157,7 +1396,21 @@ def evaluate_low_e(individual, conteneur):
     return P_low_e
 
 def evaluate_rh(individual, conteneur):
+    """
+    Calculate the heliothermal efficiency 
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
 
+    Returns
+    -------
+    rH: Int (float)
+        Heliothermal efficiency 
+    """
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')
@@ -1172,7 +1425,11 @@ def evaluate_rh(individual, conteneur):
     # Creation du stack
     d_Stack = np.array(individual)
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
 
     # Calcul du RTA
@@ -1191,10 +1448,21 @@ def evaluate_rh(individual, conteneur):
     return rH
     
 def evaluate_RTR(individual, conteneur):
-    # Calcul la reflectance solaire
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
-    
+    """
+    Calculate the performance according a RTR shape
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    P_RTR: Int (float)
+        performance according a RTR shape
+    """  
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
@@ -1206,41 +1474,39 @@ def evaluate_RTR(individual, conteneur):
     Lambda_cut = conteneur.get('Lambda_cut')
     # traitemement de l'optimisation des n
     Mat_Stack = conteneur.get('Mat_Stack')
-    
+    """
+    Why Individual_to_Stack ?
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
     
-    # Calcul des domaines 
-    # Va de min à Lambda_cut_min inclu
     Wl_1 = np.arange(min(Wl),Lambda_cut_min+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
     Wl_2 = np.arange(Lambda_cut_min, Lambda_cut+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     # Calcul du RTA
     d_Stack = d_Stack.reshape(1, len(individual))
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    # Calcul 
-    # Transmitted solar flux on the Wl-1 part
-    # ancienne version fausse. Correction au 27/04/2023
-    #P_low_e = np.concatenate([R[0:len(Wl_1)],T[len(Wl_1):len(Wl_2)], R[len(Wl_2):]])
     P_low_e = np.concatenate([R[0:len(Wl_1)],T[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], R[(len(Wl_2)+len(Wl_1)-1):]])
-    P_low_e = SolarProperties(Wl, P_low_e, Sol_Spec)
+    P_RTR = SolarProperties(Wl, P_low_e, Sol_Spec)
     
-    return P_low_e
+    return P_RTR
 
 def evaluate_netW_PV_CSP(individual, conteneur):
     """
-    Parameters
+    Calculate the performance according a RTR shape
+    1 individual = 1 output of one optimization function = 1 possible solution
     ----------
-    individual : 1D array, like a list
-        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
-        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
-        The 70 nm thick layer is in contact with air
-        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
-        1 individual = 1 stack = 1 possible solution 
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
     conteneur : Dict
-        Contain all different data in a dictionaire 
+        dictionary witch contain all parameters 
+
     Returns
     -------
-    Net_W
-    """
+    P_RTR: Int (float)
+        performance according a RTR shape
+    """  
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
@@ -1283,6 +1549,25 @@ def evaluate_netW_PV_CSP(individual, conteneur):
     return net_PV_CSP
 
 def evaluate_RTA_s(individual, conteneur):
+    """
+    Calcul the solar reflectance, the solar transmittance and the solar absoptance
+    Parameters
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    R_s : Float
+        solar reflectanc
+    T_s : Float
+        solar transmittance
+    A_s : Float
+        solar absorptance
+    """
     # Calcul la reflectance solaire, transmittance solaire et l'absorptance
     #Chaque individu est une liste d'épaisseur. 
     #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
@@ -1315,7 +1600,8 @@ def RTA_curve(individual, conteneur):
     Parameters
     ----------
     individual : numpy array
-        individual is a stack, a list a thickness.
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
     conteneur : Dict
         dictionary with contain all "global" variables
     Returns
@@ -1385,7 +1671,7 @@ def selection_min(population, evaluate, evaluate_rate, conteneur):
     """
     Parameters
     ----------
-    population : List of list 
+    population : List of array 
         Population is a list of the different indivudals 
         Each individual is a stack, so a list of ticknesss
     evaluate : fonction
@@ -1628,9 +1914,22 @@ def optimize_strangle(evaluate, selection, conteneur):
 
 def children_strangle(pop_size, parents, chromosome_size):
     """
-    See : optimize_strangle
-    
-    Cette fonction permet de générer la 1er génération d'enfants par étouffement'
+    See : the function optimize_strangle
+
+    Parameters
+    ----------
+    pop_size : Int
+        the number of individuals in the population.
+    parents : List of array 
+        List of individuals selected for be the parent of the next generation 
+    chromosome_size : Int
+        The length of each individual
+
+    Returns
+    -------
+    children : List of array 
+        List of individuals born from the parent 
+
     """
     children = []
     for i in range(pop_size-len(parents)):
@@ -2163,8 +2462,20 @@ def PSO(evaluate, selection, conteneur):
 
 def generate_neighbor(solution, conteneur):
     """
-    Function for simulated_annealing algorithm
-    """
+    Generates a neighboring solution for the simulated annealing algorithm.
+
+    Parameters
+    ----------
+    solution : array
+        The current solution represented as a list.
+    conteneur : Dict
+        A dictionary containing relevant parameters and constraints.
+
+    Returns
+    -------
+    neighbor : array
+        The generated neighboring solution obtained by modifying a randomly selected value in the solution.
+    """   
     Plage_ep = conteneur.get('Ep_plage')
     
     neighbor = solution.copy()
@@ -2175,7 +2486,16 @@ def generate_neighbor(solution, conteneur):
 
 def acceptance_probability(current_score, new_score, temperature):
     """
-    Function for simulated_annealing algo
+    Calculates the acceptance probability for the simulated annealing algorithm.
+
+    Args:
+        current_score: The current score or energy.
+        new_score: The score or energy of the new state.
+        temperature: The current temperature of the system.
+
+    Returns:
+        The acceptance probability based on the current and new scores and the temperature.
+
     """
     if new_score < current_score:
         return 1.0
