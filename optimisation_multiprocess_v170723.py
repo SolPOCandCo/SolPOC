@@ -14,40 +14,41 @@ from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
 # %%  Main 
-Comment = "Essais de la fonction d'évaluation evaluate_netW_PV_CSP " # Comment to be written in the simulation text file
-Mat_Stack = Ecrit_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3) # Creation of the Stack
-# Ajout de couches minces théorique avec la variable nb_layer, dont l'épaisseur ET l'indice doivent être optimisées
-# nb_layer = 0 # Nombre de couche mince théorique par dessus le stack. Cette variable peut de pas être définie
-d_Stack_Opt =  ["no"] # Permet de fixer une épaisseur d'une couche qui ne seras pas optimiser. Mettre "no" pour ne rien fixer. Si on as par exemple trois couches, on peut écrire [ ,40, ]. Le code comprend que seule la couche du milieu est fixe. 
+Comment = "A sentence to be written in the final text file " # Comment to be written in the simulation text file
+Mat_Stack = Write_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3) # Creation of the Stack 
 # Choice of optimization methode
 algo = DEvol # Callable. Name of the optimization methode 
 selection = selection_max # Callable. Name of the selection methode : selection_max or selection_min
-evaluate = evaluate_R # Callable. Name of the cost function
-mutation_DE = "current_to_best" # String. Mutaton methode for DEvol
+evaluate = evaluate_R_s # Callable. Name of the cost function
+mutation_DE = "current_to_best" # String. Mutaton methode for DEvol optimization method
 """_________________________________________________________________________"""
 # Wavelenght domain, here from 280 to 2500 nm wit a 5 nm step. Can be change!   
-Wl = np.arange(500 , 610, 10) # /!\ Last value is not include in the array
-# EThickness of the substrack, in nm 
+Wl = np.arange(280 , 4001, 1) # /!\ Last value is not include in the array
+# Thickness of the substrack, in nm 
 Ep_Substrack = 1e6 # Substrat thickness, in nm 
 # Plage des épaisseurs des couches minces, en nm
-Plage_ep = (0, 350) # en nm. Plage indentique pour chaque couches minces pour générée la 1ere population 
+Plage_ep = (0, 350) # en nm. Plage identique pour chaque couches minces pour générée la 1ere population 
 # Plage des indices des couches minces
 Plage_n = (1.3 , 3.0) # indice de réfraction, sans unité. Plage indentique pour chaque couches minces pour générée la 1ere population 
 # Plage des fractions volumiques
 Plage_vf = (0 , 1.0) #  volumic fraction of inclusion in host matrix
 # Angle d'incidence du rayonnement sur le stack de couche mince 
 Ang = 0 # Incidence angle on the thin layers stack, in °
+# Open the solar spectrum 
+Wl_sol , Sol_Spec , name_SolSpec = open_SolSpec('Materials/SolSpec.txt','DC')
+Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec) # Interpolate the solar spectrum 
+#%% Optional parameters
 C = 80 # Solar concentration. Data necessary for solar thermal application, like selective stack 
-Tair = 20 + 273 # Air temperature, in Kelvin 
-Tabs = 300 + 273 # Thermal absorber temperature, in Kelvin 
-# Longueur d'onde de coupure, uniquement pour les verres low-e ou le PV-CSP (fonction cout RTR)
+T_air = 20 + 273 # Air temperature, in Kelvin. Data necessary for solar thermal application, like selective stack 
+T_abs = 300 + 273 # Thermal absorber temperature, in Kelvin. Data necessary for solar thermal application, like selective stack 
+# Cuting Wavelenght. Data necessary for low-e, RTR or PV_CSP evaluates functions
 Lambda_cut_UV = 500 # nm 
 Lambda_cut_IR = 1000 # nm 
+# Ajout de couches minces théorique avec la variable nb_layer, dont l'épaisseur ET l'indice doivent être optimisées
+# nb_layer = 0 # Nombre de couche mince théorique par dessus le stack. Cette variable peut de pas être définie
+#d_Stack_Opt =  ["no"] # Permet de fixer une épaisseur d'une couche qui ne seras pas optimisée. Mettre "no" pour ne rien fixer. Si on as par exemple trois couches, on peut écrire [ ,40, ]. Le code comprend que seule la couche du milieu est fixe.
 # Open and processing the reflectif index of materials used in the stack (Read the texte files in Materials/ )
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
-# Open the solar spectrum 
-Wl_sol , Sol_Spec , name_SolSpec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec) # Interpolate the solar spectrum 
 # Open a file with PV cell shape
 Wl_PV , Signal_PV , name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
 Signal_PV = np.interp(Wl, Wl_PV, Signal_PV) # Interpolate the signal
@@ -61,21 +62,20 @@ evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next
 mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr pour DE
 mutation_delta = 15 # Si un gène mute, le gène varie de + ou - un nombre aléatorie compris entre 0 et cette valeur. Mutation absolue fixe
 f1, f2 = 0.9, 0.8  # Hyperparameter pour DEvol
-nb_generation = 100 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
+nb_generation = 10 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization methode
 nb_lancement = 8# Number of run
 cpu_used = 8  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
 #seed = 45 # Seed of the random number generator
 #%%
 """_________________________________________________________________________"""
-# Le conteneur est un dictionnaire qui contient les variables du problèmes
-# On donne le conteneur comme entrée dans certaines fonctions
-# => Elles vont ensuite chercher les variables nécessaires  
+# The container is a dictionary containing the problem variables
+# The container is given as input to certain functions
+# => They then read the necessary variables  with the commande .get
 conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
             'Ep_Substrack' : Ep_Substrack,
             'Ep_plage' : Plage_ep,
-            'd_Stack_Opt' : d_Stack_Opt,
             'Mat_Stack' : Mat_Stack,
             'SolSpec' : Sol_Spec,
             'Lambda_cut_min' : Lambda_cut_UV,
@@ -86,11 +86,17 @@ conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la va
             'name_algo' : algo.__name__, 
             'name_selection' : selection.__name__, 
             'mutation_rate': mutation_rate,
-            'nb_generation' :nb_generation,} # Fin du dico 
+            'nb_generation' :nb_generation,} # End of the dict
 
 #%%
-# Si nb_layer exite, alors j'optimise une ou plusieurs couches minces théorique
-# Je rajoute les valeurs dans le conteneur (dictionnaire qui sert à transmettre les variables) 
+# If nb_layer exists, then I optimize one or more theoretical thin layers
+# I add values to the container (dictionary used to transmit variables) 
+
+if 'd_Stack_Opt' not in locals():
+    d_Stack_Opt =  ["no"]
+    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
+else:
+    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
 if 'nb_layer' in locals():
     conteneur["nb_layer"] = nb_layer
     conteneur["n_plage"] = Plage_n
@@ -113,9 +119,18 @@ if evaluate.__name__ == "evaluate_T_Human_eye":
     
 # If I optimized a antireflective coating for PV, I need the Pv signal shape
 if evaluate.__name__ == "evaluate_rh":
-    conteneur["C"] = C
-    conteneur["T_air"] = Tair
-    conteneur["T_abs"] = Tabs
+    if 'C' in locals(): 
+        conteneur["C"] = C
+    else : 
+        conteneur["C"] = 80
+    if 'T_air' in locals():
+        conteneur["T_air"] = T_air
+    else:
+        conteneur["T_air"] = 293
+    if 'T_abs' in locals():
+        conteneur["T_abs"] = T_abs
+    else:
+        conteneur["T_abs"] = 300 + 273
 
 # Optimize a PV/CSP coating not with a RTR shape, but with a net energy balance
 if evaluate.__name__ == "evaluate_netW_PV_CSP":

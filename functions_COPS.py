@@ -75,10 +75,6 @@ def RTA3C(l, d, n, k, Ang=0):
     q0PolaP = N0/np.cos(Phi0)
     
     # Substrate
-    """
-    Etape suplémentaire par rapport à Scilab. 
-    Je doit définir mes variables avant de les éditer
-    """
     nS = n[:,0] # Je prend la 1er colone, qui contient le n du substrat pour les longueurs d'onde
     kS = k[:,0]
     Ns = nS + 1j*kS
@@ -87,21 +83,13 @@ def RTA3C(l, d, n, k, Ang=0):
     qSPolaP = Ns/np.cos(PhiS) # Ok jusque là 
     
     # Multilayers (layer 1 is the one closest to the substrate)
-    """ 
-    Autre facons de faire par rapport au code Scilab, propre à Python 
-    """
     nj= np.delete(n,0, axis=1)
     kj= np.delete(k,0, axis=1)
     dj= np.delete(d,0, axis=1)
-    """
-    Etape suplémentaire par rapport à Scilab. 
-    Je doit définir mes variables tableau avant de les éditer
-    """
+
     numlayers = nj.shape[1] # nj est un tableau 
     Nj = np.zeros((numlayers,1,len(l)), dtype=complex) # OK
-    """colone dans Scilab, tableau 3D ici. 
-    l'axe z correspond aux différentes longueurs d'ondes
-    """
+
     # colone dans Scilab, ligne ici
     Phij = np.zeros((numlayers,1,len(l)), dtype=complex)
     qjPolaS = np.zeros((numlayers,1,len(l)), dtype=complex)
@@ -111,19 +99,12 @@ def RTA3C(l, d, n, k, Ang=0):
     MpolaP = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
     Ms = np.zeros((2, 2,len(l)), dtype=complex)
     Mp = np.zeros((2, 2,len(l)), dtype=complex)
-    """redimensionnement de nj et kj
-    nj = nj.reshape(3,1,2) kj = kj.reshape(3,1,2) ne marche.
-    La dimension est bonne, mais les données sont inversée. 
-    Donc faire cette méthode
-    """
+
     sous_tableaux = np.split(nj,nj.shape[1],axis=1)
     nj = np.array([el.reshape(1,len(l)) for el in sous_tableaux]) # el.reshape(1,2) devient el.reshape(1,len(l))
     sous_tableaux = np.split(kj,kj.shape[1],axis=1)
     kj = np.array([el.reshape(1,len(l)) for el in sous_tableaux])
-    """
-    Ligne nécessaire. Cela transforme un vecteur (1,3) en vecteur (3,)
-    Cette fonction permet de supprimer les dimensions ayant une taille de 1 dans un tableau numpy
-    """
+
     dj = np.squeeze(dj) #
     # Note  : inverser un tableau avec numpy.transpose()
     for LayerJ in range(numlayers): 
@@ -132,19 +113,14 @@ def RTA3C(l, d, n, k, Ang=0):
         qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
         qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
         thetaj[LayerJ] = (2 * np.pi / l) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
-        """Changement par rapport à Scilab, du au index de Python. La 1er case est noté 0,0 dans Python et 
-        1,1 dans Scilab. Ici LayerJ commence à 0 et non plus à 1 mais l'arret de la boucle for reste le même (dernier interval 
-        exclus dans Python.
-        Chaque index x de Mpola doit être réduit de 1. L'Index y doit être augmenter de  +1 le LayerJ-1 devient LayerJ 
-        t LayerJ deient LayerJ+1 
-        """
+
         # Characteristic matrix of layer j
-        """ Calcul de MpolaS"""
+        """ Calcul of MpolaS"""
         MpolaS[0, 2*LayerJ] = np.cos(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ-1)
         MpolaS[0, 2*LayerJ+1] = -1j/qjPolaS[LayerJ]*np.sin(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ)
         MpolaS[1, 2*LayerJ] = -1j*qjPolaS[LayerJ]*np.sin(thetaj[LayerJ])
         MpolaS[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
-        """ Calcul de MpolaP"""
+        """ Calcul of MpolaP"""
         MpolaP[0, 2*LayerJ] = np.cos(thetaj[LayerJ])
         MpolaP[0, 2*LayerJ+1] = -1j/qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
         MpolaP[1, 2*LayerJ] = -1j*qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
@@ -216,8 +192,32 @@ def RTA3C(l, d, n, k, Ang=0):
 
 def RTA(l, d, n, k, Ang=0):
     """
-    The Ultimate version de RTA : work for an "infinite" numer of thin layers
-    
+    See the function RTA3C for a example / tutoral and the version of the function write for 3 layer (2 thin layer + the substrat)
+    RTA calcul the reflectivity, transmissivty and absorptivity using Abélès matrices
+    The Abélès matrices provide the best ratio accurency / speed for stack below 100 thin layers
+    The present version of RTA work for a infinit number of thin layer, but we not recommand to go over 100
+    Parameters
+    ----------
+    l : array
+        Wavelength, in nanometer
+    d : array
+        Tickness of stack, including the substrat
+    n : array 
+        DESCRIPTION.
+    k : array
+        DESCRIPTION.
+    Ang : int, optional
+        Incidence angle (in degres) of the light one the optical stack. The default is 0 degres, so light perpendicular at the substrat
+
+    Returns
+    -------
+    Refl : array
+        the stack reflectivity, for each wavelength.
+    Trans : TYPE
+        the stack transmissivity, for each wavelength.
+    Abs : TYPE
+        the stack absorptivituy, for each wavelength.
+
     """
 
     # Add an air layer on top
@@ -380,7 +380,7 @@ def Made_Stack(Mat_Stack, Wl):
     The SiO2 layer is in contact with the air
     
     DESCRIPTION.
-    Wl : List
+    Wl : numpy array
         The list of the wavelenght
 
     Returns
@@ -469,9 +469,9 @@ def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
     Sinon il faut le calculer 
     Parameters
     ----------
-    n_Stack : TYPE
+    n_Stack : array, in 2 or 3 dimensional
         DESCRIPTION.
-    k_Stack : TYPE
+    k_Stack : array, in 2 or 3 dimensional
         DESCRIPTION.
     vf : TYPE, optional
         DESCRIPTION. The default is [0].
@@ -518,16 +518,31 @@ def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
 def Bruggeman(nM, kM, nI, kI, VF):
     """
     Fonction de Bruggemann. 
-    Allow us to calcalted the complexe refractive index of a mixture of two materials, using a EMA
+    Allow us to calcalted the complexe refractive index of a mixture of two materials, using a EMA (Effective Medium Approximation)
+    Parameters
+    ----------
+    nM : array
+        Real part of refractive index of host Matrix (M is for Matrix)
+    kM : array
+        Complexe part of refractive index of host Matrix (M is for Matrix)
+    nI : array
+        Real part of refractive index of inclusion (I is for Inclusion)
+    kI : TYPE
+        Complexe part of refractive index of inclusion (I is for Inclusion)
+    VF : int
+        Volumic Fraction of inclusions in host matrix. Number between 0 et 1 (0 and 100%)     
+
+    Returns
+    -------
+    nEffective : array
+        Real part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
+    kEffective : array
+        Complexe part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
     
-    nM, kM = Refractive index of host Matrix
-    nI, kI = Refractive index of embedded particles (Inclusions)
-    nM, kM, nI and kI : list of values. One line per wavelenght
-    VF = Volume fraction of inclusions in host matrix
-    VF : value, between 0 and 1
-    
-    Return 
-    nEffective, kEffective : Refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
+    Noted than If vf = 0 :
+        nEffective = nM and kEffective = kM
+    Noted than If vf = 1.0 : 
+        nEffective = nI and kEffective = kI
     """
     if VF == 0 :
         nEffective = nI
@@ -560,53 +575,6 @@ def Bruggeman(nM, kM, nI, kI, VF):
     
     return nEffective , kEffective
 
-def Bruggeman_np(nM, kM, nI, kI, VF):
-    """
-    nM, kM = Refractive index of host Matrix
-    nI, kI = Refractive index of embedded particles (Inclusions)
-    VF = Volume fraction of inclusions in host matrix
-    
-    Code can more faster... ? 
-    /!\ wrong for the moment... 
-    """
-    if VF == 0 :
-        """
-        Mise en place nécessaire dans la version actuelle de Made_Stack_vf. 
-        Sommairement la fonction précédante lance Bruggemann pour chaque couche, même si cela n'est pas tjs nécessaire (couche d'un seul matériaux)
-        Pour ces couches nous avons à la fois vf =0 et nM et kM = 0 
-        => en renvoie les indices de la couche seul, qui sont alors stocké dans nI et kI
-        """
-        nEffective = nI
-        kEffective = kI
-        return nEffective, kEffective
-    
-    eM = (nM + 1j*kM)**2
-    eI = (nI + 1j*kI)**2
-    y = 2
-    nEffective = np.zeros(np.shape(nM))
-    kEffective = np.zeros(np.shape(nM))
-    a = np.array([-y for _ in range(np.shape(nM)[0])])
-    b = (VF*y + VF - 1)*eI - (VF*y + VF - y)*eM
-    c = eM*eI
-    #p = np.zeros(np.shape(nM))
-    p = np.zeros((len(a), 2), dtype=complex)
-    for i in range(np.shape(nM)[0]):
-        p[i] = np.roots([a[i], b[i], c[i]])
-    e1 = p[:,0]
-    e2 = p[:,1]
-    if (np.imag(e1) > 0).all():
-        Neffective = np.sqrt(e1)
-    elif (np.imag(e2) > 0).all():
-        Neffective = np.sqrt(e2) # ligne ici 
-    else:
-        if (np.real(e1) > 0).all():
-            Neffective = np.sqrt(e1)
-        elif (np.real(e2) > 0).all:
-            Neffective = np.sqrt(e2)
-    nEffective = np.real(Neffective)
-    kEffective = np.imag(Neffective)
-    return nEffective, kEffective
-
 def BB(T, l):
     """
     Parameters
@@ -631,10 +599,10 @@ def SolarProperties(l, R, SolSpec):
     """
     Parameters
     ----------
-    R : Vector
+    R : array
         Stack Optical Properties, for different Wavelength, properly intepoled
-        Not necessary the reflectance
-    L : Vector
+        Not than R is not necessary the reflectivity, can be transmissivity or absorptivity
+    L : array
         Wavelength, in nm
     SolSpec : Vector. SolarSpectrum used, properly intepoled in W.m2nm-1
     R and SolSpec must have the same length
@@ -642,7 +610,7 @@ def SolarProperties(l, R, SolSpec):
     -------
     R_s : float
         Solar Properties, accorting to the Strack Optical Properties
-        => not necessary Solar reflectance. 
+        => not necessary Solar Reflectance. 
     """
     if len(l) != len(R) or len(l) != len(SolSpec) or len(R) != len(SolSpec):
         raise ValueError("Vectors l, R, and SolSpec must have the same length.")
@@ -691,8 +659,8 @@ def helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
     Calculate the heliothermal efficiency
     Parameters
     ----------
-    A_s : Flaot
-        Solar Absoptivity
+    A_s : Float
+        Solar Absoptivity, calculate previsouly
     E_BB : Float
         Thermal emissivity, calculate previsouly according to the temperature T_Stack
     T_stack : Float
@@ -702,7 +670,7 @@ def helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
     C : Float
         Solar concentration .
     I : Float
-        Solar flux on the stack, in W/m2. Normaly calculate as integration of the solar spectrum
+        Solar irradiance on the stack, in W/m2. Normaly calculat with integration of the solar spectrum
     r_Opt : TYPE, optional
         Optical performance of the optical concentrator, used with the solar selectiv stack. The default is 0.7.
     FFabs : Float, optional
@@ -719,7 +687,7 @@ def helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
 
 def open_material(name): 
     """
-    open a text file which contain refractive index from materials
+    Open a text file which contain refractive index from Materials folder
     Exemple Wl, n, k = open_material("Ag") open a file named Ag.txt, in the Materials/
     ----------
     name : a string
@@ -732,12 +700,12 @@ def open_material(name):
 
     Returns
     -------
-    Wl : TYPE
-        DESCRIPTION.
-    n : TYPE
-        DESCRIPTION.
-    k : TYPE
-        DESCRIPTION.
+    Wl : numpy array 
+        Wavelength, in nanometer (nm) 
+    n : numpy array
+        Real part of the Refractive Index
+    k : numpy array
+        Complexe part of the Refractive Index.
     """
     try :
         type(name) == "str"        
@@ -894,7 +862,7 @@ def eliminate_duplicates(lst):
       
     return unique_elements, indices_removed
 
-def Ecrit_Stack_Periode (Subtrat, Mat_Periode, nb_periode):
+def Write_Stack_Periode (Subtrat, Mat_Periode, nb_periode):
     """
     Subtrat : a list of a string. Each elements of this list is a string as valid material (a material with an associate texte files in Material/)
     see : open_material fonction 
@@ -951,26 +919,20 @@ def valeurs_equidistantes(liste, n=5):
 
 def Wl_selectif():
     """
-    Give a vector of Wavelength, optimized for selectif coating optimisation / calculation of performancess
-    280 to 2500 nm (solar domain) with a 5 nm step for the calculation for performances
-    2500 nm to 30µm (IR domain) with a 50 nm step for the calculation of thermal emissivity (named E_BB in this code)
+    Give a vector of Wavelength (in nm), optimized for selectif coating optimisation / calculation of performancess
+        280 to 2500 nm (solar domain) with a 5 nm step for the calculation for performances
+        2500 nm to 30µm (IR domain) with a 50 nm step for the calculation of thermal emissivity (named E_BB in this code)
+
     Returns
     -------
-    Wl, the list of Wavelenght
+    Wl : array
+        Wavelenght, in nm
 
     """
     Wl_1 = np.arange(280 , 2500 , 5)
     Wl_2 = np.arange(2500 , 30050 , 50)
     Wl = np.concatenate((Wl_1,Wl_2))
     return Wl
-
-"""_________________________________________________
-Fonction for optimization 
-
-Fixation du seed dans les fonctions d'optimisation, pour éviter les soucis avec des serveurs
-ou des VM dans le cas d'un lancement en multiprocessing
-np.random.seed(np.random.randint(1,2**32 - 1))
-"""
 
 def exemple_evaluate(individual):
     """
@@ -1021,13 +983,57 @@ def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur) :
     
     return d_Stack, n_Stack, k_Stack
 
-def evaluate_R_s(individual, conteneur):
-    # Calcul la reflectance solaire
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
+def evaluate_R(individual, conteneur):
+    """
+    Cost function for the average reflectivity at one or several wavelength
+    """
+    Wl = conteneur.get('Wl')
+    Ang = conteneur.get('Ang')
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    # Creation of 
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur)
+
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    R_mean = np.mean(R)
+    return R_mean
+
+def evaluate_T(individual, conteneur):
+    """
+    Cost function for the average transmissivity at one or several wavelength
+    """
+    Wl = conteneur.get('Wl')
+    Ang = conteneur.get('Ang')
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Mat_Stack = conteneur.get('Mat_Stack')
     
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
+    # change 
+    T_mean = np.mean(T)
+    return T_mean
+
+def evaluate_R_s(individual, conteneur):
+    """
+    Parameters
+    ----------
+    individual : TYPE
+        DESCRIPTION.
+    conteneur : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    R_s : TYPE
+        DESCRIPTION.
+
+    """
+    Wl = conteneur.get('Wl')
+    Ang = conteneur.get('Ang')
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
@@ -1042,9 +1048,6 @@ def evaluate_R_s(individual, conteneur):
     return R_s
 
 def evaluate_T_s(individual, conteneur):
-    # Calcul la transmittance solaire
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
@@ -1060,7 +1063,26 @@ def evaluate_T_s(individual, conteneur):
     T_s = SolarProperties(Wl, T, Sol_Spec)
     return T_s
 
-def evaluate_T_PV(individual, conteneur):
+def evaluate_A_s(individual, conteneur):
+    """
+    Cost function for the solar absorptance
+    """
+
+    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
+    Ang = conteneur.get('Ang')#, 0)
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('SolSpec')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+    
+    A_s = 0
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    A_s = SolarProperties(Wl, A, Sol_Spec)
+    return A_s
+
+def evaluate_T_pv(individual, conteneur):
     """
     Calculate the solar transmissivity WITH a PV cells signal
     With the following ligne code in the main script
@@ -1083,7 +1105,7 @@ def evaluate_T_PV(individual, conteneur):
     T_s_PV = SolarProperties(Wl, T, Sol_Spec)
     return T_s_PV
 
-def evaluate_T_Human_eye(individual, conteneur):
+def evaluate_T_vis(individual, conteneur):
     """
     Calculate the optical transmittance with a human eye input
     The solar spectrum (Sol_Spec) has been remplaced by a human eye sensivity to wavelenght during the process
@@ -1108,81 +1130,19 @@ def evaluate_T_Human_eye(individual, conteneur):
     T_H_eye = SolarProperties(Wl, T, Sol_Spec)
     return T_H_eye
 
-def evaluate_A_s(individual, conteneur):
-    """
-    Cost function for the solar absorptance
-    """
-
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
-    n_Stack = conteneur.get('n_Stack')
-    k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
-    Mat_Stack = conteneur.get('Mat_Stack')
-    
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
-    
-    A_s = 0
-    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    A_s = SolarProperties(Wl, A, Sol_Spec)
-    return A_s
-
-def evaluate_R(individual, conteneur):
-    """
-    Cost function for the average reflectivity at one or several wavelength
-    """
-    
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
-    n_Stack = conteneur.get('n_Stack')
-    k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
-    Mat_Stack = conteneur.get('Mat_Stack')
-    
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur)
-
-    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    R_mean = np.mean(R)
-    return R_mean
-
-def evaluate_T(individual, conteneur):
-    """
-    Cost function for the average transmissivity at one or several wavelength
-    """
-    
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
-    n_Stack = conteneur.get('n_Stack')
-    k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
-    Mat_Stack = conteneur.get('Mat_Stack')
-    
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
-
-    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    
-    # change 
-    T_mean = np.mean(T)
-    return T_mean
-
 def evaluate_low_e(individual, conteneur):
-    # Calcul la reflectance solaire selon un profil low-e
-    #Chaque individu est une liste d'épaisseur. 
-    #Je met les variables Wl, Ang, n_Stack, k_Stack et SolSpec sont en global
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
-    name_algo = conteneur.get('name_algo')
     # Le profil est réflecteur de 0 à Lambda_cut_min
     # Le profil est transparrant de Lambda_cut_min à + inf
     Lambda_cut = conteneur.get('Lambda_cut')
     d_Stack = np.array(individual)
     # Calcul des domaines 
     Wl_1 = np.arange(min(Wl),Lambda_cut,(Wl[1]-Wl[0]))
-    Wl_2 = np.arange(Lambda_cut, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     Mat_Stack = conteneur.get('Mat_Stack')
     
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
@@ -1197,8 +1157,7 @@ def evaluate_low_e(individual, conteneur):
     return P_low_e
 
 def evaluate_rh(individual, conteneur):
-    # Calcul le rendement héliothermique 
-    #Chaque individu est une liste d'épaisseur. 
+
     
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')
@@ -1208,7 +1167,6 @@ def evaluate_rh(individual, conteneur):
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
-    name_algo = conteneur.get('name_algo')
     # Intégration du spectre solaire, brut en W/m2
     I =  trapz(Sol_Spec, Wl)
     # Creation du stack
@@ -1220,7 +1178,7 @@ def evaluate_rh(individual, conteneur):
     # Calcul du RTA
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     # Calcul de l'absoptance solaire 
-    As = 0 
+    A_s = 0 
     A_s = SolarProperties(Wl, A, Sol_Spec)
     # Calcul du corps noir
     BB_shape = BB(Tabs, Wl)
@@ -1242,7 +1200,6 @@ def evaluate_RTR(individual, conteneur):
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
-    name_algo = conteneur.get('name_algo')
     # Le profil est réflecteur de 0 à Lambda_cut_min
     Lambda_cut_min = conteneur.get('Lambda_cut_min')
     # Le profil est transparrant de Lambda_cut_min à Lambda_cut
@@ -1256,7 +1213,6 @@ def evaluate_RTR(individual, conteneur):
     # Va de min à Lambda_cut_min inclu
     Wl_1 = np.arange(min(Wl),Lambda_cut_min+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
     Wl_2 = np.arange(Lambda_cut_min, Lambda_cut+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
-    Wl_3 = np.arange(Lambda_cut, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     # Calcul du RTA
     d_Stack = d_Stack.reshape(1, len(individual))
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1268,6 +1224,63 @@ def evaluate_RTR(individual, conteneur):
     P_low_e = SolarProperties(Wl, P_low_e, Sol_Spec)
     
     return P_low_e
+
+def evaluate_netW_PV_CSP(individual, conteneur):
+    """
+    Parameters
+    ----------
+    individual : 1D array, like a list
+        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
+        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
+        The 70 nm thick layer is in contact with air
+        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
+        1 individual = 1 stack = 1 possible solution 
+    conteneur : Dict
+        Contain all different data in a dictionaire 
+    Returns
+    -------
+    Net_W
+    """
+    
+    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
+    Ang = conteneur.get('Ang')#, 0)
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('SolSpec')
+
+    # traitemement de l'optimisation des n
+    Mat_Stack = conteneur.get('Mat_Stack')
+    
+    """Get the "cost of PV". We need to give more importance to the PV part. Without that, the optimization process not provide
+    a RTR like coating, but a near perfect mirror
+    Without cost of PV the best coating a dielectric mirror, witch reflected all the sun light without transmited solar flux to the PV cells
+    """
+    # PV part
+    poids_PV = conteneur.get('poids_PV')
+    Signal_PV = conteneur.get('Signal_PV')
+    # Thermal part
+    Signal_Th = conteneur.get('Signal_Th')
+  
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+    
+    # Je calcul Rs
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    # Intégration du spectre solaire, brut en W/m2
+    Sol_Spec_PV = Sol_Spec * Signal_PV 
+    Sol_Spec_PV_int = trapz(Sol_Spec_PV, Wl) * poids_PV
+    Sol_Spec_Th = Sol_Spec * Signal_Th
+    Sol_Spec_Th_int = trapz(Sol_Spec_Th, Wl) 
+    
+    #Intégration de la puissance absorbé par le PV
+    Sol_Spec_T_PV = Sol_Spec * T * Signal_PV 
+    Sol_Spec_T_PV_int = trapz(Sol_Spec_T_PV, Wl) * poids_PV
+    
+    # Intégration de la puissance absorbé par le PV
+    Sol_Spec_R_Th = Sol_Spec * R * Signal_Th
+    Sol_Spec_R_Th_int = trapz(Sol_Spec_R_Th, Wl)
+    
+    net_PV_CSP = (Sol_Spec_T_PV_int + Sol_Spec_R_Th_int) / (Sol_Spec_PV_int + Sol_Spec_Th_int)
+    return net_PV_CSP
 
 def evaluate_RTA_s(individual, conteneur):
     # Calcul la reflectance solaire, transmittance solaire et l'absorptance
@@ -1297,75 +1310,14 @@ def evaluate_RTA_s(individual, conteneur):
     A_s = SolarProperties(Wl, A, Sol_Spec)
     return R_s, T_s, A_s
 
-def evaluate_netW_PV_CSP(individual, conteneur):
-    """
-    Parameters
-    ----------
-    individual : 1D array, like a list
-        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
-        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
-        The 70 nm thick layer is in contact with air
-        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
-        1 individual = 1 stack = 1 possible solution 
-    conteneur : Dict
-        Contain all different data in a dictionaire 
-    Returns
-    -------
-    Net_W
-    """
-    
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
-    n_Stack = conteneur.get('n_Stack')
-    k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
-    name_algo = conteneur.get('name_algo')
-
-    # traitemement de l'optimisation des n
-    Mat_Stack = conteneur.get('Mat_Stack')
-    
-    """Get the "cost of PV". We need to give more importance to the PV part. Without that, the optimization process not provide
-    a RTR like coating, but a near perfect mirror
-    Without cost of PV the best coating a dielectric mirror, witch reflected all the sun light without transmited solar flux to the PV cells
-    """
-    # PV part
-    poids_PV = conteneur.get('poids_PV')
-    Wl_PV = conteneur.get('Wl_PV')
-    Signal_PV = conteneur.get('Signal_PV')
-    # Thermal part
-    Wl_Th = conteneur.get('Wl_Th')
-    Signal_Th = conteneur.get('Signal_Th')
-  
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
-    
-    # Je calcul Rs
-    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    # Intégration du spectre solaire, brut en W/m2
-    Sol_Spec_PV = Sol_Spec * Signal_PV 
-    Sol_Spec_PV_int = trapz(Sol_Spec_PV, Wl) * poids_PV
-    Sol_Spec_Th = Sol_Spec * Signal_Th
-    Sol_Spec_Th_int = trapz(Sol_Spec_Th, Wl) 
-    
-    #Intégration de la puissance absorbé par le PV
-    Sol_Spec_T_PV = Sol_Spec * T * Signal_PV 
-    Sol_Spec_T_PV_int = trapz(Sol_Spec_T_PV, Wl) * poids_PV
-    
-    # Intégration de la puissance absorbé par le PV
-    Sol_Spec_R_Th = Sol_Spec * R * Signal_Th
-    Sol_Spec_R_Th_int = trapz(Sol_Spec_R_Th, Wl)
-    
-    net_PV_CSP = (Sol_Spec_T_PV_int + Sol_Spec_R_Th_int) / (Sol_Spec_PV_int + Sol_Spec_Th_int)
-    return net_PV_CSP
-
 def RTA_curve(individual, conteneur):
     """
     Parameters
     ----------
-    individual : A list
-        indivudual is a stack, a list a thickness.
+    individual : numpy array
+        individual is a stack, a list a thickness.
     conteneur : Dict
         dictionary with contain all "global" variables
-
     Returns
     -------
     R : List
@@ -1374,13 +1326,11 @@ def RTA_curve(individual, conteneur):
         Transmittance of the stack, according the wavelenght list in the conteneur
     A : List
         Absoptance of the stack, according the wavelenght list in the conteneur
-
     """
     Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
     Ang = conteneur.get('Ang')#, 0)
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('SolSpec')
     Mat_Stack = conteneur.get('Mat_Stack')
     
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
@@ -1391,23 +1341,27 @@ def RTA_curve(individual, conteneur):
 def generate_population(chromosome_size, conteneur):
     """
     See : function optimize_agn
-    
-    Cette fonction permet de générer la 1er génération, c'est à dire des empillements dont chaque
-    épaisseur est dans la plage pour l'algogenetique'
+    This function generates the 1st generation for the genetic optimization process. 
+    That is, a series of thin film stacks, each thickness of which is within the range for genetic algo, optimize_agn'.
+
+    Parameters
+    ----------
+    chromosome_size : Int 
+        The lenght of individual, so the number of chromosone 
+    conteneur : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    population : numpy array
+        DESCRIPTION.
     """
     pop_size= conteneur.get('pop_size')
     plage_ep = conteneur.get('Ep_plage')
     Ep_Substrack = conteneur.get('Ep_Substrack')
-    """ 
-    Dans certain cas, je veux fixer l'épaisseur d'une couche mince
-    Je crée donc une variable d_Stack_Opt placé dans le dicop
-    d_Strack_Opt est une liste, de la longueur de nombre de couche mince
-    Exemple : d_Stack_Opt = ["no","no", "no", 8, "no", "no"]
-    "no", ou une autre chaine de caractère veut dire que l'épaisseur doit être optimiser
-    un chifre (float or int) fixe l'épaisseur'
-    """
     # Je vais chercher d_Stack_Opt
     d_Stack_Opt = conteneur.get('d_Stack_Opt')
+    
     # Si d_Stack_Opt n'existe pas dans le conteneur, il est quand même créer, mais il est de type NoneType
     # Cela veut dire que toutes les épaisseurs doivent être optimiser. 
     
@@ -1424,11 +1378,7 @@ def generate_population(chromosome_size, conteneur):
             else : 
                 individual += [np.random.randint(plage_ep[0], plage_ep[1])]
         population.append(individual)
-# =============================================================================
-#         individual = [random.randint(plage_ep[0], plage_ep[1]) for _ in range(chromosome_size)]
-#         individual = [Ep_Substrack] + individual
-#         population.append(individual)
-# =============================================================================
+
     return population
 
 def selection_min(population, evaluate, evaluate_rate, conteneur):
@@ -1526,12 +1476,14 @@ def optimize_agn(evaluate, selection, conteneur):
 
     Returns
     -------
-    best_solution : TYPE
-        DESCRIPTION.
-    dev : TYPE
-        DESCRIPTION.
-    nb_run : TYPE
-        DESCRIPTION.
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
 
     """
     Mat_Stack = conteneur.get('Mat_Stack')
@@ -1543,9 +1495,15 @@ def optimize_agn(evaluate, selection, conteneur):
     mutation_delta = conteneur.get('mutation_delta')
     Precision_AlgoG = conteneur.get('Precision_AlgoG')
     nb_generation= conteneur.get('nb_generation')
-    
-    """ Suite à des problème sur le serveur Colossus, je fixe le seed dans la fonction 
-    """
+
+    # Seed 
+    if 'seed' in conteneur:
+        seed = conteneur.get('seed')
+        np.random.seed(seed)
+    else : 
+       seed = random.randint(1 , 2**32 - 1)
+       np.random.seed(seed)
+       
     np.random.seed(np.random.randint(1,2**32 - 1))
     
     # Paramètre de l'optimisation 
@@ -1584,19 +1542,35 @@ def optimize_agn(evaluate, selection, conteneur):
     dev = np.std(scores)
     dev = "{:.2e}".format(dev)
     
-    """
-    /!\ Peut être un soucis, car ici on selectionne le min des meilleurs scores. 
-    Hors, on peut optimiser en cherchant le max.
-    Mais si l'optimisation est bien fait le min des meilleurs scores doit correspondres aux max
-    """
+
+    # /!\ Peut être un soucis, car ici on selectionne le min des meilleurs scores. 
+    # Hors, on peut optimiser en cherchant le max.
+    # Mais si l'optimisation est bien fait le min des meilleurs scores doit correspondres aux max
+    
     best_solution=population[scores.index(max(scores))]
-    return best_solution, dev, nb_run 
+    return best_solution, dev, nb_run, seed
 
 
 def optimize_strangle(evaluate, selection, conteneur):
     """
-    Algo d'optimisation selon l'algo de COPS v1
-    
+    Parameters
+    ----------
+    evaluate : String
+        Name of the evaluation fonction 
+    selection : String
+        Name of the selection fonction 
+
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
+
     """
     #Je fais chercher les variables dans le conteneur
     Mat_Stack = conteneur.get('Mat_Stack')
@@ -1607,7 +1581,13 @@ def optimize_strangle(evaluate, selection, conteneur):
     Precision_AlgoG = conteneur.get('Precision_AlgoG')
     nb_generation= conteneur.get('nb_generation')
     
-    np.random.seed(np.random.randint(1,2**32 - 1))
+    # Option 1 
+    if 'seed' in conteneur:
+        seed = conteneur.get('seed')
+        np.random.seed(seed)
+    else : 
+       seed = random.randint(1 , 2**32 - 1)
+       np.random.seed(seed)
     
     # Lancement du problème
     population = np.zeros(0)
@@ -1636,17 +1616,19 @@ def optimize_strangle(evaluate, selection, conteneur):
     dev = np.std(scores)
     dev = "{:.2e}".format(dev)
     
-    """
-    /!\ Peut être un soucis, car ici on selectionne le min des meilleurs scores. 
-    Hors, on peut optimiser en cherchant le max.
-    Mais si l'optimisation est bien fait le min des meilleurs scores doit correspondres aux max
-    """
+    
+    # /!\ Peut être un soucis, car ici on selectionne le min des meilleurs scores. 
+    # Hors, on peut optimiser en cherchant le max.
+    # Mais si l'optimisation est bien fait le min des meilleurs scores doit correspondres aux max
+    
     best_solution=population[scores.index(max(scores))]
-    return best_solution, dev, nb_run 
+    
+    
+    return best_solution, dev, nb_run , seed
 
 def children_strangle(pop_size, parents, chromosome_size):
     """
-    See : optimizz_strangle
+    See : optimize_strangle
     
     Cette fonction permet de générer la 1er génération d'enfants par étouffement'
     """
@@ -1662,39 +1644,40 @@ def children_strangle(pop_size, parents, chromosome_size):
     return children
 
 def DEvol(f_cout, f_selection, conteneur):
-    """ Antoine Moreau, Photon team, University of Clermont Auvergne, France : 
-    "Ce DE est un current to best. Hypertuné sur le problème chirped
-    Elimination brutale des individus ne respectant pas les bornes
-    (on pourrait comparer à ce qui se passe si on remet juste au bord
-    ça pourrait être une bonne idée sur certains problèmes)"
+    """
+    Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
+    "This DE is a current to best. Hypertuned on the chirped problem 
+    Abrupt elimination of individuals not respecting the bounds
+    (compare with what happens if you just put back to the edge
+     could be a good idea on some problems)"
 
-    Antoine Grosjean : Mise à jour pour le fonctionnement avec COPS
-    Fonctionnement de type "primogéniteur". Le meilleur individus sert de références
-    pour la création des autres
-    On prend les n individus et on les passe un par un, comme parent. 
-    On génère des enfants grace au cross-over entre le parent primogeniteur et un mutant. 
-        => Si ce nouvel individu est meilleur, il remplace le parent. 
+    Parameters
+    ----------
+    evaluate : Collable 
+        evaluation fonction, give in evaluate
+    selection : Collable
+        selection fonction, give in selection
+
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
     """
     selection = f_selection.__name__, 
 
-# Paramètres de DE - paramètres potentiels de la fonction
-    cr = conteneur.get('mutation_rate')
-    #cr=0.5; # Chances de passer les paramètres du parent à son rejeton.
-    f1 = conteneur.get('f1')
-    f2 = conteneur.get('f2')
-    #f1=0.9;
-    #f2=0.8;
+    # Paramètres de DE - paramètres potentiels de la fonction
+    cr = conteneur.get('mutation_rate') #cr=0.5; # Chances de passer les paramètres du parent à son rejeton.
+    f1 = conteneur.get('f1') #f1=0.9;
+    f2 = conteneur.get('f2') #f2=0.8;
     
-    # Paramétre de base 
-    # cr = 0.5
-    # f1 = 0.9 
-    # f2 = 0.8
-    #################################### Lignes propre à COPS
-    #random.seed(random.randint(1,2**32 - 1))
-    """
-    Suite à des problèmes sur Colossus, je fixe le seed dans la fonction. 
-    Choisir l'une des options
-    """
+    #Following seed problem when using the code, the seed can be manually targeting 
+    
     # Option 1 
     if 'seed' in conteneur:
         seed = conteneur.get('seed')
@@ -1702,20 +1685,7 @@ def DEvol(f_cout, f_selection, conteneur):
     else : 
        seed = random.randint(1 , 2**32 - 1)
        np.random.seed(seed)
-    # Option 2
-    #np.random.seed()
-    # Option 3
-    #np.random.seed(None)
-    # Option  4
-# =============================================================================
-#     now = datetime.datetime.now()
-#     minute = int(now.strftime("%M"))
-#     seconds = int(now.strftime("%S"))
-#     microseconds = int(now.strftime("%f"))
-#     seed_time = int(now.strftime("%M"))*60 + int(now.strftime("%S")) * 1000 + int(now.strftime("%f"))
-#     np.random.seed(seed_time )
-# =============================================================================
-    
+
     # Calcul du budget : 
     pop_size = conteneur.get('pop_size')
     nb_generation = conteneur.get('nb_generation')
@@ -1809,7 +1779,9 @@ def DEvol(f_cout, f_selection, conteneur):
     while evaluation<budget-population:
         for k in range(0,population):
             crossover=(np.random.random(n)<cr)
-
+            # *crossover+(1-crossover)*omega[k] : crossover step
+            
+            
             if mutation_DE == "current_to_best":
                 # current to best
                 # y(x) = x + F1 (a-b) + F2(best - x)
@@ -1837,9 +1809,7 @@ def DEvol(f_cout, f_selection, conteneur):
                 c = omega[np.random.randint(population)]
                 d = omega[np.random.randint(population)]
                 X = (a + f1*(a - b + c - d))*crossover+(1-crossover)*omega[k]
-            
-            # *crossover+(1-crossover)*omega[k] : etape de crossover
-            
+   
             if np.prod((X>=X_min)*(X<=X_max)):
                 if selection[0] == "selection_min":
                     tmp=f_cout(X, conteneur)
@@ -1862,7 +1832,10 @@ def DEvol(f_cout, f_selection, conteneur):
     return [best,convergence,budget,seed]
 
 def DEvol_Video(f_cout, f_selection, conteneur):
-    """ Sous version de DE qui renvoie l'empillement au fur et à mesure.
+    """ 
+    Sub version of DE.
+    Used by the main author of COPS for provide video of the optimization process
+    The stack tickness is save during the process
     """
     selection = f_selection.__name__, 
 
@@ -2050,6 +2023,26 @@ def PSO(evaluate, selection, conteneur):
         inertia_weight = 0.8
         cognitive_weight = 1.5
         social_weight = 1.5
+        
+    Parameters
+    ----------
+    evaluate : Collable 
+        evaluation fonction, give in evaluate
+    selection : Collable
+        selection fonction, give in selection
+
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
+    
+    Need  generate_neighbor() and  acceptance_probability() functions 
     """
 
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
@@ -2170,7 +2163,7 @@ def PSO(evaluate, selection, conteneur):
 
 def generate_neighbor(solution, conteneur):
     """
-    Function for simulated_annealing algo
+    Function for simulated_annealing algorithm
     """
     Plage_ep = conteneur.get('Ep_plage')
     
@@ -2190,6 +2183,24 @@ def acceptance_probability(current_score, new_score, temperature):
 
 def simulated_annealing(evaluate, selection, conteneur):
     """
+    Parameters
+    ----------
+    evaluate : Collable 
+        evaluation fonction, give in evaluate
+    selection : Collable
+        selection fonction, give in selection
+
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
+    
     Need  generate_neighbor() and  acceptance_probability() functions 
     """
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
@@ -2264,7 +2275,20 @@ def simulated_annealing(evaluate, selection, conteneur):
 
 def generate_mutant(solution, step_size):
     """
-    Function for One_plus_One
+    Function for One_plus_One optimisation methode
+    
+    Parameters
+    ----------
+    solution : TYPE
+        DESCRIPTION.
+    step_size : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    mutant : TYPE
+        DESCRIPTION.
+
     """
     # Modification of the mutant start at 1 and not 0, because the 1st value is the substrat thickness, witch cannot be modified
     mutant = solution.copy()  # Copie de la solution initiale
@@ -2277,15 +2301,37 @@ def One_plus_One_ES(evaluate, selection, conteneur):
     The algorithm mentioned here is referred to as One_plus_One instead of (1+1) 
     because using (1+1)as a name for a function is not recommended. 
     However, it is important to note that the presented algorithm may not be the (1+1)-ES version.
-
     Although the algorithm presented here is (1+1)-ES, we cannot confirm with certainty 
     that it is theexact (1+1)-ES implementation based on information at our disposal 
-    
     See P.Bennet thesis and or Nikolaus Hansen et al. Comparing results of 31 algorithms from the black-box optimization
     benchmarking BBOB-2009 | Proceedings of the 12th annual conference companion on Genetic
     and evolutionary computation. 2010.
-    """
     
+    Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
+    "This DE is a current to best. Hypertuned on the chirped problem 
+    Abrupt elimination of individuals not respecting the bounds
+    (compare with what happens if you just put back to the edge
+     could be a good idea on some problems)"
+
+    Parameters
+    ----------
+    evaluate : Collable 
+        evaluation fonction, give in evaluate
+    selection : Collable
+        selection fonction, give in selection
+
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
+    dev : numpy array
+        the value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
+    """
+
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
     Mat_Stack = conteneur.get('Mat_Stack')
     # Interation 
