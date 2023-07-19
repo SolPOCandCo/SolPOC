@@ -1,7 +1,12 @@
 ## COPS
-COPS (from French "Code d'Optimisation des Performances Solaires", Optimisation Code for Solar Performances in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. Just from complex refractive indices of real materials, the code COPS can models and optimizes with advenced methode the optical behavior (reflectivity, transmissivity or absorptivity) of a thin layers stack deposited on a solid substrate.
+COPS (from French "Code d'Optimisation des Performances Solaires", Optimisation Code for Solar Performances in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. 
 
-This version is actualy under developpement. COPS are tested under Windows, using Spyder as IDE. Most comment are in French, please forgive us !
+COPS is a code designed to solve Maxwell's equations in a multilayered thin film structure.
+COPS is specifically designed for research in coatings, thin film deposition, and materials research for solar energy applications (thermal and PV).
+The code uses a stable method to quickly calculate reflectivity, transmissivity, and absorptivity from a stack of thin films over a full solar spectrum. COPS comes with several optimization methods, a multiprocessing pool, and a comprehensive database of refractive indices for real materials.
+In the end, COPS is simple to use for no-coder users thanks to main script, which regroup all necessary variables and automatically save important results in text files and PNG images.
+
+This version is actualy under developpement. COPS are tested under Windows, using Spyder as IDE. 
 This code can be used for scientific research or academic educations. 
 
 ## About COPS
