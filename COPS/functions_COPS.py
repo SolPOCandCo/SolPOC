@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on 28 06 2023
+Created on 27 07 2023
+COPS v 0.9.0
 @author: A.grosjean, A.soum-glaude, A.moreau & P.Bennet
 contact : antoine.grosjean@epf.fr
 """
@@ -800,7 +801,7 @@ def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):
 
 def open_Spec_Signal(name, nb_col):  
     """
-    open a spectral respond into a file
+    Open a spectral respond into a file
     Parameters
     ----------
     name : The name of a file
@@ -882,10 +883,10 @@ def Write_Stack_Periode (Subtrat, Mat_Periode, nb_periode):
     """
     Builds a stack by repeating a material period multiple times on top of a substrate.
         Exemple 1 : 
-        Mat_Stack = Ecrit_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3)
+        Mat_Stack = Write_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3)
         Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
         Exemple 2:
-        Mat_Stack = Ecrit_Stack_Periode(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
+        Mat_Stack = Write_Stack_Period(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
         Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
 
     Parameters
@@ -1074,7 +1075,7 @@ def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur) :
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
         vf = []
         vf = individual[len(Mat_Stack):len(individual)]
-        individual_list = individual.tolist()  # Conversion en liste
+        individual_list = individual.tolist()# Conversion en liste
         del individual_list[len(Mat_Stack):len(individual)]
         individual = np.array(individual_list)  # Conversion en tableau
         d_Stack = np.array(individual)
@@ -1268,6 +1269,48 @@ def evaluate_A_s(individual, conteneur):
     A_s = SolarProperties(Wl, A, Sol_Spec)
     return A_s
 
+def evaluate_R_Brg(individual, conteneur):
+    """
+    Cost function for a Bragg mirror
+    Maximise the average reflectivity between 500 to 650 nm (defaut value)
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
+        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
+        The 70 nm thick layer is in contact with air
+        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
+        1 individual = 1 stack = 1 possible solution 
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    R_mean : Int (float)
+        The average reflectance
+    """
+    Wl = conteneur.get('Wl')
+    Ang = conteneur.get('Ang')
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Mat_Stack = conteneur.get('Mat_Stack')
+    #Wl_targ = 550 
+    # Creation of 
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, conteneur)
+
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    # Wavelenght array where the reflectivity of the Bragg mirror must be maximised
+    Wl_2 = np.arange(500, 655, 5)
+    R_Bragg = 0 
+    for i in range(len(Wl_2)):
+        index = np.where(Wl == Wl_2[i])
+        value_index = index[0][0]
+        R_Bragg = R_Bragg + R[value_index]
+
+    return R_Bragg * 1/(len(Wl_2))
+
 def evaluate_T_pv(individual, conteneur):
     """
     Calculate the solar transmissivity WITH a PV cells signal
@@ -1308,6 +1351,46 @@ def evaluate_T_pv(individual, conteneur):
     T_PV = SolarProperties(Wl, T, Sol_Spec)
     return T_PV
 
+def evaluate_A_pv(individual, conteneur):
+    """
+    Calculate the solar absoptivity WITH a PV cells signal
+    With the following ligne code in the main script
+    if evaluate.__name__ == "evaluate_T_PV":
+        conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
+    
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    conteneur : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    T_PV: Int (float)
+        Solar transmissivity WITH a PV cells signal
+    """
+
+    Wl = conteneur.get('Wl')#,
+    Ang = conteneur.get('Ang')#
+    n_Stack = conteneur.get('n_Stack')
+    k_Stack = conteneur.get('k_Stack')
+    Sol_Spec = conteneur.get('Sol_Spec_with_PV') # Sol_Spec_with_pv = Sol_Spec * Signal_PV
+    Mat_Stack = conteneur.get('Mat_Stack')
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  conteneur)
+    
+    T_PV = 0
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    # Sol_Spec is Sol_Spec_with_PV
+    A_PV = SolarProperties(Wl, A, Sol_Spec)
+    return A_PV
+
 def evaluate_T_vis(individual, conteneur):
     """
     Calculate the optical transmittance with a human eye input
@@ -1337,7 +1420,7 @@ def evaluate_T_vis(individual, conteneur):
     Ang = conteneur.get('Ang')#
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
-    Sol_Spec = conteneur.get('Sol_Spec_with_Human_eye')
+    Sol_Spec_Heye = conteneur.get('Sol_Spec_with_Human_eye')
     Mat_Stack = conteneur.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -1348,7 +1431,7 @@ def evaluate_T_vis(individual, conteneur):
     
     T_vis = 0
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    T_vis = SolarProperties(Wl, T, Sol_Spec)
+    T_vis = SolarProperties(Wl, T, Sol_Spec_Heye)
     return T_vis
 
 def evaluate_low_e(individual, conteneur):
@@ -1463,8 +1546,8 @@ def evaluate_RTR(individual, conteneur):
     P_RTR: Int (float)
         performance according a RTR shape
     """  
-    Wl = conteneur.get('Wl')#, np.arange(280,2505,5))
-    Ang = conteneur.get('Ang')#, 0)
+    Wl = conteneur.get('Wl')#
+    Ang = conteneur.get('Ang')#
     n_Stack = conteneur.get('n_Stack')
     k_Stack = conteneur.get('k_Stack')
     Sol_Spec = conteneur.get('SolSpec')
@@ -1550,7 +1633,8 @@ def evaluate_netW_PV_CSP(individual, conteneur):
 
 def evaluate_RTA_s(individual, conteneur):
     """
-    Calcul the solar reflectance, the solar transmittance and the solar absoptance
+    Calcul the solar reflectance, the solar transmittance and the solar absoptance 
+    for a ful spectrum
     Parameters
     ----------
     individual : array
@@ -1734,7 +1818,7 @@ def crossover(parents, crossover_rate , pop_size):
 
 # Nouvelle version de la mutation
 # Chaque gène de l'enfant à mutatin_rate chance de muter 
-def mutation(children, mutation_rate, mutation_delta):
+def mutation(children, mutation_rate, mutation_delta, d_Stack_Opt):
     """
     See : optimize_agn
     
@@ -1743,15 +1827,21 @@ def mutation(children, mutation_rate, mutation_delta):
     Certaines épaisseurs varie, de l'ordre de +/- mutation_delta.
     Ajout d'une boucle if pour que l'épaisseur ne soit pas négative
     """
-    for i in range(1,len(children)):
-        for j in range(np.shape(children)[1]-1):
+    for i in range(1, len(children)):
+        for j in range(np.shape(children)[1] - 1):
             if np.random.uniform(0, 1) < mutation_rate:
-                children[i][j+1] += np.random.uniform(-mutation_delta, mutation_delta)
-                if children[i][j+1] <= 0:
-                    children[i][j+1] = 0 #abs(children[i][mutation_point])
+                # Check if d_Stack_Opt[j] is an int or float
+                if isinstance(d_Stack_Opt[j], (int, float)):
+                    # If it is, use the value from d_Stack_Opt to mutate the child
+                    children[i][j + 1] = d_Stack_Opt[j]
+                else:
+                    # Otherwise, perform random mutation
+                    children[i][j + 1] += np.random.uniform(-mutation_delta, mutation_delta)
+                    if children[i][j + 1] <= 0:
+                        children[i][j + 1] = 0
     return children
 
-def optimize_agn(evaluate, selection, conteneur):
+def optimize_ga(evaluate, selection, conteneur):
     """
     Parameters
     ----------
@@ -1781,20 +1871,22 @@ def optimize_agn(evaluate, selection, conteneur):
     mutation_delta = conteneur.get('mutation_delta')
     Precision_AlgoG = conteneur.get('Precision_AlgoG')
     nb_generation= conteneur.get('nb_generation')
+    d_Stack_Opt = conteneur.get('d_Stack_Opt')
 
     # Seed 
     if 'seed' in conteneur:
         seed = conteneur.get('seed')
         np.random.seed(seed)
     else : 
-       seed = random.randint(1 , 2**32 - 1)
+       seed = random.randint(1 , 2**31)
        np.random.seed(seed)
        
-    np.random.seed(np.random.randint(1,2**32 - 1))
+    np.random.seed(np.random.randint(1,2**31))
     
     # Paramètre de l'optimisation 
     population = np.zeros(0)
     dev = float("inf")
+    dev_tab = []
     nb_run = 0
     chromosome_size = len(Mat_Stack) -1 # Nombre de couche minces
     population = generate_population(chromosome_size, conteneur)
@@ -1806,8 +1898,11 @@ def optimize_agn(evaluate, selection, conteneur):
         for i in range(nb_generation):
             parents = selection(population, evaluate, evaluate_rate, conteneur)
             children = crossover(parents, crossover_rate, pop_size)
-            children = mutation(children, mutation_rate, mutation_delta)
+            children = mutation(children, mutation_rate, mutation_delta, d_Stack_Opt)
             population = parents + children
+            scores = [evaluate(individual, conteneur) for individual in population]
+            dev = np.std(scores)
+            dev_tab.append(dev)
             nb_run = nb_run + 1
             # test de fin d'optimisation
     else:
@@ -1820,13 +1915,14 @@ def optimize_agn(evaluate, selection, conteneur):
             children = mutation(children, mutation_rate, mutation_delta)
             population = parents + children
             # test de fin d'optimisation
-            scores = [evaluate(individual) for individual in population]
+            scores = [evaluate(individual, conteneur) for individual in population]
             dev = np.std(scores)
+            dev_tab.append(dev)
             nb_run = nb_run + 1
     # fin de l'optimisation
     scores = [evaluate(individual, conteneur) for individual in population]
-    dev = np.std(scores)
-    dev = "{:.2e}".format(dev)
+    #dev = np.std(scores)
+    #dev = "{:.2e}".format(dev)
     
 
     # /!\ Peut être un soucis, car ici on selectionne le min des meilleurs scores. 
@@ -1834,7 +1930,7 @@ def optimize_agn(evaluate, selection, conteneur):
     # Mais si l'optimisation est bien fait le min des meilleurs scores doit correspondres aux max
     
     best_solution=population[scores.index(max(scores))]
-    return best_solution, dev, nb_run, seed
+    return best_solution, dev_tab, nb_run, seed
 
 
 def optimize_strangle(evaluate, selection, conteneur):
@@ -1878,6 +1974,7 @@ def optimize_strangle(evaluate, selection, conteneur):
     # Lancement du problème
     population = np.zeros(0)
     dev = float("inf")
+    tab_dev = []
     chromosome_size = len(Mat_Stack) -1 # Nombre de couche minces
     population = generate_population(chromosome_size, conteneur)
     if mod == "for":
@@ -1886,16 +1983,21 @@ def optimize_strangle(evaluate, selection, conteneur):
             parents = selection(population, evaluate, evaluate_rate, conteneur)
             children = children_strangle(pop_size, parents, chromosome_size)
             population = parents + children 
+            scores = [evaluate(individual, conteneur) for individual in parents]
+            dev = np.std(scores)
+            tab_dev.append(dev)
             nb_run = nb_run + 1
             # test de fin d'optimisation
     else:
+        dev = float("inf")
         while dev > Precision_AlgoG:
-            parents = selection(population, evaluate, evaluate_rate)
+            parents = selection(population, evaluate, evaluate_rate, conteneur)
             children = children_strangle(pop_size, parents, chromosome_size)
             population = parents + children
             # test de fin d'optimisation
-            scores = [evaluate(individual) for individual in population]
+            scores = [evaluate(individual, conteneur) for individual in parents]
             dev = np.std(scores)
+            tab_dev.append(dev)
             nb_run = nb_run + 1
     # fin de l'optimisation
     scores = [evaluate(individual, conteneur) for individual in population]
@@ -1910,7 +2012,7 @@ def optimize_strangle(evaluate, selection, conteneur):
     best_solution=population[scores.index(max(scores))]
     
     
-    return best_solution, dev, nb_run , seed
+    return best_solution, tab_dev, nb_run , seed
 
 def children_strangle(pop_size, parents, chromosome_size):
     """
@@ -1938,7 +2040,7 @@ def children_strangle(pop_size, parents, chromosome_size):
         for j in range(chromosome_size): 
             min_values = min([sublist[j+1] for sublist in parents])
             max_values = max([sublist[j+1] for sublist in parents])
-            individual = individual + [np.random.randint(min_values,max_values)]
+            individual = individual + [np.random.randint(min_values,max_values+1)]
         children.append(individual)
     return children
 
@@ -2005,11 +2107,19 @@ def DEvol(f_cout, f_selection, conteneur):
     
     chromosome_size = len(Mat_Stack) + nb_layer -1 # Nombre de couche minces
     
+    d_Stack_Opt = conteneur.get('d_Stack_Opt')
+    if isinstance(d_Stack_Opt, type(None)):
+        d_Stack_Opt = ["no"] * chromosome_size
+    
     X_min = [Ep_Substrack]
     X_max = [Ep_Substrack]
     for i in range(chromosome_size):
-         X_min += [Plage_ep[0]]
-         X_max += [Plage_ep[1]]
+        if isinstance(d_Stack_Opt[i], (int, float)):
+            X_min += [d_Stack_Opt[i]]
+            X_max += [d_Stack_Opt[i]]
+        else : 
+            X_min += [Plage_ep[0]]
+            X_max += [Plage_ep[1]]
          
     if 'n_plage' in conteneur:
         Plage_n = conteneur.get('n_plage')

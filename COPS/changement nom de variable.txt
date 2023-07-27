@@ -1,0 +1,37 @@
+To do list
+-----------------------
+Traduire et Remplacer dans toutes les fonctions les phrases
+        except FileNotFoundError:
+            print("Le fichier n'a pas été trouvé.")
+Et     except FileNotFoundError:
+        print("Le nom du fichier n'est pas un string.")
+
+Remplacer Wl_sol par Wl_Sol
+Remplacer name_SolSpec par name_Sol_Spec 
+
+Remplacer le dictonnaire "conteneur" par "kwargs"
+Remplacer le nom de la variable l par Wl dans les fonctions RTA et RTA3C
+Ne pas hésiter à corriger les fautes d'anglais :) 
+Dire dans GitHub si le __init__.py est correctement écrit
+Essayer de faire une doc avec Sphinx et donc voir si les docstring dans function_COPS.py 
+
+Fait dans le script optimisation_multiprocess. A uniformisé partout
+------------------------
+Lambda_cut_UV devient Lambda_cut_1
+Lambda_cut_IR devient Lambda_cut_2
+Dans le dictionnaire et dans function_COPS
+Lambda_cut_1 est souvent nommé Lambda_cut_min
+Lambda_cut_2 est souvent nommé Lambda_cut
+=> Uniformisé si possible
+
+Plage_ep devient Th_range
+Plage_n devient n_range
+Plage_n devient vf_range 
+Tair devient T_air
+Tabs devient T_abs
+Ecrit_Stack_Periode devient Write_Stack_Periode
+optimize_agn est devenu optimize_gn
+nb_lancement devient nb_run
+
+Le fichier text empillement.txt devient StacksThicknesses.txt
+
