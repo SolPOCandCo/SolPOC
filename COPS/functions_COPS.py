@@ -11,7 +11,7 @@ import math
 from scipy.integrate import trapz
 import random
 
-def RTA3C(l, d, n, k, Ang=0):
+def RTA3C(Wl, d, n, k, Ang=0):
     """_________________________________________________
     Exemple of RTA
     RTA is the key function : it's allow us to calcul reflectivity (R) transmissivity (T) and absorptivity(A)
@@ -60,8 +60,8 @@ def RTA3C(l, d, n, k, Ang=0):
     => La réflectivité vaut 0.00767694 (nombre entre 0 et 1) à 600 nm et 0.00903544 à 700 nm
     """
     # Add an air layer on top
-    n = np.append(n, np.ones((len(l), 1)), axis=1) # remplacement de 2 par len(l)
-    k = np.append(k, np.zeros((len(l), 1)), axis=1) # remplacement de 2 par len(l)
+    n = np.append(n, np.ones((len(Wl), 1)), axis=1) # remplacement de 2 par len(l)
+    k = np.append(k, np.zeros((len(Wl), 1)), axis=1) # remplacement de 2 par len(l)
     d = np.append(d, np.zeros((1, 1)), axis=1)
 
     # Incidence angle of solar radiation on the absorber = normal incidence
@@ -88,22 +88,22 @@ def RTA3C(l, d, n, k, Ang=0):
     dj= np.delete(d,0, axis=1)
 
     numlayers = nj.shape[1] # nj est un tableau 
-    Nj = np.zeros((numlayers,1,len(l)), dtype=complex) # OK
+    Nj = np.zeros((numlayers,1,len(Wl)), dtype=complex) # OK
 
     # colone dans Scilab, ligne ici
-    Phij = np.zeros((numlayers,1,len(l)), dtype=complex)
-    qjPolaS = np.zeros((numlayers,1,len(l)), dtype=complex)
-    qjPolaP = np.zeros((numlayers,1,len(l)), dtype=complex)
-    thetaj = np.zeros((numlayers,1,len(l)), dtype=complex)
-    MpolaS = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
-    MpolaP = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
-    Ms = np.zeros((2, 2,len(l)), dtype=complex)
-    Mp = np.zeros((2, 2,len(l)), dtype=complex)
+    Phij = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    qjPolaS = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    qjPolaP = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    thetaj = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    MpolaS = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
+    MpolaP = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
+    Ms = np.zeros((2, 2,len(Wl)), dtype=complex)
+    Mp = np.zeros((2, 2,len(Wl)), dtype=complex)
 
     sous_tableaux = np.split(nj,nj.shape[1],axis=1)
-    nj = np.array([el.reshape(1,len(l)) for el in sous_tableaux]) # el.reshape(1,2) devient el.reshape(1,len(l))
+    nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux]) # el.reshape(1,2) devient el.reshape(1,len(l))
     sous_tableaux = np.split(kj,kj.shape[1],axis=1)
-    kj = np.array([el.reshape(1,len(l)) for el in sous_tableaux])
+    kj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
 
     dj = np.squeeze(dj) #
     # Note  : inverser un tableau avec numpy.transpose()
@@ -112,7 +112,7 @@ def RTA3C(l, d, n, k, Ang=0):
         Phij[LayerJ] = np.arcsin(N0 * np.sin(Phi0) / Nj[LayerJ])
         qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
         qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
-        thetaj[LayerJ] = (2 * np.pi / l) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
+        thetaj[LayerJ] = (2 * np.pi / Wl) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
 
         # Characteristic matrix of layer j
         """ Calcul of MpolaS"""
@@ -181,7 +181,7 @@ def RTA3C(l, d, n, k, Ang=0):
         
     # Transmittance of the substrate
     d = np.squeeze(d)
-    TransSub = np.exp((-4*np.pi*kS*d[0])/l)
+    TransSub = np.exp((-4*np.pi*kS*d[0])/Wl)
         
     # Transmittance of the substrate + multilayer stack
     Trans = TransMultilayer * TransSub
@@ -190,7 +190,7 @@ def RTA3C(l, d, n, k, Ang=0):
     Abs = 1 - Refl - Trans
     return Refl, Trans, Abs
 
-def RTA(l, d, n, k, Ang=0):
+def RTA(Wl, d, n, k, Ang=0):
     """
     See the function RTA3C for a example / tutoral and the version of the function write for 3 layer (2 thin layer + the substrat)
     RTA calcul the reflectivity, transmissivty and absorptivity using Abélès matrix formalism
@@ -221,8 +221,8 @@ def RTA(l, d, n, k, Ang=0):
     """
 
     # Add an air layer on top
-    n = np.append(n, np.ones((len(l), 1)), axis=1)
-    k = np.append(k, np.zeros((len(l), 1)), axis=1)
+    n = np.append(n, np.ones((len(Wl), 1)), axis=1)
+    k = np.append(k, np.zeros((len(Wl), 1)), axis=1)
     d = np.append(d, np.zeros((1, 1)), axis=1)
 
     # Incidence angle of solar radiation on the absorber = normal incidence
@@ -249,23 +249,23 @@ def RTA(l, d, n, k, Ang=0):
     dj= np.delete(d,0, axis=1)
 
     numlayers = nj.shape[1] # nj est un tableau 
-    Nj = np.zeros((numlayers,1,len(l)), dtype=complex) # OK
+    Nj = np.zeros((numlayers,1,len(Wl)), dtype=complex) # OK
     """Matrice tableau 3D ici. 
     l'axe "z" correspond aux différentes longueurs d'ondes """
-    Phij = np.zeros((numlayers,1,len(l)), dtype=complex)
-    qjPolaS = np.zeros((numlayers,1,len(l)), dtype=complex)
-    qjPolaP = np.zeros((numlayers,1,len(l)), dtype=complex)
-    thetaj = np.zeros((numlayers,1,len(l)), dtype=complex)
-    MpolaS = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
-    MpolaP = np.zeros((2, 2*numlayers,len(l)), dtype=complex)
-    Ms = np.zeros((2, 2,len(l)), dtype=complex)
-    Mp = np.zeros((2, 2,len(l)), dtype=complex)
+    Phij = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    qjPolaS = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    qjPolaP = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    thetaj = np.zeros((numlayers,1,len(Wl)), dtype=complex)
+    MpolaS = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
+    MpolaP = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
+    Ms = np.zeros((2, 2,len(Wl)), dtype=complex)
+    Mp = np.zeros((2, 2,len(Wl)), dtype=complex)
     """Redimensionnement de nj et kj
     """
     sous_tableaux = np.split(nj,nj.shape[1],axis=1)
-    nj = np.array([el.reshape(1,len(l)) for el in sous_tableaux])
+    nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
     sous_tableaux = np.split(kj,kj.shape[1],axis=1)
-    kj = np.array([el.reshape(1,len(l)) for el in sous_tableaux])
+    kj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
     """ Transforme un vecteur (1,3) en vecteur (3,)
     """
     dj = np.squeeze(dj) #    
@@ -274,7 +274,7 @@ def RTA(l, d, n, k, Ang=0):
         Phij[LayerJ] = np.arcsin(N0 * np.sin(Phi0) / Nj[LayerJ])
         qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
         qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
-        thetaj[LayerJ] = (2 * np.pi / l) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
+        thetaj[LayerJ] = (2 * np.pi / Wl) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
         """Changement par rapport à Scilab, du au index de Python. La 1er case est noté 0,0 dans Python et 
         1,1 dans Scilab. Ici LayerJ commence à 0 et non plus à 1 mais l'arret de la boucle for reste le même (dernier interval 
         exclus dans Python.
@@ -346,7 +346,7 @@ def RTA(l, d, n, k, Ang=0):
         
     # Transmittance of the substrate
     d = np.squeeze(d)
-    TransSub = np.exp((-4*np.pi*kS*d[0])/l)
+    TransSub = np.exp((-4*np.pi*kS*d[0])/Wl)
         
     # Transmittance of the substrate + multilayer stack
     Trans = TransMultilayer * TransSub
@@ -375,7 +375,7 @@ def Made_Stack(Mat_Stack, Wl):
 
     Parameters
     ----------
-    Mat_Stack : List of string, with containt each material of the stack. See as exemple the function Ecrit_Stack_Periode
+    Mat_Stack : List of string, with containt each material of the stack. See as exemple the function write_stack_period
     Exemple : Mat_Stack = ['BK7', 'TiO2', 'SiO2'] is a stack of TiO2 and SiO2 deposited on BK7 subtrate
     The SiO2 layer is in contact with the air
     
@@ -708,35 +708,34 @@ def open_material(name):
     k : numpy array
         Complexe part of the Refractive Index.
     """
-    try :
-        type(name) == "str"        
-        # Initialiser un tableau vide
-        tableau3D = []
-        name="Materials/" + name + ".txt"
-        try: 
-            # Ouvrir le fichier en lecture seule
-            file = open(name, "r")
-            # utiliser readlines pour lire toutes les lignes du fichier
-            # La variable "lignes" est une liste contenant toutes les lignes du fichier
-            lines = file.readlines()
-            # fermez le fichier après avoir lu les lignes
-            file.close()
-            
-            # Itérer sur les lignes
-            nb_line = len(lines)
-            for i in range (nb_line):
-                values = lines[i].split("\t")
-                values[2] =values[2].rstrip("\n")
-                values = [float(val) for val in values]
-                tableau3D.append(values)
-                
-        except FileNotFoundError:
-            print("Le fichier n'a pas été trouvé.")
-        # Transformer la liste en tableau numpy
-        tableau3D = np.array(tableau3D)
+    
+    assert type(name) == "str", f"Argument 'name' must be a string but had type {type(name)}"
+    # Initialiser un tableau vide
+    tableau3D = []
+    name="Materials/" + name + ".txt"
+    try: 
+        # Ouvrir le fichier en lecture seule
+        file = open(name, "r")
+        # utiliser readlines pour lire toutes les lignes du fichier
+        # La variable "lignes" est une liste contenant toutes les lignes du fichier
+        lines = file.readlines()
+        # fermez le fichier après avoir lu les lignes
+        file.close()
         
+        # Itérer sur les lignes
+        nb_line = len(lines)
+        for i in range (nb_line):
+            values = lines[i].split("\t")
+            values[2] =values[2].rstrip("\n")
+            values = [float(val) for val in values]
+            tableau3D.append(values)
+            
     except FileNotFoundError:
-        print("Le nom du fichier n'est pas un string.")
+        print(f"File {name} was not found.")
+    # Transformer la liste en tableau numpy
+    tableau3D = np.array(tableau3D)
+    
+
     Wl = []  
     Wl = tableau3D[:,0]
     n = []
@@ -879,14 +878,14 @@ def eliminate_duplicates(lst):
       
     return unique_elements, indices_removed
 
-def Write_Stack_Periode (Subtrat, Mat_Periode, nb_periode):
+def write_stack_period (Subtrat, Mat_Periode, nb_periode):
     """
     Builds a stack by repeating a material period multiple times on top of a substrate.
         Exemple 1 : 
-        Mat_Stack = Write_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 3)
+        Mat_Stack = write_stack_period(["BK7"], ["TiO2_I", "SiO2_I"], 3)
         Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
         Exemple 2:
-        Mat_Stack = Write_Stack_Period(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
+        Mat_Stack = write_stack_period(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
         Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
 
     Parameters
@@ -1185,7 +1184,7 @@ def evaluate_R_s(individual, parameters):
     Ang = parameters.get('Ang')
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
     Mat_Stack = parameters.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -1220,7 +1219,7 @@ def evaluate_T_s(individual, parameters):
     Ang = parameters.get('Ang')#, 0)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
     Mat_Stack = parameters.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -1255,7 +1254,7 @@ def evaluate_A_s(individual, parameters):
     Ang = parameters.get('Ang')#, 0)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
     Mat_Stack = parameters.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -1454,13 +1453,13 @@ def evaluate_low_e(individual, parameters):
     Ang = parameters.get('Ang')#, 0)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
-    # Le profil est réflecteur de 0 à Lambda_cut_min
-    # Le profil est transparrant de Lambda_cut_min à + inf
-    Lambda_cut = parameters.get('Lambda_cut')
+    Sol_Spec = parameters.get('Sol_Spec')
+    # Le profil est réflecteur de 0 à Lambda_cut_1
+    # Le profil est transparrant de Lambda_cut_1 à + inf
+    Lambda_cut_1 = parameters.get('Lambda_cut_2')
     d_Stack = np.array(individual)
     # Calcul des domaines 
-    Wl_1 = np.arange(min(Wl),Lambda_cut,(Wl[1]-Wl[0]))
+    Wl_1 = np.arange(min(Wl),Lambda_cut_1,(Wl[1]-Wl[0]))
     Mat_Stack = parameters.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -1498,11 +1497,11 @@ def evaluate_rh(individual, parameters):
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
     Ang = parameters.get('Ang')
     C = parameters.get('C')
-    Tair = parameters.get('T_air')
-    Tabs = parameters.get('T_abs')
+    T_air = parameters.get('T_air')
+    T_abs = parameters.get('T_abs')
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
     # Intégration du spectre solaire, brut en W/m2
     I =  trapz(Sol_Spec, Wl)
     # Creation du stack
@@ -1521,12 +1520,12 @@ def evaluate_rh(individual, parameters):
     A_s = 0 
     A_s = SolarProperties(Wl, A, Sol_Spec)
     # Calcul du corps noir
-    BB_shape = BB(Tabs, Wl)
+    BB_shape = BB(T_abs, Wl)
     # calcul de l'émittance du revetement à uhe corps noir
-    E_BB_Tabs = E_BB(Wl, A, BB_shape)
+    E_BB_T_abs = E_BB(Wl, A, BB_shape)
     
     # Calcul du rendement héliothermique. Argument de la fonction helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
-    rH = helio_th(A_s, E_BB_Tabs, Tabs, Tair, C, I,  r_Opt = 0.7, FFabs=1)
+    rH = helio_th(A_s, E_BB_T_abs, T_abs, T_air, C, I,  r_Opt = 0.7, FFabs=1)
     
     return rH
     
@@ -1550,11 +1549,11 @@ def evaluate_RTR(individual, parameters):
     Ang = parameters.get('Ang')#
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
-    # Le profil est réflecteur de 0 à Lambda_cut_min
-    Lambda_cut_min = parameters.get('Lambda_cut_min')
-    # Le profil est transparrant de Lambda_cut_min à Lambda_cut
-    Lambda_cut = parameters.get('Lambda_cut')
+    Sol_Spec = parameters.get('Sol_Spec')
+    # Le profil est réflecteur de 0 à Lambda_cut_1
+    Lambda_cut_1 = parameters.get('Lambda_cut_1')
+    # Le profil est transparrant de Lambda_cut_1 à Lambda_cut_1
+    Lambda_cut_1 = parameters.get('Lambda_cut_2')
     # traitemement de l'optimisation des n
     Mat_Stack = parameters.get('Mat_Stack')
     """
@@ -1564,8 +1563,8 @@ def evaluate_RTR(individual, parameters):
     """
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
     
-    Wl_1 = np.arange(min(Wl),Lambda_cut_min+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
-    Wl_2 = np.arange(Lambda_cut_min, Lambda_cut+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
+    Wl_1 = np.arange(min(Wl),Lambda_cut_1+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
+    Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_1+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     # Calcul du RTA
     d_Stack = d_Stack.reshape(1, len(individual))
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -1595,7 +1594,7 @@ def evaluate_netW_PV_CSP(individual, parameters):
     Ang = parameters.get('Ang')#, 0)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
 
     # traitemement de l'optimisation des n
     Mat_Stack = parameters.get('Mat_Stack')
@@ -1660,7 +1659,7 @@ def evaluate_RTA_s(individual, parameters):
     Ang = parameters.get('Ang')#, 0)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('SolSpec')
+    Sol_Spec = parameters.get('Sol_Spec')
     Mat_Stack = parameters.get('Mat_Stack')
     
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
@@ -1710,9 +1709,9 @@ def RTA_curve(individual, parameters):
 
 def generate_population(chromosome_size, parameters):
     """
-    See : function optimize_agn
+    See : function optimize_gn
     This function generates the 1st generation for the genetic optimization process. 
-    That is, a series of thin film stacks, each thickness of which is within the range for genetic algo, optimize_agn'.
+    That is, a series of thin film stacks, each thickness of which is within the range for genetic algo, optimize_gn'.
 
     Parameters
     ----------
@@ -1727,8 +1726,8 @@ def generate_population(chromosome_size, parameters):
         DESCRIPTION.
     """
     pop_size= parameters.get('pop_size')
-    plage_ep = parameters.get('Ep_plage')
-    Ep_Substrack = parameters.get('Ep_Substrack')
+    Th_range = parameters.get('Th_range')
+    Th_Substrate = parameters.get('Th_Substrate')
     # Je vais chercher d_Stack_Opt
     d_Stack_Opt = parameters.get('d_Stack_Opt')
     
@@ -1741,12 +1740,12 @@ def generate_population(chromosome_size, parameters):
     population = []
     for i in range(pop_size):
         # 0 et 200 sont, en nm, les plages d'épaisseur du subtrat
-        individual = [Ep_Substrack]
+        individual = [Th_Substrate]
         for j in range(chromosome_size):
             if isinstance(d_Stack_Opt[j], (int, float)):
                 individual += [d_Stack_Opt[j]]
             else : 
-                individual += [np.random.randint(plage_ep[0], plage_ep[1])]
+                individual += [np.random.randint(Th_range[0], Th_range[1])]
         population.append(individual)
 
     return population
@@ -1799,7 +1798,7 @@ def selection_max(population, evaluate, evaluate_rate, parameters):
 # Nouvelle version du crossover, par mask. # On mélange complétement les gènes
 def crossover(parents, crossover_rate , pop_size):
     """
-    See : optimize_agn
+    See : optimize_gn
     """
     children = []
     for i in range((pop_size-len(parents))//2): # On fait deux enfants par parents
@@ -1820,7 +1819,7 @@ def crossover(parents, crossover_rate , pop_size):
 # Chaque gène de l'enfant à mutatin_rate chance de muter 
 def mutation(children, mutation_rate, mutation_delta, d_Stack_Opt):
     """
-    See : optimize_agn
+    See : optimize_gn
     
     Cette fonction permet de faire muter les enfants (les nouveaux empillements), lors de leurs naissances.
     Lors de sa naissance un enfant à un % de chance (mutation_rate) de muter
@@ -2096,9 +2095,9 @@ def DEvol(f_cout, f_selection, parameters):
     population = pop_size
     
     # calcul des X_min et X_max
-    Plage_ep = parameters.get('Ep_plage')
-    Plage_vf = parameters.get('vf_plage')
-    Ep_Substrack = parameters.get('Ep_Substrack')
+    Th_range = parameters.get('Th_range')
+    vf_range = parameters.get('vf_range')
+    Th_Substrate = parameters.get('Th_Substrate')
     Mat_Stack = parameters.get('Mat_Stack')
     if 'nb_layer' in parameters:
         nb_layer = parameters.get('nb_layer')
@@ -2111,31 +2110,31 @@ def DEvol(f_cout, f_selection, parameters):
     if isinstance(d_Stack_Opt, type(None)):
         d_Stack_Opt = ["no"] * chromosome_size
     
-    X_min = [Ep_Substrack]
-    X_max = [Ep_Substrack]
+    X_min = [Th_Substrate]
+    X_max = [Th_Substrate]
     for i in range(chromosome_size):
         if isinstance(d_Stack_Opt[i], (int, float)):
             X_min += [d_Stack_Opt[i]]
             X_max += [d_Stack_Opt[i]]
         else : 
-            X_min += [Plage_ep[0]]
-            X_max += [Plage_ep[1]]
+            X_min += [Th_range[0]]
+            X_max += [Th_range[1]]
          
     if 'n_plage' in parameters:
-        Plage_n = parameters.get('n_plage')
+        n_range = parameters.get('n_plage')
         for i in range(nb_layer):
-            X_min += [Plage_n[0]]
-            X_max += [Plage_n[1]]
+            X_min += [n_range[0]]
+            X_max += [n_range[1]]
     
-    if 'vf_plage' in parameters:
-        Plage_vf = parameters.get('vf_plage')
+    if 'vf_range' in parameters:
+        vf_range = parameters.get('vf_range')
         for i in range(len(Mat_Stack)):
             if "-" in Mat_Stack[i]:
-                X_min += [Plage_vf[0]]
-                X_max += [Plage_vf[1]]
+                X_min += [vf_range[0]]
+                X_max += [vf_range[1]]
             else:
-                X_min += [Plage_vf[0]]
-                X_max += [Plage_vf[0]]
+                X_min += [vf_range[0]]
+                X_max += [vf_range[0]]
 
     """
     idée ; je parcours la liste Mat_stack. Je créer un X_max_2. quand je croise un - 
@@ -2148,8 +2147,8 @@ def DEvol(f_cout, f_selection, parameters):
             
     if no_dash: # Si no_dask est true, je rentre dans la boucle
         for i in range(chromosome_size):
-            X_min += [Plage_vf[0]]
-            X_max += [Plage_vf[1]]*
+            X_min += [vf_range[0]]
+            X_max += [vf_range[1]]*
     """
                
     # je met les list en array
@@ -2272,9 +2271,9 @@ def DEvol_Video(f_cout, f_selection, parameters):
     population = pop_size
     
     # calcul des X_min et X_max
-    Plage_ep = parameters.get('Ep_plage')
-    Plage_vf = parameters.get('vf_plage')
-    Ep_Substrack = parameters.get('Ep_Substrack')
+    Th_range = parameters.get('Th_range')
+    vf_range = parameters.get('vf_range')
+    Th_Substrate = parameters.get('Th_Substrate')
     Mat_Stack = parameters.get('Mat_Stack')
     if 'nb_layer' in parameters:
         nb_layer = parameters.get('nb_layer')
@@ -2283,27 +2282,27 @@ def DEvol_Video(f_cout, f_selection, parameters):
     
     chromosome_size = len(Mat_Stack) + nb_layer -1 # Nombre de couche minces
     
-    X_min = [Ep_Substrack]
-    X_max = [Ep_Substrack]
+    X_min = [Th_Substrate]
+    X_max = [Th_Substrate]
     for i in range(chromosome_size):
-         X_min += [Plage_ep[0]]
-         X_max += [Plage_ep[1]]
+         X_min += [Th_range[0]]
+         X_max += [Th_range[1]]
          
     if 'n_plage' in parameters:
-        Plage_n = parameters.get('n_plage')
+        n_range = parameters.get('n_plage')
         for i in range(nb_layer):
-            X_min += [Plage_n[0]]
-            X_max += [Plage_n[1]]
+            X_min += [n_range[0]]
+            X_max += [n_range[1]]
     
-    if 'vf_plage' in parameters:
-        Plage_vf = parameters.get('vf_plage')
+    if 'vf_range' in parameters:
+        vf_range = parameters.get('vf_range')
         for i in range(len(Mat_Stack)):
             if "-" in Mat_Stack[i]:
-                X_min += [Plage_vf[0]]
-                X_max += [Plage_vf[1]]
+                X_min += [vf_range[0]]
+                X_max += [vf_range[1]]
             else:
-                X_min += [Plage_vf[0]]
-                X_max += [Plage_vf[0]]
+                X_min += [vf_range[0]]
+                X_max += [vf_range[0]]
 
     # je met les list en array
     X_min = np.array(X_min)
@@ -2460,7 +2459,7 @@ def PSO(evaluate, selection, parameters):
     num_particles = parameters.get('pop_size')
     # number of particules is storage in nb_generation
     num_iterations = parameters.get('nb_generation')
-    Ep_Substrack = parameters.get('Ep_Substrack')
+    Th_Substrate = parameters.get('Th_Substrate')
 
     selection = selection.__name__,
 
@@ -2478,12 +2477,12 @@ def PSO(evaluate, selection, parameters):
        np.random.seed(seed)
        
     # Creation of lower_bound and upper bound
-    Plage_ep = parameters.get('Ep_plage')
+    Th_range = parameters.get('Th_range')
     chromosome_size = len(Mat_Stack) -1 # Nombre de couche minces
-    lower_bound = np.array([Plage_ep[0]] * chromosome_size) # Définir les bornes inférieures pour chaque dimension
-    lower_bound = np.insert(lower_bound, 0, Ep_Substrack) # j'ajoute l'épaisseur du substrat dans les bornes 
-    upper_bound = np.array([Plage_ep[1]] * chromosome_size) # Définir les bornes supérieures pour chaque dimension
-    upper_bound = np.insert(upper_bound, 0, Ep_Substrack) # j'ajoute l'épaisseur du substrat dans les bornes 
+    lower_bound = np.array([Th_range[0]] * chromosome_size) # Définir les bornes inférieures pour chaque dimension
+    lower_bound = np.insert(lower_bound, 0, Th_Substrate) # j'ajoute l'épaisseur du substrat dans les bornes 
+    upper_bound = np.array([Th_range[1]] * chromosome_size) # Définir les bornes supérieures pour chaque dimension
+    upper_bound = np.insert(upper_bound, 0, Th_Substrate) # j'ajoute l'épaisseur du substrat dans les bornes 
     
     # Start
     num_dimensions = len(lower_bound)
@@ -2586,12 +2585,12 @@ def generate_neighbor(solution, parameters):
     neighbor : array
         The generated neighboring solution obtained by modifying a randomly selected value in the solution.
     """   
-    Plage_ep = parameters.get('Ep_plage')
+    Th_range = parameters.get('Th_range')
     
     neighbor = solution.copy()
     # random.randint start at 1 and not 0, because the 1st value is the substrat thickness, witch cannot be modified
     index = random.randint(1, len(neighbor) - 1)
-    neighbor[index] = random.uniform(Plage_ep[0], Plage_ep[1])  # Choisir une valeur aléatoire entre -1 et 1 pour la sous-liste sélectionnée
+    neighbor[index] = random.uniform(Th_range[0], Th_range[1])  # Choisir une valeur aléatoire entre -1 et 1 pour la sous-liste sélectionnée
     return neighbor
 
 def acceptance_probability(current_score, new_score, temperature):
@@ -2635,10 +2634,10 @@ def simulated_annealing(evaluate, selection, parameters):
     """
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
     Mat_Stack = parameters.get('Mat_Stack')
-    Ep_Substrack = parameters.get('Ep_Substrack')
+    Th_Substrate = parameters.get('Th_Substrate')
     # number of iteration of the annealing
     nb_generation = parameters.get('nb_generation')
-    Plage_ep = parameters.get('Ep_plage')
+    Th_range = parameters.get('Th_range')
     
     # Get the name of the selection function
     selection = selection.__name__,
@@ -2661,8 +2660,8 @@ def simulated_annealing(evaluate, selection, parameters):
     
     chromosome_size = len(Mat_Stack) - 1 # Nombre de couche minces
     # Génération de la solution initiale
-    current_solution = [random.uniform(Plage_ep[0], Plage_ep[1]) for _ in range(chromosome_size)]  # Générer une solution aléatoire
-    current_solution = np.insert(current_solution, 0, Ep_Substrack) # j'ajoute l'épaisseur du substrat dans les bornes 
+    current_solution = [random.uniform(Th_range[0], Th_range[1]) for _ in range(chromosome_size)]  # Générer une solution aléatoire
+    current_solution = np.insert(current_solution, 0, Th_Substrate) # j'ajoute l'épaisseur du substrat dans les bornes 
     
     # Initialisation 
     best_solution = current_solution.copy()
@@ -2769,8 +2768,8 @@ def One_plus_One_ES(evaluate, selection, parameters):
     nb_generation = parameters.get('nb_generation')
     #print(nb_generation)
     num_iterations = pop_size * nb_generation
-    Ep_Substrack = parameters.get('Ep_Substrack')
-    Plage_ep = parameters.get('Ep_plage')
+    Th_Substrate = parameters.get('Th_Substrate')
+    Th_range = parameters.get('Th_range')
     
     # Facteur d'échelle de la taille de pas
     step_size_factor = parameters.get('mutation_delta')
@@ -2793,8 +2792,8 @@ def One_plus_One_ES(evaluate, selection, parameters):
     
     chromosome_size = len(Mat_Stack) - 1 # Nombre de couche minces
     # Génération de la solution initiale
-    initial_solution = [random.uniform(Plage_ep[0], Plage_ep[1]) for _ in range(chromosome_size)]  # Générer une solution aléatoire
-    initial_solution = np.insert(initial_solution, 0, Ep_Substrack) # j'ajoute l'épaisseur du substrat dans les bornes      
+    initial_solution = [random.uniform(Th_range[0], Th_range[1]) for _ in range(chromosome_size)]  # Générer une solution aléatoire
+    initial_solution = np.insert(initial_solution, 0, Th_Substrate) # j'ajoute l'épaisseur du substrat dans les bornes      
     
     current_solution = initial_solution
     current_step_size = initial_step_size

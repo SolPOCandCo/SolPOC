@@ -14,8 +14,8 @@ from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
 # %%  Main 
-Comment = "Essais de la fonction d'évaluation evaluate_netW_PV_CSP " # Commentaire qui seras inscrit dans le fichier texte final
-Mat_Stack = Ecrit_Stack_Periode(["BK7"], ["TiO2_I", "SiO2_I"], 6) # Ecriture du stack. 
+Comment = "Essais de la fonction d'évaluation evaluate_netW_PV_CSP " # CommenT_aire qui seras inscrit dans le fichier texte final
+Mat_Stack = write_stack_period(["BK7"], ["TiO2_I", "SiO2_I"], 6) # Ecriture du stack. 
 # Ajout de couches minces théorique avec la variable nb_layer, dont l'épaisseur ET l'indice doivent être optimisées
 # nb_layer = 0 # Nombre de couche mince théorique par dessus le stack. cette variable peut de pas être définie
 d_Stack_Opt =  ["no"] # Permet de fixer une épaisseur d'une couche qui ne seras pas optimiser. Mettre "no" pour ne rien fixer. Si on as par exemple trois couches, on peut écrire [ ,40, ]. Le code comprend que seule la couche du milieu est fixe. 
@@ -29,26 +29,26 @@ mutation_DE = "current_to_best" # On doit écrire une chaine de caractère avec 
 # Domaine des longueurs d'ondes. Ici de 280 à 2500 nm par pas de 5 nm  
 Wl = np.arange(280 , 2505, 5) #  #/!\. La valeur extréme supérieur est exclus. Il existe une fonction Wl_selectif() qui permet Wl de 280 à 2500 par pas de 5 nm, puit de 2500 à 30µm par pas de 50 nm# 
 # Epaisseur du substrat, en nm 
-Ep_Substrack = 1e6 # en nm 
+Th_Substrate = 1e6 # en nm 
 # Plage des épaisseurs des couches minces, en nm
-Plage_ep = (0, 350) # en nm. Plage indentique pour chaque couches minces pour générée la 1ere population 
+Th_range = (0, 350) # en nm. Plage indentique pour chaque couches minces pour générée la 1ere population 
 # Plage des indices des couches minces
-Plage_n = (1.3 , 3.0) # indice de réfraction, sans unité. Plage indentique pour chaque couches minces pour générée la 1ere population 
+n_range = (1.3 , 3.0) # indice de réfraction, sans unité. Plage indentique pour chaque couches minces pour générée la 1ere population 
 # Plage des fractions volumiques
-Plage_vf = (0 , 1.0) #  volumic fraction of inclusion in host matrix
+vf_range = (0 , 1.0) #  volumic fraction of inclusion in host matrix
 # Angle d'incidence du rayonnement sur le stack de couche mince 
 Ang = 0 # en °
 C = 80 # Concentration solaire
-Tair = 20 + 273 # Température de l'air (Tair) et de l'absorbeur en Kelvin
-Tabs = 300 + 273 # Température de l'absorbeur en Kelvin
+T_air = 20 + 273 # Température de l'air (T_air) et de l'absorbeur en Kelvin
+T_abs = 300 + 273 # Température de l'absorbeur en Kelvin
 # Longueur d'onde de coupure, uniquement pour les verre low-e ou le PV-CSP (fonction cout RTR)
-Lambda_cut_UV = 500 # nm 
-Lambda_cut_IR = 1000 # nm 
+Lambda_cut_1 = 500 # nm 
+Lambda_cut_2 = 1000 # nm 
 # Ouverture et traitement des matériaux réel 
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
 # Ouverture du spectre solaire et traitement des matériaux réel 
-Wl_sol , Sol_Spec , name_SolSpec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec) # Interpolation du spectre
+Wl_Sol , Sol_Spec , name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec) # Interpolation du spectre
 # Ouverture du fichier des cellules PV
 Wl_PV , Signal_PV , name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
 Signal_PV = np.interp(Wl, Wl_PV, Signal_PV) # Interpolation du spectre
@@ -64,7 +64,7 @@ mutation_delta = 15 # Si un gène mute, le gène varie de + ou - un nombre aléa
 f1, f2 = 0.9, 0.8  # Hyperparamétre pour DEvol
 nb_generation = 200 # Nombre de génération. Pour DE sert aussi à calculer le budget, via nb_generation * pop_size
 precision_AlgoG = 10**-5 # Précision sur le paramètres pour stoper l'optimisation
-nb_lancement = 16 # Nombre de lancement 
+nb_run = 16 # Nombre de lancement 
 cpu_used = 8  # Nombre de processeur utilisé /!\ à rester "raisonable"
 #seed = 45 # Variable optionelle. Fixation du seed (graine du générateur de nombre aléatoire)
 #%%
@@ -75,15 +75,15 @@ cpu_used = 8  # Nombre de processeur utilisé /!\ à rester "raisonable"
 parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
             'C' : C,
-            'T_air' : Tair,
-            'T_abs' : Tabs,
-            'Ep_Substrack' : Ep_Substrack,
-            'Ep_plage' : Plage_ep,
+            'T_air' : T_air,
+            'T_abs' : T_abs,
+            'Th_Substrate' : Th_Substrate,
+            'Th_range' : Th_range,
             'd_Stack_Opt' : d_Stack_Opt,
             'Mat_Stack' : Mat_Stack,
-            'SolSpec' : Sol_Spec,
-            'Lambda_cut_min' : Lambda_cut_UV,
-            'Lambda_cut' : Lambda_cut_IR,
+            'Sol_Spec' : Sol_Spec,
+            'Lambda_cut_1' : Lambda_cut_1,
+            'Lambda_cut_2' : Lambda_cut_2,
             'n_Stack' : n_Stack,
             'k_Stack' : k_Stack,
             'pop_size': pop_size,
@@ -105,7 +105,7 @@ parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la v
 # Je rajoute les valeurs dans le dictionnaire parameters (dictionnaire qui sert à transmettre les variables) 
 if 'nb_layer' in locals():
     parameters["nb_layer"] = nb_layer
-    parameters["n_plage"] = Plage_n
+    parameters["n_plage"] = n_range
 # si la variale seed existe, je la rajoute dans le dictionnaire. 
 if 'seed' in locals():
     parameters["seed"] = seed
@@ -122,12 +122,12 @@ if evaluate.__name__ == "evaluate_netW_PV_CSP":
     parameters["Signal_Th"] = Signal_Th 
         
 if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-    parameters["vf_plage"] = Plage_vf
+    parameters["vf_range"] = vf_range
     
-if 'Lambda_cut_UV' not in locals():
-    Lambda_cut_UV = 0 # nm 
-if 'Lambda_cut_IR' not in locals():
-    Lambda_cut_IR = 0 # nm 
+if 'Lambda_cut_1' not in locals():
+    Lambda_cut_1 = 0 # nm 
+if 'Lambda_cut_2' not in locals():
+    Lambda_cut_2 = 0 # nm 
     
 #%%
 # création d'une fonction pour faire du multiprocessing
@@ -188,7 +188,7 @@ if __name__=="__main__":
     # Je créer un pool de problème réssoudre
     mp_pool = Pool(cpu_used)
     # Je ressous chaque problème du pool avec multiprocessing
-    results = mp_pool.map(run_problem_solution, range(nb_lancement))
+    results = mp_pool.map(run_problem_solution, range(nb_run))
     
     # /!\ Dans Python, il faut créer des listes vides avant de rajouter des choses dedans 
     tab_best_solution = []
@@ -197,7 +197,7 @@ if __name__=="__main__":
     tab_nb_run = []
     tab_temps = []
     tab_seed = []
-    # for i in range(nb_lancement): # je lance nb_lancement fois le problèmes
+    # for i in range(nb_run): # je lance nb_run fois le problèmes
     
     time.sleep(1) 
     # result est un tableau qui contient les solutions renvoyé par my.pool. Je les extrait pour les placé dans des tableaux différents
@@ -241,8 +241,8 @@ if __name__=="__main__":
     # Rappel : spectre GT => Spectre global, c-a-d le spectre du soleil + reflexion de l'environement 
     # Spectre GT  = Spectre DC (Direct) + Spectre Diffus
     # C'est le spectre que voit la surface
-    Wl_sol , Sol_Spec , name_SolSpec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-    Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec)
+    Wl_Sol , Sol_Spec , name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+    Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
     # Intégration du spectre solaire, brut en W/m2
     Sol_Spec_int = trapz(Sol_Spec, Wl)
     # Ecriture du spectre solaire modifié par la transmittance du traitement
@@ -268,8 +268,8 @@ if __name__=="__main__":
     # En aval
     # Ouverture du spectre solaire, qui peut être différent du 1er en fonction des cas
     # Rappel : spectre DC => Spectre direct c-a-d uniquement le spectre du soleil, concentrable par un systeme optique 
-    Wl_sol_2 , Sol_Spec_2 , name_SolSpec_2 = open_SolSpec('Materials/SolSpec.txt', 'DC')
-    Sol_Spec_2 = np.interp(Wl, Wl_sol_2, Sol_Spec_2)
+    Wl_Sol_2 , Sol_Spec_2 , name_Sol_Spec_2 = open_SolSpec('Materials/SolSpec.txt', 'DC')
+    Sol_Spec_2 = np.interp(Wl, Wl_Sol_2, Sol_Spec_2)
     # Intégration du spectre solaire, brut en W/m2
     Sol_Spec_int_2 = trapz(Sol_Spec_2, Wl)
     # Ecriture du spectre solaire modifié par la réflectance du traitement
@@ -306,7 +306,7 @@ if __name__=="__main__":
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
-        BB_shape = BB(Tabs, Wl)
+        BB_shape = BB(T_abs, Wl)
         ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
         # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
@@ -337,7 +337,7 @@ if __name__=="__main__":
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
-        BB_shape = BB(Tabs, Wl)
+        BB_shape = BB(T_abs, Wl)
         ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
         # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
@@ -352,7 +352,7 @@ if __name__=="__main__":
     
     # Graph de la convergence
     # Je copie ma table de performance
-    if (nb_lancement > 2): 
+    if (nb_run > 2): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
         # Je cherche l'index max dans la table de performance
@@ -386,7 +386,7 @@ if __name__=="__main__":
         plt.show()
     
     # Je copie ma table de performance
-    if (nb_lancement > 5): 
+    if (nb_run > 5): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
         # Je cherche l'index max dans la table de performance
@@ -460,8 +460,8 @@ if __name__=="__main__":
         ep = np.delete(ep, np.s_[(len(Mat_Stack)):len(ep)])
  
     #del epaisseur[0]
-    lower = Plage_ep[0]
-    upper = Plage_ep[1]
+    lower = Th_range[0]
+    upper = Th_range[1]
     fig, ax = plt.subplots()
     ax.scatter(range(1, len(ep)), ep[1:])
     ax.axhline(lower, color='r')
@@ -482,8 +482,8 @@ if __name__=="__main__":
         for i in range(nb_layer + len(Mat_Stack)-1):
             n_list = np.delete(n_list, 0)
         #del epaisseur[0]
-        lower = Plage_n[0]
-        upper = Plage_n[1]
+        lower = n_range[0]
+        upper = n_range[1]
         fig, ax = plt.subplots()
         ax.scatter(range(1, len(n_list)), n_list[1:])
         ax.axhline(lower, color='r')
@@ -494,7 +494,7 @@ if __name__=="__main__":
         for i, val in enumerate(n_list[1:]):
             ax.annotate(str("{:.2f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
         # Fixe les limites sur l'axe y : ici de 1 à 3 
-        ax.set_ylim((min(Plage_n)-0.5), (max(Plage_n)+0.5)) # changer l'échelle de l'axe y
+        ax.set_ylim((min(n_range)-0.5), (max(n_range)+0.5)) # changer l'échelle de l'axe y
         plt.xlabel("Number of layers, substrat to air")
         plt.ylabel("Refractive_Index (-)")
         plt.title("Refractive_Index ")
@@ -503,8 +503,8 @@ if __name__=="__main__":
 
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
         # Graph des fractions volumiques
-        lower = Plage_vf[0]
-        upper = Plage_vf[1]
+        lower = vf_range[0]
+        upper = vf_range[1]
         fig, ax = plt.subplots()
         ax.scatter(range(1, len(vf)), vf[1:])
         ax.axhline(lower, color='r')
@@ -515,7 +515,7 @@ if __name__=="__main__":
         for i, val in enumerate(vf[1:]):
             ax.annotate(str("{:.3f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
         # Fixe les limites sur l'axe y : ici de 1 à 3 
-        ax.set_ylim((min(Plage_vf)), (max(Plage_vf))) # changer l'échelle de l'axe y
+        ax.set_ylim((min(vf_range)), (max(vf_range))) # changer l'échelle de l'axe y
         plt.xlabel("Number of layers, substrat to air")
         plt.ylabel("Volumic_Fraction (-)")
         plt.title("Volumic_Fraction ")
@@ -580,7 +580,7 @@ if __name__=="__main__":
         for value in tab_temps:
             file.write(str(value) + "\n")
     
-    filename = directory + "/empillement.txt"
+    filename = directory + "/StacksThicknesses.txt"
     with open(filename, "w") as file:
         for value in tab_best_solution:
             np.savetxt(file, value.reshape(1, -1), fmt='%.18e', delimiter=' ')
@@ -621,24 +621,24 @@ if __name__=="__main__":
         file.write("Le nom de la fonction de sélection est : " + str(selection.__name__) + "\n")
         file.write("Si optimisation par DE, la mutation est : " + mutation_DE + "\n")
         file.write("\n")
-        file.write("L'emplacement et le nom du spectre solaire est :"  + str(name_SolSpec) + "\n")
+        file.write("L'emplacement et le nom du spectre solaire est :"  + str(name_Sol_Spec) + "\n")
         file.write("La valeur d'irradiance : " + str("{:.1f}".format(trapz(Sol_Spec, Wl))) + " W/m²" + "\n")
         file.write("\n")
         file.write("Nom du dossier :\t" + str(directory) + "\n")
         file.write("Matériaux de l'empillement\t" + str(Mat_Stack_print) + "\n")
         file.write("Le nombre de couche minces est \t" + str(nb_total_layer) + "\n")
         file.write("Domaine des longueurs d'ondes \t" + str(min(Wl)) + " nm à " + str(max(Wl)) + " nm, pas de " + str(Wl[1]-Wl[0])+ " nm"+ "\n")
-        file.write("Epaisseur du substrat, en nm \t" + str(Ep_Substrack) + "\n")
-        file.write("Plage des épaisseur des couches minces\t" + str(Plage_ep[0]) + " à " + str(Plage_ep[1]) + " nm" + "\n")
-        file.write("Plage des indices des couches minces\t" + str(Plage_n[0]) + " à " + str(Plage_n[1]) + "\n")
+        file.write("Epaisseur du substrat, en nm \t" + str(Th_Substrate) + "\n")
+        file.write("Plage des épaisseur des couches minces\t" + str(Th_range[0]) + " à " + str(Th_range[1]) + " nm" + "\n")
+        file.write("Plage des indices des couches minces\t" + str(n_range[0]) + " à " + str(n_range[1]) + "\n")
         file.write("Angle d'incidence sur le stack\t" + str(Ang) + "°" + "\n")
         file.write("Le taux de concentration est\t" + str(C) + "\n")
-        file.write("La température de l'air est\t" + str(Tair) + " K" + "\n")
-        file.write("La température de l'absorbeur' est\t" + str(Tabs) + " K" + "\n")
+        file.write("La température de l'air est\t" + str(T_air) + " K" + "\n")
+        file.write("La température de l'absorbeur' est\t" + str(T_abs) + " K" + "\n")
         if evaluate.__name__ == "evaluate_low_e" or evaluate.__name__ == "evaluate_RTR":
             file.write("Pour les profils d'optimisaiton low-e et RTR " + "\n")
-            file.write("La longueur d'onde de coupure UV est \t" + str(Lambda_cut_UV) + " nm" + "\n")
-            file.write("La longueur d'onde de coupure IR est \t" + str(Lambda_cut_IR) + " nm" + "\n")
+            file.write("La longueur d'onde de coupure UV est \t" + str(Lambda_cut_1) + " nm" + "\n")
+            file.write("La longueur d'onde de coupure IR est \t" + str(Lambda_cut_2) + " nm" + "\n")
         if evaluate.__name__ == "evaluate_netW_PV_CSP" : 
             file.write("Pour les profils d'optimisaiton evaluate_netW_PV_CSP" + "\n")
             file.write("Le coût fictif du PV est \t" + str(poids_PV) + "\n")
@@ -650,7 +650,7 @@ if __name__=="__main__":
         file.write("Etendue de la mutation\t" + str(mutation_delta) + "\n")
         file.write("Precision de l'algo en auto\t" + str(precision_AlgoG) + "\n")
         file.write("Nombre de génération\t" + str(nb_generation) + "\n")
-        file.write("Nb de Lancement\t" + str(nb_lancement) + "\n")
+        file.write("Nb de Lancement\t" + str(nb_run) + "\n")
         file.write("Nb de processeur disponible\t" +str(cpu_count()) + "\n")
         file.write("Nb de processeur utilisé\t" +str(cpu_used) + "\n")
         file.write("Le temps réel d'éxécution (en s) total est de :\t" + str("{:.2f}".format(time_real))  + "\n")
@@ -669,29 +669,29 @@ if __name__=="__main__":
             file.write("_____________________________________________" +  "\n")
             file.write("Le nom du fichier amont et le n° de la colone est : " + name_PV + "\n")
             file.write("Le nom du fichier avant et le n° de la colone est : " + name_Th + "\n")
-            file.write("Le nom du spectre solaire utilisé pour l'optimisation ': " + name_SolSpec + "\n")
+            file.write("Le nom du spectre solaire utilisé pour l'optimisation ': " + name_Sol_Spec + "\n")
             file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int)) + "\n")
             file.write("La puissance transmise par le traitement du spectre solaire incident (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_T_int)) + "\n")
             file.write("La puissance réfléchie par le traitement du spectre solaire incident (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_R_int)) + "\n")
             file.write("La puissance absorbée par le traitement du spectre solaire incident (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_A_int)) + "\n")
-            if Lambda_cut_UV != 0 and Lambda_cut_IR != 0: 
-                Wl_1 = np.arange(min(Wl),Lambda_cut_UV,(Wl[1]-Wl[0]))
-                Wl_2 = np.arange(Lambda_cut_UV, Lambda_cut_IR, (Wl[1]-Wl[0]))
-                Wl_3 = np.arange(Lambda_cut_IR, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
+            if Lambda_cut_1 != 0 and Lambda_cut_2 != 0: 
+                Wl_1 = np.arange(min(Wl),Lambda_cut_1,(Wl[1]-Wl[0]))
+                Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_2, (Wl[1]-Wl[0]))
+                Wl_3 = np.arange(Lambda_cut_2, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
                 # P_low_e = np.concatenate([R[0:len(Wl_1)],T[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], R[(len(Wl_2)+len(Wl_1)-1):]])
                 file.write("\n")
                 # Partie avec le spectre GT
-                file.write("Calcul avec le spectre': " + name_SolSpec + "\n")
+                file.write("Calcul avec le spectre': " + name_Sol_Spec + "\n")
                 # a = trapz(Sol_Spec[0:len(Wl_1)]* R[0:len(Wl_1)], Wl_1)
-                # file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_UV (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
+                # file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_1 (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 a = trapz(Sol_Spec[len(Wl_1):(len(Wl_2)+len(Wl_1))]* T[len(Wl_1):(len(Wl_2)+len(Wl_1))], Wl_2)
                 file.write("La puissance solaire transmise de Lambda_UV à Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # a = trapz(Sol_Spec[(len(Wl_2)+len(Wl_1)):]* R[(len(Wl_2)+len(Wl_1)):], Wl_3)
                 # file.write("La puissance solaire réfléchie à partir de Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # Partie avec le spectre DC
-                file.write("Calcul avec le spectre': " + name_SolSpec_2 + "\n")
+                file.write("Calcul avec le spectre': " + name_Sol_Spec_2 + "\n")
                 a = trapz(Sol_Spec_2[0:len(Wl_1)]* R[0:len(Wl_1)], Wl_1)
-                file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_UV (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
+                file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_1 (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # a = trapz(Sol_Spec_2[len(Wl_1):(len(Wl_2)+len(Wl_1))]* T[len(Wl_1):(len(Wl_2)+len(Wl_1))], Wl_2)
                 # file.write("La puissance solaire transmise de Lambda_UV à Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 a = trapz(Sol_Spec_2[(len(Wl_2)+len(Wl_1)):]* R[(len(Wl_2)+len(Wl_1)):], Wl_3)
@@ -700,7 +700,7 @@ if __name__=="__main__":
                 
                 file.write("\n")
                 file.write("En amont (partie cellule PV sur un système solaire PV/CSP) : " +  "\n")
-                file.write("Le nom du spectre solaire est': " + name_SolSpec + "\n")
+                file.write("Le nom du spectre solaire est': " + name_Sol_Spec + "\n")
                 file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int)) + "\n")
                 file.write("La puissance transmise par le traitement du spectre solaire GT (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_T_int)) + "\n")
                 file.write("L'efficacité (%) de la cellule avec le spectre solaire non modifié (sans traitement) est " + str("{:.3f}".format(Ps_amont_ref)) + "\n")
@@ -709,7 +709,7 @@ if __name__=="__main__":
                 file.write("Soit une puissance utile (en W/m2) de " + str("{:.2f}".format(Sol_Spec_mod_T_amont_int)) + "\n")
                 file.write("\n")
                 file.write("En aval (partie absorbeur thermique sur un système solaire PV/CSP) : " +  "\n")
-                file.write("Le nom du spectre solaire est : " + name_SolSpec_2 + "\n")
+                file.write("Le nom du spectre solaire est : " + name_Sol_Spec_2 + "\n")
                 file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int_2)) + "\n")
                 file.write("La puissance réfléchie par le traitement du spectre solaire DC (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_R_int_2)) + "\n")
                 file.write("L'efficacité (%) du traitement absorbant avec le spectre solaire non modifié (sans traitement) est " + str("{:.3f}".format(Ps_aval_ref)) + "\n")

@@ -13,8 +13,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 # Date: 17 07 2023
-Comment = " On peut écrire ici un commentaire, qui seras imprimé dans le fichier txt"
-#Mat_Stack = Ecrit_Stack_Periode(["Al_Rakic"], ["SiO2_I", "TiO2_I"], 4)
+Comment = " On peut écrire ici un commenT_aire, qui seras imprimé dans le fichier txt"
+#Mat_Stack = write_stack_period(["Al_Rakic"], ["SiO2_I", "TiO2_I"], 4)
 Mat_Stack = ("BK7", "TiO2_I", "ZnO-Al_Rakic", "Ag_Babar", "ZnO-Al_Rakic", "TiO2_I", "SiO2_I")
 # Epaisseur des couche mince en nm 
 d_Stack = [1000000, 30, 5, 8, 5, 22, 67]
@@ -28,8 +28,8 @@ Ang = 0 # en °
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
 n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
 # Ouverture du spectre solaire
-Wl_sol , Sol_Spec , name_SolSpec= open_SolSpec('Materials/SolSpec.txt')
-Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec)
+Wl_Sol , Sol_Spec , name_Sol_Spec= open_SolSpec('Materials/SolSpec.txt')
+Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
 
 """_________________________________________________________________________"""
 # parameters est un dictionnaire qui contient les variables du problèmes
@@ -38,9 +38,9 @@ Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec)
 
 parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
-            'Ep_Substrack' : d_Stack[0],
+            'Th_Substrate' : d_Stack[0],
             'Mat_Stack' : Mat_Stack,
-            'SolSpec' : Sol_Spec,
+            'Sol_Spec' : Sol_Spec,
             'n_Stack' : n_Stack,
             'k_Stack' : k_Stack,}
 
@@ -119,7 +119,7 @@ filename = directory + "/temps.txt"
 with open(filename, "w") as file:
     file.write(" Temps " + str((t2 - t1)) + "\n")
 
-filename = directory + "/empillement.txt"
+filename = directory + "/StacksThicknesses.txt"
 with open(filename, "w") as file:
     file.write(str(d_Stack) + "\n")
         

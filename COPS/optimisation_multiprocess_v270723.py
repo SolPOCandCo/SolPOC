@@ -16,16 +16,16 @@ from multiprocessing import Pool, cpu_count
 
 # %%  Main : You can start to modified something
 Comment = "A sentence to be written in the final text file" # Comment to be written in the simulation text file
-Mat_Stack = Write_Stack_Periode(["BK7"], ["TiO2", "SiO2"], 2)
+Mat_Stack = write_stack_period(["BK7"], ["TiO2", "SiO2"], 2)
 # Choice of optimization method
 algo = DEvol # Name of the optimization method 
 selection = selection_max # Callable. Name of the selection method : selection_max or selection_min
-evaluate = evaluate_R_Brg# Callable. Name of the cost function
+evaluate = evaluate_R_Brg # Callable. Name of the cost function
 # %% Important parameters 
-# Wavelenght domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
+# Wavelength domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
 Wl = np.arange(400 , 800, 5) # /!\ Last value is not include in the array
-# Thickness of the substrack, in nm 
-Th_Substrack = 1e6 # Substrat thickness, in nm 
+# Thickness of the substrate, in nm 
+Th_Substrate = 1e6 # Substrate thickness, in nm 
 # Range of thickness (lower bound and upper bound), for the optimisation process
 Th_range = (0, 200) # in nm.
 # Range of refractive index (lower bound and upper bound), for the optimisation process
@@ -46,7 +46,7 @@ nb_layer = 0 # Number of theoretical thin layers above the stack. This variable 
 # Allows fixing the thickness of a layer that will not be optimized. d
 d_Stack_Opt = [] #Set to "no" to leave it unset. For example, if there are three layers, it can be written ["no",40,"no"]. The code understands that only the middle layer is fixed
 # Open the solar spectrum 
-Wl_sol , Sol_Spec , name_SolSpec = open_SolSpec('Materials/SolSpec.txt','GT')
+Wl_Sol , Sol_Spec , name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt','GT')
 # Open a file with PV cell shape
 Wl_PV , Signal_PV , name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
 # Open a file with thermal absorber shape
@@ -62,14 +62,14 @@ mutation_DE = "current_to_best" # String. Mutaton method for DEvol optimization 
 nb_generation = 300 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization method, as optimiza_agn or strangle
 nb_run = 10 # Number of run
-cpu_used = 10  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
+cpu_used = 10  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 #seed = 45 # Seed of the random number generator. Uncommet for fix the seed
 #%% You should stop modifying anything :) 
 """_________________________________________________________________________"""
 # Open and interpol the refractive index
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
 # Open and processing the reflectif index of materials used in the stack (Read the texte files in Materials/ )
-Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec) # Interpolate the solar spectrum 
+Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec) # Interpolate the solar spectrum 
 Signal_PV = np.interp(Wl, Wl_PV, Signal_PV) # Interpolate the signal
 Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal 
 # parameters is a dictionary containing the problem variables
@@ -77,12 +77,12 @@ Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal
 # => They then read the necessary variables  with the commande .get
 parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
-            'Ep_Substrack' : Th_Substrack,
-            'Ep_plage' : Th_range,
+            'Th_Substrate' : Th_Substrate,
+            'Th_range' : Th_range,
             'Mat_Stack' : Mat_Stack,
-            'SolSpec' : Sol_Spec,
-            'Lambda_cut_min' : Lambda_cut_1,
-            'Lambda_cut' : Lambda_cut_2,
+            'Sol_Spec' : Sol_Spec,
+            'Lambda_cut_1' : Lambda_cut_1,
+            'Lambda_cut_2' : Lambda_cut_2,
             'n_Stack' : n_Stack,
             'k_Stack' : k_Stack,
             'pop_size': pop_size,
@@ -94,7 +94,7 @@ parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la v
 #%%
 # If nb_layer exists, then I optimize one or more theoretical thin layers
 # I add values to the container (dictionary used to transmit variables) 
-language = "en" # can change into fr for write the console information and the files in the folder in english
+language = "en" # can change into fr for write the console information and the files in the folder in English
 
 if 'd_Stack_Opt' not in locals() or len(d_Stack_Opt) == 0:
     d_Stack_Opt =  ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
@@ -104,11 +104,11 @@ else:
 if 'nb_layer' in locals() and nb_layer != 0:
     parameters["nb_layer"] = nb_layer
     parameters["n_plage"] = n_range
-# si la variale seed existe, je la rajoute dans le dictionnaire. 
+# si la variable seed existe, je la rajoute dans le dictionnaire. 
 if 'seed' in locals():
     parameters["seed"] = seed
     
-# If I optimized a antireflective coating for PV, I need the Pv signal shape
+# If I optimized a antireflective coating for PV, I need the PV signal shape
 if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
@@ -178,7 +178,7 @@ if algo.__name__ == "optimize_strangle":
     parameters['evaluate_rate'] = evaluate_rate
 
 if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-    parameters["vf_plage"] = vf_range
+    parameters["vf_range"] = vf_range
     
 if 'Lambda_cut_1' not in locals():
     Lambda_cut_1 = 0 # nm 
@@ -323,8 +323,8 @@ if __name__=="__main__":
     # Reminder: GT spectrum => Global spectrum, i.e., the spectrum of the sun + reflection from the environment
     # GT Spectrum = Direct Spectrum (DC) + Diffuse Spectrum
     # This is the spectrum seen by the surface
-    Wl_sol, Sol_Spec, name_SolSpec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-    Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec)
+    Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+    Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
     # Integration of the solar spectrum, raw in W/m2
     Sol_Spec_int = trapz(Sol_Spec, Wl)
     # Writing the solar spectrum modified by the treatment's transmittance
@@ -350,8 +350,8 @@ if __name__=="__main__":
     # Downstream
     # Opening the solar spectrum, which may be different from the first one depending on the cases
     # Reminder: DC spectrum => Direct spectrum, i.e., only the spectrum of the sun, concentrable by an optical system
-    Wl_sol_2, Sol_Spec_2, name_SolSpec_2 = open_SolSpec('Materials/SolSpec.txt', 'DC')
-    Sol_Spec_2 = np.interp(Wl, Wl_sol_2, Sol_Spec_2)
+    Wl_Sol_2, Sol_Spec_2, name_Sol_Spec_2 = open_SolSpec('Materials/SolSpec.txt', 'DC')
+    Sol_Spec_2 = np.interp(Wl, Wl_Sol_2, Sol_Spec_2)
     # Integration of the solar spectrum, raw in W/m2
     Sol_Spec_int_2 = trapz(Sol_Spec_2, Wl)
     # Writing the solar spectrum modified by the treatment's reflectance
@@ -711,14 +711,14 @@ if __name__=="__main__":
             file.write("Le nom de la fonction de sélection est : " + str(selection.__name__) + "\n")
             file.write("Si optimisation par DE, la mutation est : " + mutation_DE + "\n")
             file.write("\n")
-            file.write("L'emplacement et le nom du spectre solaire est :"  + str(name_SolSpec) + "\n")
+            file.write("L'emplacement et le nom du spectre solaire est :"  + str(name_Sol_Spec) + "\n")
             file.write("La valeur d'irradiance : " + str("{:.1f}".format(trapz(Sol_Spec, Wl))) + " W/m²" + "\n")
             file.write("\n")
             file.write("Nom du dossier :\t" + str(directory) + "\n")
             file.write("Matériaux de l'empillement\t" + str(Mat_Stack_print) + "\n")
             file.write("Le nombre de couche minces est \t" + str(nb_total_layer) + "\n")
             file.write("Domaine des longueurs d'ondes \t" + str(min(Wl)) + " nm à " + str(max(Wl)) + " nm, pas de " + str(Wl[1]-Wl[0])+ " nm"+ "\n")
-            file.write("Epaisseur du substrat, en nm \t" + str(Ep_Substrack) + "\n")
+            file.write("Epaisseur du substrat, en nm \t" + str(Th_Substrate) + "\n")
             file.write("Plage des épaisseur des couches minces\t" + str(Th_range[0]) + " à " + str(Th_range[1]) + " nm" + "\n")
             file.write("Plage des indices des couches minces\t" + str(n_range[0]) + " à " + str(Range_n[1]) + "\n")
             file.write("Angle d'incidence sur le stack\t" + str(Ang) + "°" + "\n")
@@ -759,14 +759,14 @@ if __name__=="__main__":
             file.write("The name of the selection function is: " + str(selection.__name__) + "\n")
             file.write("If optimizing with DE, the mutation is: " + mutation_DE + "\n")
             file.write("\n")
-            file.write("The location and name of the solar spectrum is: " + str(name_SolSpec) + "\n")
+            file.write("The location and name of the solar spectrum is: " + str(name_Sol_Spec) + "\n")
             file.write("The irradiance value: " + str("{:.1f}".format(trapz(Sol_Spec, Wl))) + " W/m²" + "\n")
             file.write("\n")
             file.write("Folder name: " + str(directory) + "\n")
             file.write("Materials in the stack: " + str(Mat_Stack_print) + "\n")
             file.write("The number of thin layers: " + str(nb_total_layer) + "\n")
             file.write("Wavelength range: " + str(min(Wl)) + " nm to " + str(max(Wl)) + " nm, step of " + str(Wl[1]-Wl[0]) + " nm" + "\n")
-            file.write("Substrate thickness, in nm: " + str(Th_Substrack) + "\n")
+            file.write("Substrate thickness, in nm: " + str(Th_Substrate) + "\n")
             file.write("Range of thin layer thickness: " + str(Th_range[0]) + " to " + str(Th_range[1]) + " nm" + "\n")
             file.write("Range of thin layer indices: " + str(n_range[0]) + " to " + str(n_range[1]) + "\n")
             file.write("Incident angle on the stack: " + str(Ang) + "°" + "\n")
@@ -807,7 +807,7 @@ if __name__=="__main__":
             file.write("_____________________________________________" +  "\n")
             file.write("Le nom du fichier amont et le n° de la colone est : " + name_PV + "\n")
             file.write("Le nom du fichier avant et le n° de la colone est : " + name_Th + "\n")
-            file.write("Le nom du spectre solaire utilisé pour l'optimisation ': " + name_SolSpec + "\n")
+            file.write("Le nom du spectre solaire utilisé pour l'optimisation ': " + name_Sol_Spec + "\n")
             file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int)) + "\n")
             file.write("La puissance transmise par le traitement du spectre solaire incident (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_T_int)) + "\n")
             file.write("La puissance réfléchie par le traitement du spectre solaire incident (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_R_int)) + "\n")
@@ -819,17 +819,17 @@ if __name__=="__main__":
                 # P_low_e = np.concatenate([R[0:len(Wl_1)],T[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], R[(len(Wl_2)+len(Wl_1)-1):]])
                 file.write("\n")
                 # Partie avec le spectre GT
-                file.write("Calcul avec le spectre': " + name_SolSpec + "\n")
+                file.write("Calcul avec le spectre': " + name_Sol_Spec + "\n")
                 # a = trapz(Sol_Spec[0:len(Wl_1)]* R[0:len(Wl_1)], Wl_1)
-                # file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_UV (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
+                # file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_1 (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 a = trapz(Sol_Spec[len(Wl_1):(len(Wl_2)+len(Wl_1))]* T[len(Wl_1):(len(Wl_2)+len(Wl_1))], Wl_2)
                 file.write("La puissance solaire transmise de Lambda_UV à Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # a = trapz(Sol_Spec[(len(Wl_2)+len(Wl_1)):]* R[(len(Wl_2)+len(Wl_1)):], Wl_3)
                 # file.write("La puissance solaire réfléchie à partir de Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # Partie avec le spectre DC
-                file.write("Calcul avec le spectre': " + name_SolSpec_2 + "\n")
+                file.write("Calcul avec le spectre': " + name_Sol_Spec_2 + "\n")
                 a = trapz(Sol_Spec_2[0:len(Wl_1)]* R[0:len(Wl_1)], Wl_1)
-                file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_UV (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
+                file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_1 (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 # a = trapz(Sol_Spec_2[len(Wl_1):(len(Wl_2)+len(Wl_1))]* T[len(Wl_1):(len(Wl_2)+len(Wl_1))], Wl_2)
                 # file.write("La puissance solaire transmise de Lambda_UV à Lambda_IR (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
                 a = trapz(Sol_Spec_2[(len(Wl_2)+len(Wl_1)):]* R[(len(Wl_2)+len(Wl_1)):], Wl_3)
@@ -838,7 +838,7 @@ if __name__=="__main__":
                 
                 file.write("\n")
                 file.write("En amont (partie cellule PV sur un système solaire PV/CSP) : " +  "\n")
-                file.write("Le nom du spectre solaire est': " + name_SolSpec + "\n")
+                file.write("Le nom du spectre solaire est': " + name_Sol_Spec + "\n")
                 file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int)) + "\n")
                 file.write("La puissance transmise par le traitement du spectre solaire GT (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_T_int)) + "\n")
                 file.write("L'efficacité (%) de la cellule avec le spectre solaire non modifié (sans traitement) est " + str("{:.3f}".format(Ps_amont_ref)) + "\n")
@@ -847,7 +847,7 @@ if __name__=="__main__":
                 file.write("Soit une puissance utile (en W/m2) de " + str("{:.2f}".format(Sol_Spec_mod_T_amont_int)) + "\n")
                 file.write("\n")
                 file.write("En aval (partie absorbeur thermique sur un système solaire PV/CSP) : " +  "\n")
-                file.write("Le nom du spectre solaire est : " + name_SolSpec_2 + "\n")
+                file.write("Le nom du spectre solaire est : " + name_Sol_Spec_2 + "\n")
                 file.write("L'intégration de ce spectre solaire (en W/m2) est " + str("{:.2f}".format(Sol_Spec_int_2)) + "\n")
                 file.write("La puissance réfléchie par le traitement du spectre solaire DC (en W/m2) est " + str("{:.2f}".format(Sol_Spec_mod_R_int_2)) + "\n")
                 file.write("L'efficacité (%) du traitement absorbant avec le spectre solaire non modifié (sans traitement) est " + str("{:.3f}".format(Ps_aval_ref)) + "\n")
