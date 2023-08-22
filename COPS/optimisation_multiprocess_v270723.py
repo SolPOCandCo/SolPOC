@@ -59,10 +59,10 @@ mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is C
 mutation_delta = 15 # If a chromose mutate, le value change form random number include between + or - this values
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
 mutation_DE = "current_to_best" # String. Mutaton method for DEvol optimization method
-nb_generation = 5 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
+nb_generation = 300 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization method, as optimiza_agn or strangle
-nb_run = 2 # Number of run
-cpu_used = 2  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
+nb_run = 10 # Number of run
+cpu_used = 10  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 #seed = 45 # Seed of the random number generator. Uncommet for fix the seed
 #%% You should stop modifying anything :) 
 """_________________________________________________________________________"""
