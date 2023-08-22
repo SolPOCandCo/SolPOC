@@ -709,7 +709,7 @@ def open_material(name):
         Complexe part of the Refractive Index.
     """
     
-    assert type(name) == "str", f"Argument 'name' must be a string but had type {type(name)}"
+    assert isinstance(name, str), f"Argument 'name' must be a string but had type {type(name)}"
     # Initialiser un tableau vide
     tableau3D = []
     name="Materials/" + name + ".txt"
