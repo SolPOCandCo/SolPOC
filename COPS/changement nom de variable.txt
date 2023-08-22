@@ -9,7 +9,6 @@ Et     except FileNotFoundError:
 Remplacer Wl_sol par Wl_Sol
 Remplacer name_SolSpec par name_Sol_Spec 
 
-Remplacer le dictonnaire "conteneur" par "kwargs"
 Remplacer le nom de la variable l par Wl dans les fonctions RTA et RTA3C
 Ne pas hésiter à corriger les fautes d'anglais :) 
 Dire dans GitHub si le __init__.py est correctement écrit

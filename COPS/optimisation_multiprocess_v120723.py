@@ -69,10 +69,10 @@ cpu_used = 8  # Nombre de processeur utilisé /!\ à rester "raisonable"
 #seed = 45 # Variable optionelle. Fixation du seed (graine du générateur de nombre aléatoire)
 #%%
 """_________________________________________________________________________"""
-# Le conteneur est un dictionnaire qui contient les variables du problèmes
-# On donne le conteneur comme entrée dans certaines fonctions
+# le dictionnaire parameters est un dictionnaire qui contient les variables du problèmes
+# On donne le dictionnaire parameters comme entrée dans certaines fonctions
 # => Elles vont ensuite chercher les variables nécessaires  
-conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
+parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
             'C' : C,
             'T_air' : Tair,
@@ -102,27 +102,27 @@ conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la va
 
 #%%
 # Si nb_layer exite, alors j'optimise une ou plusieurs couches minces théorique
-# Je rajoute les valeurs dans le conteneur (dictionnaire qui sert à transmettre les variables) 
+# Je rajoute les valeurs dans le dictionnaire parameters (dictionnaire qui sert à transmettre les variables) 
 if 'nb_layer' in locals():
-    conteneur["nb_layer"] = nb_layer
-    conteneur["n_plage"] = Plage_n
+    parameters["nb_layer"] = nb_layer
+    parameters["n_plage"] = Plage_n
 # si la variale seed existe, je la rajoute dans le dictionnaire. 
 if 'seed' in locals():
-    conteneur["seed"] = seed
+    parameters["seed"] = seed
 # Optimize a PV/CSP coating not with a RTR shape, but with a net energy balance
 if evaluate.__name__ == "evaluate_netW_PV_CSP":
     if 'poids_PV' in locals():
-        conteneur['poids_PV'] = poids_PV
+        parameters['poids_PV'] = poids_PV
     else : 
         poids_PV = 3.0
-        conteneur['poids_PV'] = poids_PV
+        parameters['poids_PV'] = poids_PV
     # Interpolation 
-    # Put the PV celle and the selective coating in the conteneur
-    conteneur["Signal_PV"] = Signal_PV
-    conteneur["Signal_Th"] = Signal_Th 
+    # Update the PV celle and the selective coating within the parameters dict
+    parameters["Signal_PV"] = Signal_PV
+    parameters["Signal_Th"] = Signal_Th 
         
 if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-    conteneur["vf_plage"] = Plage_vf
+    parameters["vf_plage"] = Plage_vf
     
 if 'Lambda_cut_UV' not in locals():
     Lambda_cut_UV = 0 # nm 
@@ -135,8 +135,8 @@ def run_problem_solution(i):
     t1 = time.time() # Temps avant l'exécution de la fonction
         # Ligne en dessous à activé pour désynchroniser légèrement les coeurs, si le seed est génèrer par lecture de l'horloge
     # time.sleep(np.random.random())
-    # Lancement de l'algo d'optmisation (algo), selon une fonction coût (evaluate), une sélection (selection) en donnant toutes les infos nécessaires via le conteneur
-    best_solution, dev, nb_run, seed = algo(evaluate, selection, conteneur)
+    # Lancement de l'algo d'optmisation (algo), selon une fonction coût (evaluate), une sélection (selection) en donnant toutes les infos nécessaires via le dictionnaire parameters
+    best_solution, dev, nb_run, seed = algo(evaluate, selection, parameters)
     # calcul du temps utilisé
     t2 = time.time()
     temps = t2 - t1
@@ -145,7 +145,7 @@ def run_problem_solution(i):
         best_solution = best_solution.tolist()
     best_solution = np.array(best_solution)
     dev = np.array(dev)
-    perf = evaluate(best_solution, conteneur)
+    perf = evaluate(best_solution, parameters)
     print("J'ai fini le cas n°", str(i+1), " en ", 
           "{:.1f}".format(temps), " secondes.",
           " Meilleur : ", "{:.4f}".format(perf),
@@ -225,9 +225,9 @@ if __name__=="__main__":
     # Je viens de trouver mon max, de tout mes run. C'est le meilleur des meilleurs ! Bravo ! 
     
     # Calcul Rs, Ts, As du max (performance solaire)
-    Rs, Ts, As = evaluate_RTA_s(tab_best_solution[max_index], conteneur) 
+    Rs, Ts, As = evaluate_RTA_s(tab_best_solution[max_index], parameters) 
     # Calcul le R, T, A (Reflectance et cie, pour tracer une courbe)
-    R, T, A = RTA_curve(tab_best_solution[max_index], conteneur)
+    R, T, A = RTA_curve(tab_best_solution[max_index], parameters)
     # Je met au moin une valeur différente de 0 pour éviter une erreur lors du calcul de l'intégral
     if all(value == 0 for value in T):
         T[0] = 10**-301
@@ -476,7 +476,7 @@ if __name__=="__main__":
     plt.savefig(directory + "/" + "Thickness.png", dpi = 300, bbox_inches='tight')
     plt.show()
     
-    if 'nb_layer' in conteneur:
+    if 'nb_layer' in parameters:
         # Graph des indices
         n_list = tab_best_solution[max_index]
         for i in range(nb_layer + len(Mat_Stack)-1):

@@ -16,11 +16,11 @@ from multiprocessing import Pool, cpu_count
 # %%  Main 
 Comment = "A sentence to be written in the final text file " # Comment to be written in the simulation text file
 Mat_Stack = Write_Stack_Periode(["BK7"], ["W-Al2O3", "SiO2"], 1) # Creation of the Stack 
-# Choice of optimization methode
-algo = DEvol # Callable. Name of the optimization methode 
-selection = selection_max # Callable. Name of the selection methode : selection_max or selection_min
+# Choice of optimization method
+algo = DEvol # Callable. Name of the optimization method 
+selection = selection_max # Callable. Name of the selection method : selection_max or selection_min
 evaluate = evaluate_R_s # Callable. Name of the cost function
-mutation_DE = "current_to_best" # String. Mutaton methode for DEvol optimization method
+mutation_DE = "current_to_best" # String. Mutaton method for DEvol optimization method
 """_________________________________________________________________________"""
 # Wavelenght domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
 Wl = np.arange(400 , 600, 50) # /!\ Last value is not include in the array
@@ -55,24 +55,24 @@ Signal_PV = np.interp(Wl, Wl_PV, Signal_PV) # Interpolate the signal
 # Open a file with thermal absorber shape
 Wl_Th , Signal_Th , name_Th = open_Spec_Signal('Materials/Thermal_absorber.txt', 1)
 Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal 
-#%% Hyperparameters for optimisation methode
+#%% Hyperparameters for optimisation method
 pop_size = 30 # number of individual per iteration / generation 
 crossover_rate = 0.9 # crossover rate (1.0 = 100%)
 evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next generations
-mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
+mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization method
 mutation_delta = 15 # Si un gène mute, le gène varie de + ou - un nombre aléatorie compris entre 0 et cette valeur. Mutation absolue fixe
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
 nb_generation = 10 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
-precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization methode
+precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization method
 nb_lancement = 8# Number of run
 cpu_used = 8  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
 #seed = 45 # Seed of the random number generator
 #%%
 """_________________________________________________________________________"""
-# The container is a dictionary containing the problem variables
-# The container is given as input to certain functions
+# parameters  is a dictionary containing the problem variables
+# This dictionary is given as input to certain functions
 # => They then read the necessary variables  with the commande .get
-conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
+parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
             'Ep_Substrack' : Ep_Substrack,
             'Ep_plage' : Plage_ep,
@@ -90,24 +90,24 @@ conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la va
 
 #%%
 # If nb_layer exists, then I optimize one or more theoretical thin layers
-# I add values to the container (dictionary used to transmit variables) 
+# I add values to parameters (dictionary used to transmit variables) 
 language = "en" # can change into fr for write the console information and the files in the folder in english
 
 if 'd_Stack_Opt' not in locals():
     d_Stack_Opt =  ["no"]
-    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
+    parameters["'d_Stack_Opt' "] = d_Stack_Opt
 else:
-    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
+    parameters["'d_Stack_Opt' "] = d_Stack_Opt
 if 'nb_layer' in locals():
-    conteneur["nb_layer"] = nb_layer
-    conteneur["n_plage"] = Plage_n
+    parameters["nb_layer"] = nb_layer
+    parameters["n_plage"] = Plage_n
 # si la variale seed existe, je la rajoute dans le dictionnaire. 
 if 'seed' in locals():
-    conteneur["seed"] = seed
+    parameters["seed"] = seed
     
 # If I optimized a antireflective coating for PV, I need the Pv signal shape
 if evaluate.__name__ == "evaluate_T_PV":
-    conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
+    parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
 if evaluate.__name__ == "evaluate_T_Human_eye":
     # Open a file with Human eye response 
@@ -116,42 +116,42 @@ if evaluate.__name__ == "evaluate_T_Human_eye":
     Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye) # Interpolate the signal
     
     Sol_Spec = Signal_H_eye 
-    conteneur["Sol_Spec_with_Human_eye"] = Signal_H_eye 
+    parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye 
     
 # If I optimized a antireflective coating for PV, I need the Pv signal shape
 if evaluate.__name__ == "evaluate_rh":
     if 'C' in locals(): 
-        conteneur["C"] = C
+        parameters["C"] = C
     else : 
-        conteneur["C"] = 80
+        parameters["C"] = 80
     if 'T_air' in locals():
-        conteneur["T_air"] = T_air
+        parameters["T_air"] = T_air
     else:
-        conteneur["T_air"] = 293
+        parameters["T_air"] = 293
     if 'T_abs' in locals():
-        conteneur["T_abs"] = T_abs
+        parameters["T_abs"] = T_abs
     else:
-        conteneur["T_abs"] = 300 + 273
+        parameters["T_abs"] = 300 + 273
 
 # Optimize a PV/CSP coating not with a RTR shape, but with a net energy balance
 if evaluate.__name__ == "evaluate_netW_PV_CSP":
     if 'poids_PV' in locals():
-        conteneur['poids_PV'] = poids_PV
+        parameters['poids_PV'] = poids_PV
     else : 
         poids_PV = 3.0
-        conteneur['poids_PV'] = poids_PV
+        parameters['poids_PV'] = poids_PV
     # Interpolation 
     # Put the PV cells and the absorber signal in the conteneur
-    conteneur["Signal_PV"] = Signal_PV
-    conteneur["Signal_Th"] = Signal_Th 
+    parameters["Signal_PV"] = Signal_PV
+    parameters["Signal_Th"] = Signal_Th 
     
 if algo.__name__ == "DEvol":
     if 'mutation_DE' not in locals():
         mutation_DE = "current_to_best" 
     
-    conteneur["mutation_DE"] = mutation_DE
-    conteneur["f1"] = f1
-    conteneur["f2"] = f2
+    parameters["mutation_DE"] = mutation_DE
+    parameters["f1"] = f1
+    parameters["f2"] = f2
     
 if algo.__name__ == "optimize_agn":
     if 'precision_AlgoG' not in locals():
@@ -163,14 +163,14 @@ if algo.__name__ == "optimize_agn":
     if 'evaluate_rate' not in locals():
         evaluate_rate = 0.3
         
-    conteneur["Precision_AlgoG"] = precision_AlgoG
-    conteneur["mutation_delta"] = mutation_delta
-    conteneur['crossover_rate']= crossover_rate
-    conteneur['evaluate_rate'] = evaluate_rate
-    conteneur["Mod_Algo"] = "for"   
+    parameters["Precision_AlgoG"] = precision_AlgoG
+    parameters["mutation_delta"] = mutation_delta
+    parameters['crossover_rate']= crossover_rate
+    parameters['evaluate_rate'] = evaluate_rate
+    parameters["Mod_Algo"] = "for"   
 
 if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-    conteneur["vf_plage"] = Plage_vf
+    parameters["vf_plage"] = Plage_vf
     
 if 'Lambda_cut_UV' not in locals():
     Lambda_cut_UV = 0 # nm 
@@ -183,8 +183,8 @@ def run_problem_solution(i):
     t1 = time.time() # Time before the optimisation process
     # Line below to be uncommented to slightly desynchronize the cores, if the seed is generated by reading the clock.
     # time.sleep(np.random.random())
-    # Run the optimisation process (algo), with an evaluate methode, a selection methode and the container
-    best_solution, dev, nb_run, seed = algo(evaluate, selection, conteneur)
+    # Run the optimisation process (algo), with an evaluate method, a selection method and the parameters dictionary.
+    best_solution, dev, nb_run, seed = algo(evaluate, selection, parameters)
     # calcul the time used
     t2 = time.time()
     temps = t2 - t1
@@ -193,7 +193,7 @@ def run_problem_solution(i):
         best_solution = best_solution.tolist()
     best_solution = np.array(best_solution)
     dev = np.array(dev)
-    perf = evaluate(best_solution, conteneur)
+    perf = evaluate(best_solution, parameters)
     if language== "fr":
         print("J'ai fini le cas n°", str(i+1), " en ", "{:.1f}".format(temps), " secondes."," Meilleur : ", "{:.4f}".format(perf),flush=True)
     if language== "en":
@@ -298,9 +298,9 @@ if __name__=="__main__":
     # I've just found my maximum, out of all my runs. It's the best of the best! Congratulations! 
     
     # Calcul of Rs, Ts, As du max (solar performances)
-    Rs, Ts, As = evaluate_RTA_s(tab_best_solution[max_index], conteneur) 
+    Rs, Ts, As = evaluate_RTA_s(tab_best_solution[max_index], parameters) 
     # Calcul le R, T, A (Reflectivity and other, for plot a curve)
-    R, T, A = RTA_curve(tab_best_solution[max_index], conteneur)
+    R, T, A = RTA_curve(tab_best_solution[max_index], parameters)
     # I set at least one value other than 0 to avoid errors when calculating the integral.
     
     if all(value == 0 for value in T):
@@ -549,7 +549,7 @@ if __name__=="__main__":
     plt.savefig(directory + "/" + "Thickness.png", dpi = 300, bbox_inches='tight')
     plt.show()
     
-    if 'nb_layer' in conteneur:
+    if 'nb_layer' in parameters:
         # Plot of refractif index Graph des indices
         n_list = tab_best_solution[max_index]
         for i in range(nb_layer + len(Mat_Stack)-1):

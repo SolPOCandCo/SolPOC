@@ -32,11 +32,11 @@ Wl_sol , Sol_Spec , name_SolSpec= open_SolSpec('Materials/SolSpec.txt')
 Sol_Spec = np.interp(Wl, Wl_sol, Sol_Spec)
 
 """_________________________________________________________________________"""
-# Le conteneur est un dictionnaire qui contient les variables du problèmes
-# On donne le conteneur comme entrée dans certaines fonctions
+# parameters est un dictionnaire qui contient les variables du problèmes
+# On donne le dictionnaire parameters comme entrée dans certaines fonctions
 # => Elles vont ensuite chercher les variables nécessaires   
 
-conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
+parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
             'Ang': Ang, 
             'Ep_Substrack' : d_Stack[0],
             'Mat_Stack' : Mat_Stack,
@@ -60,9 +60,9 @@ print("Le dossier '" + directory + "' a été créé.")
 
 t1 = time.time()
 # Calcul Rs, Ts, As du max
-Rs, Ts, As = evaluate_RTA_s(d_Stack, conteneur) 
+Rs, Ts, As = evaluate_RTA_s(d_Stack, parameters) 
 # Calcul le R, T, A
-R, T, A = RTA_curve(d_Stack, conteneur)
+R, T, A = RTA_curve(d_Stack, parameters)
 
 # Ecriture du spectre solaire modifié
 Sol_Spec_mod = R*Sol_Spec
