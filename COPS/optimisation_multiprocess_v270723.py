@@ -17,13 +17,13 @@ from multiprocessing import Pool, cpu_count
 # %%  Main : You can start to modified something
 Comment = "A sentence to be written in the final text file" # Comment to be written in the simulation text file
 Mat_Stack = write_stack_period(["BK7"], ["TiO2", "SiO2"], 2)
-# Choice of optimization method
+# Choice of optimisation method
 algo = DEvol # Name of the optimization method 
 selection = selection_max # Callable. Name of the selection method : selection_max or selection_min
 evaluate = evaluate_R_Brg # Callable. Name of the cost function
 # %% Important parameters 
-# Wavelength domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
-Wl = np.arange(400 , 800, 5) # /!\ Last value is not include in the array
+# Wavelength domain, here from 320 to 2500 nm with a 5 nm step. Can be change!   
+Wl = np.arange(400 , 800, 5) # /!\ Last value is not included in the array
 # Thickness of the substrate, in nm 
 Th_Substrate = 1e6 # Substrate thickness, in nm 
 # Range of thickness (lower bound and upper bound), for the optimisation process
@@ -31,8 +31,8 @@ Th_range = (0, 200) # in nm.
 # Range of refractive index (lower bound and upper bound), for the optimisation process
 n_range = (1.3 , 3.0) 
 # Range of volumic fraction (lower bound and upper bound), for the optimisation process
-vf_range = (0 , 1.0) #  volumic fraction of inclusion in host matrix, must be include in (0,1)
-# Incidance angle of the thina layer stack. 0 degres is for normal incidence angle
+vf_range = (0 , 1.0) #  volumic fraction of inclusion in host matrix, must be included in (0,1)
+# Incidence angle of the thin layer stack. 0 degrees is for normal incidence angle
 Ang = 0 # Incidence angle on the thin layers stack, in °
 #%% Optional parameters
 C = 80 # Solar concentration. Data necessary for solar thermal application, like selective stack 
@@ -43,7 +43,7 @@ Lambda_cut_1 = 800 # nm
 Lambda_cut_2 = 1000 # nm 
 # Addition of theoretical thin layers with the variable nb_layer, whose thickness AND index must be optimized.
 nb_layer = 0 # Number of theoretical thin layers above the stack. This variable can be left undefined.
-# Allows fixing the thickness of a layer that will not be optimized. d
+# Allows fixing the thickness of a layer that will not be optimized.
 d_Stack_Opt = [] #Set to "no" to leave it unset. For example, if there are three layers, it can be written ["no",40,"no"]. The code understands that only the middle layer is fixed
 # Open the solar spectrum 
 Wl_Sol , Sol_Spec , name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt','GT')
@@ -56,7 +56,7 @@ pop_size = 30 # number of individual per iteration / generation
 crossover_rate = 0.5 # crossover rate (1.0 = 100%)
 evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next generations
 mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization method
-mutation_delta = 15 # If a chromose mutate, le value change form random number include between + or - this values
+mutation_delta = 15 # If a chromose mutates, the value change from random number include between + or - this values
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
 mutation_DE = "current_to_best" # String. Mutaton method for DEvol optimization method
 nb_generation = 300 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
@@ -75,7 +75,7 @@ Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal
 # parameters is a dictionary containing the problem variables
 # This dictionary is given as input to certain functions
 # => They then read the necessary variables  with the commande .get
-parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la valeur de Wl
+parameters = {'Wl': Wl, # I store a new variable called "Wl", and I give it Wl's value
             'Ang': Ang, 
             'Th_Substrate' : Th_Substrate,
             'Th_range' : Th_range,
@@ -94,7 +94,7 @@ parameters = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la v
 #%%
 # If nb_layer exists, then I optimize one or more theoretical thin layers
 # I add values to the container (dictionary used to transmit variables) 
-language = "en" # can change into fr for write the console information and the files in the folder in English
+language = "en" # can change into fr to write the console information and the files in the folder in French
 
 if 'd_Stack_Opt' not in locals() or len(d_Stack_Opt) == 0:
     d_Stack_Opt =  ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
@@ -104,11 +104,11 @@ else:
 if 'nb_layer' in locals() and nb_layer != 0:
     parameters["nb_layer"] = nb_layer
     parameters["n_plage"] = n_range
-# si la variable seed existe, je la rajoute dans le dictionnaire. 
+# if the seed variable exists, i add it in the dictionary 
 if 'seed' in locals():
     parameters["seed"] = seed
     
-# If I optimized a antireflective coating for PV, I need the PV signal shape
+# If I optimized an antireflective coating for PV, I need the PV signal shape
 if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
@@ -121,7 +121,7 @@ if evaluate.__name__ == "evaluate_T_Human_eye":
     Sol_Spec = Signal_H_eye 
     parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye 
     
-# If I optimized a antireflective coating for PV, I need the Pv signal shape
+# If I optimized an antireflective coating for PV, I need the PV signal shape
 if evaluate.__name__ == "evaluate_rh":
     if 'C' in locals(): 
         parameters["C"] = C
@@ -209,7 +209,7 @@ def run_problem_solution(i):
                   
     return best_solution, perf, dev, n_iter, temps, seed
 #%%
-# Début de la boucle main. Le code doit être dans cette boucle pour fonctionner en multiprocessing 
+# Beginning of the main loop. The code must be in this loop to work in multiprocessing 
 if __name__=="__main__":
     if language == "fr":
         print("Début du programme")
@@ -228,7 +228,7 @@ if __name__=="__main__":
     date_time = datetime.now().strftime("%Y-%m-%d-%Hh%M")
     dawn_of_time = time.time()
     
-    # Ecriture du dossier de sauvegarde, à la date et heure du jour 
+    # Writing of the backup folder, with current date/time 
     directory = date_time
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -268,7 +268,7 @@ if __name__=="__main__":
     # Solving each problem in the pool using multiprocessing
     results = mp_pool.map(run_problem_solution, range(nb_run))
     
-    # Creation of empty list, for use then later  
+    # Creation of empty lists, for use them later  
     tab_best_solution = []
     tab_dev = []
     tab_perf = []
@@ -298,16 +298,16 @@ if __name__=="__main__":
     """___________________Données des meilleurs résultats______________________"""
     # Go to find the best in all the result
     if selection.__name__ == "selection_max":
-        max_value = max(tab_perf) # cherche le max
+        max_value = max(tab_perf) # finds the maximum
     if selection.__name__ == "selection_min":
-        max_value = min(tab_perf) # cherche le max    
-    max_index = tab_perf.index(max_value) # cherche l'index du max (où il est)
+        max_value = min(tab_perf) # finds the minimum 
+    max_index = tab_perf.index(max_value) # finds the maximum's index (where he is)
 
     # I've just found my maximum, out of all my runs. It's the best of the best! Congratulations! 
     
-    # Calcul of Rs, Ts, As du max (solar performances)
+    # Calculation of Rs, Ts, As du max (solar performances)
     Rs, Ts, As = evaluate_RTA_s(tab_best_solution[max_index], parameters) 
-    # Calcul le R, T, A (Reflectivity and other, for plot a curve)
+    # Calculation le R, T, A (Reflectivity and other, for plot a curve)
     R, T, A = RTA_curve(tab_best_solution[max_index], parameters)
     # I set at least one value other than 0 to avoid errors when calculating the integral.
     
@@ -372,61 +372,61 @@ if __name__=="__main__":
 
     # Reflectivity plot
     fig, ax1 = plt.subplots()
-    color = 'black' # Couleurs de base possibles: b g r c m y k w
+    color = 'black' # Basic colors availables : b g r c m y k w
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Reflectivity (-)', color=color)
     if evaluate.__name__ == 'evaluate_rh':
         ax1.set_xscale('log')
     ax1.plot(Wl, R, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
-    # Code line to change y-axis, for reflectance # Ligne de code pour changer l'axe de y, pour la réflectance
-    # Disabled for automatic scaling  # Désactivé pour échelle automatique
+    # Code line to change y-axis, for reflectance
+    # Disabled for automatic scaling
     
-    ax1.set_ylim(0, 1) # changer l'échelle de l'axe y
+    ax1.set_ylim(0, 1) # Change y-axis' scale
     ax2 = ax1.twinx()  
     color = 'tab:red'
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
         BB_shape = BB(T_abs, Wl)
-        ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
-        # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
+        ## BB_shape is the black body's shape. According to the temperature, the black body's irradiance can be very higher
+        # than solar spectrum. That's why I put the black body at the same height for this chart
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
         ax2.plot(Wl, BB_shape, color='orange', linestyle = 'dashed')
     
     ax2.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()  
-    ax2.set_ylim(0, 2) # changer l'échelle de l'axe y
+    ax2.set_ylim(0, 2) # Change y-axis' scale
     plt.title("Optimum Reflectivity")
-    # Save the plot. Sauvegarde de la figure
+    # Save the plot.
     plt.savefig(directory + "/" + "Optimum_Reflectivity.png", dpi = 300, bbox_inches='tight')
     plt.show()
     
-    # Plot transmissivity # Graph de la transmittance
+    # Plot transmissivity
     fig, ax1 = plt.subplots()
-    color = 'black' # Couleurs de base possibles: b g r c m y k w
+    color = 'black' # Basic colors availables : b g r c m y k w
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Transmissivity (-)', color=color)
     if evaluate.__name__ == 'evaluate_rh':
         ax1.set_xscale('log')
     ax1.plot(Wl, T, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
-    # Ligne de code pour changer l'axe de y, pour la réflectance
-    # Désactivé pour échelle automatique
-    ax1.set_ylim(0, 1) # changer l'échelle de l'axe y
+    # Line to change y-axis (for the reflectance)
+    # Disabled for automatic scale
+    ax1.set_ylim(0, 1) # Change y-axis' scale
     ax2 = ax1.twinx()  
     color = 'tab:red'
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
         BB_shape = BB(T_abs, Wl)
-        ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
-        # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
+        ## BB_shape is the black body's shape. According to the temperature, the black body's irradiance can be very higher
+        # than solar spectrum. That's why I put the black body at the same height for this chart
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
         ax2.plot(Wl, BB_shape, color='orange', linestyle = 'dashed')
     ax2.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()  
-    ax2.set_ylim(0, 2) # changer l'échelle de l'axe y
+    ax2.set_ylim(0, 2) # Change y-axis' scale
     plt.title("Optimum Transmissivity")
     plt.savefig(directory + "/" + "Optimum_Transmissivity.png", dpi = 300, bbox_inches='tight')
     plt.show()
@@ -435,19 +435,19 @@ if __name__=="__main__":
     if (nb_run > 2): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
-        # Je cherche l'index max dans la table de performance
+        # I search the maximum index in the performance table
         max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_1 = tab_dev_save[max_index] # Je cherche le dev associé
+        dev_1 = tab_dev_save[max_index] # I search the associated dev
         del tab_perf_save[max_index], tab_dev_save[max_index]
         
-        # Je recherche le max, qui est alors le second
+        # I search the maximum, which is second here
         max_index = tab_perf_save.index(max(tab_perf_save))
         dev_2 = tab_dev_save[max_index]
         del tab_perf_save[max_index], tab_dev_save[max_index]
     
         max_index = tab_perf_save.index(max(tab_perf_save))
         dev_3 = tab_dev_save[max_index]
-        del tab_perf_save, tab_dev_save# suprime toute la variable 
+        del tab_perf_save, tab_dev_save# Deletes the variables
         
         if  algo.__name__ == "DEvol":
             if  selection.__name__ == "selection_max":
@@ -465,16 +465,16 @@ if __name__=="__main__":
         plt.savefig(directory + "/" + "ConvergencePlots.png", dpi = 300, bbox_inches='tight')
         plt.show()
     
-    # Je copie ma table de performance
+    # I copy my performance table
     if (nb_run > 5): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
-        # Je cherche l'index max dans la table de performance
+        # I search the maximum index in the performance table
         max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_1 = tab_dev_save[max_index] # Je cherche le dev associé
+        dev_1 = tab_dev_save[max_index] # I search the associated dev
         del tab_perf_save[max_index], tab_dev_save[max_index]
         
-        # Je recherche le max, qui est alors le second
+        # I search the maximum, which is second here
         max_index = tab_perf_save.index(max(tab_perf_save))
         dev_2 = tab_dev_save[max_index]
         del tab_perf_save[max_index], tab_dev_save[max_index]
@@ -493,7 +493,7 @@ if __name__=="__main__":
         
         max_index = tab_perf_save.index(max(tab_perf_save))
         dev_6 = tab_dev_save[max_index]
-        del tab_perf_save, tab_dev_save# suprime toute la variable  
+        del tab_perf_save, tab_dev_save# Deletes the variables  
         
         if  algo.__name__ == "DEvol":
             if  selection.__name__ == "selection_max":
@@ -517,13 +517,13 @@ if __name__=="__main__":
         plt.savefig(directory + "/" + "ConvergencePlots2.png", dpi = 300, bbox_inches='tight')
         plt.show()
     
-    # Graph de la convergence du problème
+    # Problem's convergence plot
     tab_perf_sorted = tab_perf.copy()
     tab_perf_sorted.sort(reverse = True)
     fig, ax1 = plt.subplots()
-    color = 'black' # Couleurs de base possibles: b g r c m y k w
+    color = 'black' # Basic colors availables : b g r c m y k w
     if max(tab_perf_sorted) - min(tab_perf_sorted) < 1e-4:
-        ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # changer l'échelle de l'axe y
+        ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # Change y-axis' scale
     ax1.set_xlabel('Best cases (left) to worse (right)')
     ax1.set_ylabel('Cost function (-)', color=color)
     ax1.plot(tab_perf_sorted, color=color)
@@ -532,7 +532,7 @@ if __name__=="__main__":
     plt.savefig(directory + "/" + "ConsistencyCurve.png", dpi = 300, bbox_inches='tight')
     plt.show()
     
-    # Plot of thickness # Graph des épaisseurs
+    # Plot of thickness
     ep = tab_best_solution[max_index]
     if 'nb_layer' in locals() and nb_layer != 0:
         ep = np.delete(ep, np.s_[(nb_layer + len(Mat_Stack)):])
@@ -560,7 +560,7 @@ if __name__=="__main__":
     plt.show()
     
     if 'nb_layer' in parameters:
-        # Plot of refractif index Graph des indices
+        # Plot of refractive index
         n_list = tab_best_solution[max_index]
         for i in range(nb_layer + len(Mat_Stack)-1):
             n_list = np.delete(n_list, 0)
@@ -573,11 +573,11 @@ if __name__=="__main__":
         ax.axhline(upper, color='g')
         ax.set_xticks(range(1, len(n_list)))
         ax.set_xticklabels([str(i) for i in range(1, len(n_list))])
-        # Mettre les étiquettes 
+        # Put the labels 
         for i, val in enumerate(n_list[1:]):
             ax.annotate(str("{:.2f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
-        # Fixe les limites sur l'axe y : ici de 1 à 3 
-        ax.set_ylim((min(n_range)-0.5), (max(n_range)+0.5)) # changer l'échelle de l'axe y
+        # Fix y-axis limits : from 1 to 3 here
+        ax.set_ylim((min(n_range)-0.5), (max(n_range)+0.5)) # Change y-axis' scale
         plt.xlabel("Number of layers, substrat to air")
         plt.ylabel("Refractive Index (-)")
         plt.title("Optimum Refractive Index ")
@@ -585,7 +585,7 @@ if __name__=="__main__":
         plt.show()
 
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
-        # Graph des fractions volumiques
+        # Volumetric parts graph
         lower = vf_range[0]
         upper = vf_range[1]
         fig, ax = plt.subplots()
@@ -594,11 +594,11 @@ if __name__=="__main__":
         ax.axhline(upper, color='g')
         ax.set_xticks(range(1, len(vf)))
         ax.set_xticklabels([str(i) for i in range(1, len(vf))])
-        # Mettre les étiquettes 
+        # Put the labels 
         for i, val in enumerate(vf[1:]):
             ax.annotate(str("{:.3f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
-        # Fixe les limites sur l'axe y : ici de 1 à 3 
-        ax.set_ylim((min(vf_range)), (max(vf_range))) # changer l'échelle de l'axe y
+        # Fix y-axis limits : from 1 to 3 here 
+        ax.set_ylim((min(vf_range)), (max(vf_range))) # Change y-axis' scale
         plt.xlabel("Number of layers, substrat to air")
         plt.ylabel("Volumic Fraction (-)")
         plt.title("Volumic Fraction ")
@@ -607,45 +607,45 @@ if __name__=="__main__":
     
     """_____________________Write results in a texte file_________________"""
     
-    # Mon but est de récupérer quelque valeurs(via equidistant_value) de la convergence de l'algo (contenu dans tab_dev)
+    # My goal is to pick up some values (with equidistant_value) of the alogorithm convergence (stored in tab_dev)
     tab_perf_dev = []
     for i in range(len(tab_dev)):
-        # Je parcour tab_dev
+        # I check all over tab_dev
         data_dev = []
         data_dev = tab_dev[i]
-        # Je prend quelque valeurs (de base 5) équidistante
+        # I take some values (initially 5) equidistants
         data_dev = valeurs_equidistantes(data_dev, 5)
-        # J'inverse ma liste, car de base la 1er valeur est celle au début du problème, et la derniere correspond
-        # a la derniere fonction coût calculé, donc normalement mon best pour ce run
+        # I invert my list because initially, the 1st value is the one at the begining of the problem, and the last one 
+        # is the last cost function calculated, so normally my best for this run
         data_dev.reverse()
-        # Si j'ai lancé DEvol en mode sélection_max, les valeurs présente sont en réalité 1 - fcout
+        # If I've launched DEvol in selection_max mode, the real values are 1 - fcout
         if  algo.__name__ == "DEvol":
             if  selection.__name__ == "selection_max":
                 data_dev = [1- x  for x in data_dev]
         tab_perf_dev.append(data_dev)
-    # je met la list de list en array
+    # I pass the list of list in an array
     tab_perf_dev = np.array(tab_perf_dev, dtype=float)
-    # Ecriture de tab_perf_dev dans un fichier txt
+    # Writing of tab_perf_dev in a txt file
     np.savetxt(directory + '/Convergence.txt', tab_perf_dev, fmt='%.18e', delimiter='  ')
     
     tab_perf_dev = []
     for i in range(len(tab_dev)):
-        # Je parcour tab_dev
+        # I check all over tab_dev
         data_dev = []
         data_dev = tab_dev[i]
-        # Je prend quelque valeurs (de base 25) équidistante
+        # I take some values (initially 25) equidistants
         data_dev = valeurs_equidistantes(data_dev, 25)
-        # J'inverse ma liste, car de base la 1er valeur est celle au début du problème, et la derniere correspond
-        # a la derniere fonction coût calculé, donc normalement mon best pour ce run
+        # I invert my list because initially, the 1st value is the one at the begining of the problem, and the last one 
+        # is the last cost function calculated, so normally my best for this run
         data_dev.reverse()
-        # Si j'ai lancé DEvol en mode sélection_max, les valeurs présente sont en réalité 1 - fcout
+        # If I've launched DEvol in selection_max mode, the real values are 1 - fcout
         if  algo.__name__ == "DEvol":
             if  selection.__name__ == "selection_max":
                 data_dev = [1- x  for x in data_dev]
         tab_perf_dev.append(data_dev)
-    # je met la list de list en array
+    # I pass the list of list in an array
     tab_perf_dev = np.array(tab_perf_dev, dtype=float)
-    # Ecriture de tab_perf_dev dans un fichier txt
+    # Writing of tab_perf_dev in a txt file
     np.savetxt(directory + '/Convergence_25.txt', tab_perf_dev, fmt='%.18e', delimiter='  ')
     
     filename = directory + "/performance.txt"
@@ -818,7 +818,7 @@ if __name__=="__main__":
                 Wl_3 = np.arange(Lambda_cut_2, max(Wl)+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
                 # P_low_e = np.concatenate([R[0:len(Wl_1)],T[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], R[(len(Wl_2)+len(Wl_1)-1):]])
                 file.write("\n")
-                # Partie avec le spectre GT
+                # GT spectrum part
                 file.write("Calcul avec le spectre': " + name_Sol_Spec + "\n")
                 # a = trapz(Sol_Spec[0:len(Wl_1)]* R[0:len(Wl_1)], Wl_1)
                 # file.write("La puissance solaire réfléchie du début du spectre à Lambda_cut_1 (en W/m2) est " + str("{:.2f}".format(a)) + "\n")
@@ -865,12 +865,12 @@ if __name__=="__main__":
         name = result[0][i]
         n = n_Stack_w[:,i]
         k = k_Stack_w[:,i]
-        # Trace le graphique
+        # Plot the graph
         plt.title("RefractiveIndex of " + name)
         plt.plot(Wl, n, label = "n extroplated")
         plt.plot(Wl, k, label = "k extroplated")
     # =============================================================================
-    #     # Ouvre le fichier originel
+    #     # Open the initial file
     #     Wl_2, n_2, k_2 = open_material(result[0][i])
     #     plt.plot(Wl_2, n_2, 'o', label = "n data")
     #     plt.plot(Wl_2, k_2, 'o', label = "k data")
