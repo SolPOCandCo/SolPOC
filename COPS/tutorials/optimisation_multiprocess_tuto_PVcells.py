@@ -13,23 +13,23 @@ from functions_COPS import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
-# %%  Main 
-Comment = "A sentence to be written in the final text file "  # Comment to be written in the simulation text file
-Mat_Stack = ["BK7"]   
+# %%  Main You can start to modified something
+Comment = "Tutorial : anti-reflective coating for Si PV-Cell"  # Comment to be written in the simulation text file
+Mat_Stack = ["Si", "TiO2", "ZnO", "Al2O3"]   
 # Choice of optimization method
 algo = DEvol # Callable. Name of the optimization methode 
 selection = selection_max # Callable. Name of the selection methode : selection_max or selection_min
-evaluate = evaluate_T_vis # Callable. Name of the cost function
+evaluate = evaluate_A_pv # Callable. Name of the cost function
 mutation_DE = "current_to_best" # String. Mutaton methode for DEvol optimization method
 """_________________________________________________________________________"""
 # Wavelenght domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
-Wl = np.arange(300 , 800, 5) # /!\ Last value is not include in the array
+Wl = np.arange(280 , 1505, 5) # /!\ Last value is not include in the array
 # Thickness of the substrack, in nm 
 Ep_Substrack = 1e6 # Substrat thickness, in nm 
 # Range of thickness (lower bound and upper bound), for the optimisation process
 Plage_ep = (0, 200) # in nm.
 # Range of refractive index (lower bound and upper bound), for the optimisation process
-Plage_n = (1.442 , 2.42) 
+Plage_n = (1.3 , 3.0) 
 # Range of volumic fraction (lower bound and upper bound), for the optimisation process
 Plage_vf = (0 , 1.0) #  volumic fraction of inclusion in host matrix, must be include in (0,1)
 # Incidance angle of the thina layer stack. 0 degres is for normal incidence angle
@@ -45,11 +45,11 @@ T_abs = 300 + 273 # Thermal absorber temperature, in Kelvin. Data necessary for 
 Lambda_cut_UV = 500 # nm 
 Lambda_cut_IR = 1000 # nm 
 # Addition of theoretical thin layers with the variable nb_layer, whose thickness AND index must be optimized.
-nb_layer = 3 # Number of theoretical thin layers above the stack. This variable can be left undefined.
+# nb_layer = 0 # Number of theoretical thin layers above the stack. This variable can be left undefined.
 #d_Stack_Opt = ["no"] # Allows fixing the thickness of a layer that will not be optimized. Set to "no" to leave it unset. For example, if there are three layers, it can be written [,40,]. The code understands that only the middle layer is fixed.
 # Open and processing the reflectif index of materials used in the stack (Read the texte files in Materials/ )
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
-# Open a file with PV cell shape
+# Open a file with PV cells shapes
 Wl_PV , Signal_PV , name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
 Signal_PV = np.interp(Wl, Wl_PV, Signal_PV) # Interpolate the signal
 # Open a file with thermal absorber shape
@@ -59,15 +59,15 @@ Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal
 pop_size = 30 # number of individual per iteration / generation 
 crossover_rate = 0.9 # crossover rate (1.0 = 100%)
 evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next generations
-mutation_rate = 0.8 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
+mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
 mutation_delta = 15 # If a chromose mutate, le value change form random number include between + or - this values
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
-nb_generation = 100 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
+nb_generation = 35 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization methode, as optimiza_agn or strangle
-nb_lancement = 10# Number of run
-cpu_used = 10 # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
+nb_lancement = 8# Number of run
+cpu_used = 8  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
 #seed = 45 # Seed of the random number generator
-#%%
+#%% You should stop modifying anything :) 
 """_________________________________________________________________________"""
 # The container is a dictionary containing the problem variables
 # The container is given as input to certain functions
@@ -106,10 +106,10 @@ if 'seed' in locals():
     conteneur["seed"] = seed
     
 # If I optimized a antireflective coating for PV, I need the Pv signal shape
-if evaluate.__name__ == "evaluate_T_PV":
+if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
-if evaluate.__name__ == "evaluate_T_vis":
+if evaluate.__name__ == "evaluate_T_Human_eye":
     # Open a file with Human eye response 
     # eye is written fully for not misunderstood with the e for emissivity
     Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
@@ -515,6 +515,8 @@ if __name__=="__main__":
     tab_perf_sorted.sort(reverse = True)
     fig, ax1 = plt.subplots()
     color = 'black' # Couleurs de base possibles: b g r c m y k w
+    if max(tab_perf_sorted) - min(tab_perf_sorted) < 1e-4:
+        ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # changer l'échelle de l'axe y
     ax1.set_xlabel('Best cases (left) to worse (right)')
     ax1.set_ylabel('Cost function (-)', color=color)
     ax1.plot(tab_perf_sorted, color=color)

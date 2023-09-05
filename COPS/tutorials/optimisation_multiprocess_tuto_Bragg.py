@@ -15,21 +15,21 @@ from multiprocessing import Pool, cpu_count
 
 # %%  Main 
 Comment = "A sentence to be written in the final text file "  # Comment to be written in the simulation text file
-Mat_Stack = ["BK7"]   
+Mat_Stack = ("BK7", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2")   
 # Choice of optimization method
 algo = DEvol # Callable. Name of the optimization methode 
 selection = selection_max # Callable. Name of the selection methode : selection_max or selection_min
-evaluate = evaluate_T_vis # Callable. Name of the cost function
+evaluate = evaluate_R_Brg # Callable. Name of the cost function
 mutation_DE = "current_to_best" # String. Mutaton methode for DEvol optimization method
 """_________________________________________________________________________"""
 # Wavelenght domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
-Wl = np.arange(300 , 800, 5) # /!\ Last value is not include in the array
+Wl = np.arange(400 , 805, 5) # /!\ Last value is not include in the array
 # Thickness of the substrack, in nm 
 Ep_Substrack = 1e6 # Substrat thickness, in nm 
 # Range of thickness (lower bound and upper bound), for the optimisation process
 Plage_ep = (0, 200) # in nm.
 # Range of refractive index (lower bound and upper bound), for the optimisation process
-Plage_n = (1.442 , 2.42) 
+Plage_n = (1.3 , 3.0) 
 # Range of volumic fraction (lower bound and upper bound), for the optimisation process
 Plage_vf = (0 , 1.0) #  volumic fraction of inclusion in host matrix, must be include in (0,1)
 # Incidance angle of the thina layer stack. 0 degres is for normal incidence angle
@@ -44,9 +44,9 @@ T_abs = 300 + 273 # Thermal absorber temperature, in Kelvin. Data necessary for 
 # Cuting Wavelenght. Data necessary for low-e, RTR or PV_CSP evaluates functions
 Lambda_cut_UV = 500 # nm 
 Lambda_cut_IR = 1000 # nm 
-# Addition of theoretical thin layers with the variable nb_layer, whose thickness AND index must be optimized.
-nb_layer = 3 # Number of theoretical thin layers above the stack. This variable can be left undefined.
-#d_Stack_Opt = ["no"] # Allows fixing the thickness of a layer that will not be optimized. Set to "no" to leave it unset. For example, if there are three layers, it can be written [,40,]. The code understands that only the middle layer is fixed.
+# Ajout de couches minces théorique avec la variable nb_layer, dont l'épaisseur ET l'indice doivent être optimisées
+# nb_layer = 0 # Nombre de couche mince théorique par dessus le stack. Cette variable peut de pas être définie
+#d_Stack_Opt =  ["no"] # Permet de fixer une épaisseur d'une couche qui ne seras pas optimisée. Mettre "no" pour ne rien fixer. Si on as par exemple trois couches, on peut écrire [ ,40, ]. Le code comprend que seule la couche du milieu est fixe.
 # Open and processing the reflectif index of materials used in the stack (Read the texte files in Materials/ )
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
 # Open a file with PV cell shape
@@ -59,15 +59,15 @@ Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal
 pop_size = 30 # number of individual per iteration / generation 
 crossover_rate = 0.9 # crossover rate (1.0 = 100%)
 evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next generations
-mutation_rate = 0.8 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
+mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
 mutation_delta = 15 # If a chromose mutate, le value change form random number include between + or - this values
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
 nb_generation = 100 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization methode, as optimiza_agn or strangle
 nb_lancement = 10# Number of run
-cpu_used = 10 # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
+cpu_used = 10  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
 #seed = 45 # Seed of the random number generator
-#%%
+#%% 
 """_________________________________________________________________________"""
 # The container is a dictionary containing the problem variables
 # The container is given as input to certain functions
@@ -109,7 +109,7 @@ if 'seed' in locals():
 if evaluate.__name__ == "evaluate_T_PV":
     conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
-if evaluate.__name__ == "evaluate_T_vis":
+if evaluate.__name__ == "evaluate_T_Human_eye":
     # Open a file with Human eye response 
     # eye is written fully for not misunderstood with the e for emissivity
     Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
@@ -380,7 +380,7 @@ if __name__=="__main__":
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
-        BB_shape = BB(Tabs, Wl)
+        BB_shape = BB(T_abs, Wl)
         ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
         # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
@@ -411,7 +411,7 @@ if __name__=="__main__":
     ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
     ax2.plot(Wl, Sol_Spec, color=color)
     if evaluate.__name__ == 'evaluate_rh':
-        BB_shape = BB(Tabs, Wl)
+        BB_shape = BB(T_abs, Wl)
         ## BB_shape est la forme du corps noir. En fonction de la température, l'irradiance du corps noir peut être tres supérieur
         # au spectre solair. Pour ce graphiquie, je met donc le corps noir à la meme hauteur 
         BB_shape =BB_shape*(max(Sol_Spec)/max(BB_shape))
@@ -543,7 +543,7 @@ if __name__=="__main__":
     ax.set_xticklabels([str(i) for i in range(1, len(ep))])
     for i, val in enumerate(ep[1:]):
         ax.annotate(str("{:.0f}".format(val)), xy=(i + 1, val), xytext=(i + 1.1, val + 1.1 ))
-    plt.xlabel("Number of layers, subtrate to air")
+    plt.xlabel("Number of layers, substrate to air")
     plt.ylabel("Thickness (nm)")
     plt.title("Thickness ")
     plt.savefig(directory + "/" + "Thickness.png", dpi = 300, bbox_inches='tight')

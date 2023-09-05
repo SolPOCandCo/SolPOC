@@ -13,23 +13,23 @@ from functions_COPS import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
-# %%  Main 
+# %%  Main You can start to modified something
 Comment = "A sentence to be written in the final text file "  # Comment to be written in the simulation text file
-Mat_Stack = ["BK7"]   
+Mat_Stack = ["BK7", "Si3N4", "ZnO", "Ag", "ZnO", "Si3N4"]   
 # Choice of optimization method
 algo = DEvol # Callable. Name of the optimization methode 
 selection = selection_max # Callable. Name of the selection methode : selection_max or selection_min
-evaluate = evaluate_T_vis # Callable. Name of the cost function
+evaluate = evaluate_low_e # Callable. Name of the cost function
 mutation_DE = "current_to_best" # String. Mutaton methode for DEvol optimization method
 """_________________________________________________________________________"""
 # Wavelenght domain, here from 320 to 2500 nm wit a 5 nm step. Can be change!   
-Wl = np.arange(300 , 800, 5) # /!\ Last value is not include in the array
+Wl = np.arange(280 , 1505, 5) # /!\ Last value is not include in the array
 # Thickness of the substrack, in nm 
 Ep_Substrack = 1e6 # Substrat thickness, in nm 
 # Range of thickness (lower bound and upper bound), for the optimisation process
 Plage_ep = (0, 200) # in nm.
 # Range of refractive index (lower bound and upper bound), for the optimisation process
-Plage_n = (1.442 , 2.42) 
+Plage_n = (1.3 , 3.0) 
 # Range of volumic fraction (lower bound and upper bound), for the optimisation process
 Plage_vf = (0 , 1.0) #  volumic fraction of inclusion in host matrix, must be include in (0,1)
 # Incidance angle of the thina layer stack. 0 degres is for normal incidence angle
@@ -42,11 +42,11 @@ C = 80 # Solar concentration. Data necessary for solar thermal application, like
 T_air = 20 + 273 # Air temperature, in Kelvin. Data necessary for solar thermal application, like selective stack 
 T_abs = 300 + 273 # Thermal absorber temperature, in Kelvin. Data necessary for solar thermal application, like selective stack 
 # Cuting Wavelenght. Data necessary for low-e, RTR or PV_CSP evaluates functions
-Lambda_cut_UV = 500 # nm 
-Lambda_cut_IR = 1000 # nm 
+Lambda_cut_UV = 800 # nm 
+Lambda_cut_IR = 800 # nm 
 # Addition of theoretical thin layers with the variable nb_layer, whose thickness AND index must be optimized.
-nb_layer = 3 # Number of theoretical thin layers above the stack. This variable can be left undefined.
-#d_Stack_Opt = ["no"] # Allows fixing the thickness of a layer that will not be optimized. Set to "no" to leave it unset. For example, if there are three layers, it can be written [,40,]. The code understands that only the middle layer is fixed.
+#nb_layer = 3 # Number of theoretical thin layers above the stack. This variable can be left undefined.
+d_Stack_Opt = ["no", 10, "no", 10, "no"] # Allows fixing the thickness of a layer that will not be optimized. Set to "no" to leave it unset. For example, if there are three layers, it can be written [,40,]. The code understands that only the middle layer is fixed.
 # Open and processing the reflectif index of materials used in the stack (Read the texte files in Materials/ )
 n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
 # Open a file with PV cell shape
@@ -59,15 +59,15 @@ Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) # Interpolate the signal
 pop_size = 30 # number of individual per iteration / generation 
 crossover_rate = 0.9 # crossover rate (1.0 = 100%)
 evaluate_rate = 0.3 # Part of individuals selected to be the progenitors of next generations
-mutation_rate = 0.8 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
+mutation_rate = 0.5 # chance of child gene muted during the birth. /!\ This is Cr for DEvol optimization methode
 mutation_delta = 15 # If a chromose mutate, le value change form random number include between + or - this values
 f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol 
-nb_generation = 100 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
+nb_generation = 250 # Number of generation/iteration. For DEvol is also used to calculate the budget (nb_generation * pop_size)
 precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some optimization methode, as optimiza_agn or strangle
-nb_lancement = 10# Number of run
-cpu_used = 10 # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
+nb_run = 10 # Number of run
+cpu_used = 10  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU our computer
 #seed = 45 # Seed of the random number generator
-#%%
+#%% You should stop modifying anything :) 
 """_________________________________________________________________________"""
 # The container is a dictionary containing the problem variables
 # The container is given as input to certain functions
@@ -94,10 +94,10 @@ conteneur = {'Wl': Wl, # Je stocke une variable nommée "Wl", et lui donne la va
 language = "en" # can change into fr for write the console information and the files in the folder in english
 
 if 'd_Stack_Opt' not in locals():
-    d_Stack_Opt =  ["no"]
-    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
+    d_Stack_Opt =  ["no"] * (len(Mat_Stack) - 1)
+    conteneur["d_Stack_Opt"] = d_Stack_Opt
 else:
-    conteneur["'d_Stack_Opt' "] = d_Stack_Opt
+    conteneur["d_Stack_Opt"] = d_Stack_Opt
 if 'nb_layer' in locals():
     conteneur["nb_layer"] = nb_layer
     conteneur["n_plage"] = Plage_n
@@ -106,10 +106,10 @@ if 'seed' in locals():
     conteneur["seed"] = seed
     
 # If I optimized a antireflective coating for PV, I need the Pv signal shape
-if evaluate.__name__ == "evaluate_T_PV":
+if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     conteneur["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
-if evaluate.__name__ == "evaluate_T_vis":
+if evaluate.__name__ == "evaluate_T_Human_eye":
     # Open a file with Human eye response 
     # eye is written fully for not misunderstood with the e for emissivity
     Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
@@ -153,7 +153,7 @@ if algo.__name__ == "DEvol":
     conteneur["f1"] = f1
     conteneur["f2"] = f2
     
-if algo.__name__ == "optimize_agn":
+if algo.__name__ == "optimize_ga":
     if 'precision_AlgoG' not in locals():
         precision_AlgoG = 1e-5
     if 'mutation_delta' not in locals():
@@ -258,7 +258,7 @@ if __name__=="__main__":
     # creation of a pool 
     mp_pool = Pool(cpu_used)
     # Solving each problem in the pool using multiprocessing
-    results = mp_pool.map(run_problem_solution, range(nb_lancement))
+    results = mp_pool.map(run_problem_solution, range(nb_run))
     
     # Creation of empty list, for use then later  
     tab_best_solution = []
@@ -425,7 +425,7 @@ if __name__=="__main__":
     plt.show()
     
     # convergences plots
-    if (nb_lancement > 2): 
+    if (nb_run > 2): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
         # Je cherche l'index max dans la table de performance
@@ -459,7 +459,7 @@ if __name__=="__main__":
         plt.show()
     
     # Je copie ma table de performance
-    if (nb_lancement > 5): 
+    if (nb_run > 5): 
         tab_perf_save = tab_perf.copy()
         tab_dev_save = tab_dev.copy()
         # Je cherche l'index max dans la table de performance
@@ -515,12 +515,14 @@ if __name__=="__main__":
     tab_perf_sorted.sort(reverse = True)
     fig, ax1 = plt.subplots()
     color = 'black' # Couleurs de base possibles: b g r c m y k w
+    if max(tab_perf_sorted) - min(tab_perf_sorted) < 1e-4:
+        ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # changer l'échelle de l'axe y
     ax1.set_xlabel('Best cases (left) to worse (right)')
     ax1.set_ylabel('Cost function (-)', color=color)
     ax1.plot(tab_perf_sorted, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
     plt.title("Consistency curve")
-    plt.savefig(directory + "/" + "Consistency curve.png", dpi = 300, bbox_inches='tight')
+    plt.savefig(directory + "/" + "ConsistencyCurve.png", dpi = 300, bbox_inches='tight')
     plt.show()
     
     # Plot of thickness # Graph des épaisseurs
@@ -569,9 +571,9 @@ if __name__=="__main__":
         # Fixe les limites sur l'axe y : ici de 1 à 3 
         ax.set_ylim((min(Plage_n)-0.5), (max(Plage_n)+0.5)) # changer l'échelle de l'axe y
         plt.xlabel("Number of layers, substrat to air")
-        plt.ylabel("Refractive_Index (-)")
-        plt.title("Refractive_Index ")
-        plt.savefig(directory + "/" + "Refractive_Index.png", dpi = 300, bbox_inches='tight')
+        plt.ylabel("Refractive Index (-)")
+        plt.title("Refractive Index ")
+        plt.savefig(directory + "/" + "RefractiveIndex.png", dpi = 300, bbox_inches='tight')
         plt.show()
 
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
@@ -590,9 +592,9 @@ if __name__=="__main__":
         # Fixe les limites sur l'axe y : ici de 1 à 3 
         ax.set_ylim((min(Plage_vf)), (max(Plage_vf))) # changer l'échelle de l'axe y
         plt.xlabel("Number of layers, substrat to air")
-        plt.ylabel("Volumic_Fraction (-)")
-        plt.title("Volumic_Fraction ")
-        plt.savefig(directory + "/" + "Volumic_Fraction.png", dpi = 300, bbox_inches='tight')
+        plt.ylabel("Volumic Fraction (-)")
+        plt.title("Volumic Fraction ")
+        plt.savefig(directory + "/" + "VolumicFraction.png", dpi = 300, bbox_inches='tight')
         plt.show()
     
     """_____________________Write results in a texte file_________________"""
@@ -653,7 +655,7 @@ if __name__=="__main__":
         for value in tab_temps:
             file.write(str(value) + "\n")
     
-    filename = directory + "/empillement.txt"
+    filename = directory + "/StacksThicknesses.txt"
     with open(filename, "w") as file:
         for value in tab_best_solution:
             np.savetxt(file, value.reshape(1, -1), fmt='%.18e', delimiter=' ')
@@ -730,7 +732,7 @@ if __name__=="__main__":
             file.write("Etendue de la mutation\t" + str(mutation_delta) + "\n")
             file.write("Precision de l'algo en auto\t" + str(precision_AlgoG) + "\n")
             file.write("Nombre de génération\t" + str(nb_generation) + "\n")
-            file.write("Nb de Lancement\t" + str(nb_lancement) + "\n")
+            file.write("Nb de Lancement\t" + str(nb_run) + "\n")
             file.write("Nb de processeur disponible\t" +str(cpu_count()) + "\n")
             file.write("Nb de processeur utilisé\t" +str(cpu_used) + "\n")
             file.write("Le temps réel d'éxécution (en s) total est de :\t" + str("{:.2f}".format(time_real))  + "\n")
@@ -778,7 +780,7 @@ if __name__=="__main__":
             file.write("Mutation range: " + str(mutation_delta) + "\n")
             file.write("Precision of the algorithm in auto: " + str(precision_AlgoG) + "\n")
             file.write("Number of generations: " + str(nb_generation) + "\n")
-            file.write("Number of run: " + str(nb_lancement) + "\n")
+            file.write("Number of run: " + str(nb_run) + "\n")
             file.write("Number of available CPU: " + str(cpu_count()) + "\n")
             file.write("Number of used CPU: " + str(cpu_used) + "\n")
             file.write("Total execution time (in s): " + str("{:.2f}".format(time_real)) + "\n")
