@@ -2,7 +2,7 @@
 """
 Created on 27 07 2023
 COPS v 0.9.0
-@author: A.grosjean, A.soum-glaude, A.moreau & P.Bennet
+@author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 contact : antoine.grosjean@epf.fr
 """
 
