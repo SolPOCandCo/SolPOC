@@ -354,8 +354,8 @@ def nb_compo(Mat_Stack):
     """
     Gives back the amount of composite thin layers (made up of two materials). As a cermet or a porous material,
     a composite thin layer includes the dash - in it string
-    Exemple : 'W-Al2O3' => W composite layer of Al2O3 (cermet type)
-              ' air-SiO2' =>  air composite layer of SiO2, (porous type)
+    Exemple : 'W-Al2O3' => composite layer of Al2O3 matrix with W inclusion (cermet type)
+              ' air-SiO2' =>  composite layer of SiO2 matrix with air inclusion, (porous type)
     """
     nb = 0 
     for i in Mat_Stack: 
