@@ -20,44 +20,44 @@ def RTA3C(Wl, d, n, k, Ang=0):
     """
 
     """
-    La function RTA calcule la refléctivité, la transmissivité et l'absorptivité d'un ensemble de couches minces déposées sur un substrat
-    tel que refléctivité + transmissivité + absorptivité  = 1 
-    Le chiffre apres 'RTA' 'désigne le nombre de couche mince déposée sur le substrat INCLUT. Le code RTA 3C est donc pour 1 substrat et 2 couches minces max
+    The RTAA function calculates the reflectivity, the transmissivity, and the absorptivity of a group of thin layers applied on a substrate
+    as reflectivity + transmissivity + absorptivity = 1
+    The number after 'RTA' means the amount of thn layers applied on the substrate (we count the substrate in the amount). The RTA 3C code is logically for 1 substrate and 2 thin layers maximum
 
-    l'utilisation de numpy (np) permet un gain de temps sur le lancement
-    => le gain de temps par rapport au lancement d'une fonction RTA écrite pour une seule longueur d'onde dans une boucle for est de l'ordre de 100 fois
+    The numpy (np) utilisation is a time saver on the launch
+    => the time saved compared to the launch of an RTA function for one wavelength in a for loop is about 100 times faster
 
-    Arguments d'entrée : 
-    l : la longueur d'onde en nm, de type vecteur
-    d :  les épaisseurs du substrat et des couches mince en nm
-    n :  les parties réel des indices de réfraction des matériaux. n est un tableau 2D avec le colone les indices de chaque couche et en ligne les longueurs d'onde
-    k : les coefficients d'absorption soit les parties complexes des matériaux. k est un tableau 2D avec le colone les coef d'extinction de chaque couche et en ligne les longueurs d'onde
-    Ang : l'angle d'incidence d'incidence du rayonnement en degres
+    Input arguments :
+    l : the wavelength in nm, has a vector type
+    d : substrate and thin layers thickness in nm
+    n : real parts of materials refraction indexes. n is a 2D table with the thin layers indexes in the columns and the wavelengths in the rows
+    k : complex parts of material refraction indexes. k is a 2D table with the thin layers extinction coefficients in the columns and the wavelengths in the rows
+    Ang : incidence angle of the radiation in degrees
 
-    Sortie : 
-    Refl, un vecteur colonne qui contient la réflectivité. Les indices en colone correspondent aux longueur d'onde'
-    Trans, un vecteur colonne qui contient la transmivité. Les indices en colone correspondent aux longueur d'onde'
-    Abs, un vecteur colonne qui contient l'absorptivité. Les indices en colone correspondent aux longueur d'onde'
+    Output :
+    Refl is a column vector which includes the reflectivity. Column indexes corresponds to wavelengths'
+    Trans is a column vector which includes the transmissivity. Column indexes corresponds to wavelengts'
+    Abs, a column vector which includes the absorptivity. Column indexes corresponds to wavelengths'
 
-    Test : 
-    Ecire les variables suivante : 
-    l = np.arange(600,750,100). Note que ici deux longueurs sont calculer : 600 et 700 nm
-    d = np.array([[1000000, 150, 180]]). 1 mm de substrat, 150 nm de couche n°1, 180 de n°2 puit du vide (n=1, k=0)
-    n = np.array([[1.5, 1.23,1.14],[1.5, 1.2,1.1]])
+    Test :
+    Write these variables :
+    l = np.arange(600,750,100). We can notice that two wavelengths are calculated : 600 and 700 nm
+    d = np.array([[1000000, 150, 180]]). 1 mm of substrate, 150 nm of n°1 layer, 180 of n°2 and empty space (n=1, k=0)
+    n = np.array([1.5, 1.23,1.14],[1.5, 1.2,1.1]])
     k = np.array([[0, 0.1,0.05], [0, 0.1, 0.05]])
-    Ang = 0 
+    Ang = 0
 
-    # Exécuter la fonction
-    Refl, Trans, Abs = RTA3C(l, d, n, k , Ang)
+    # Run functon
+    Refl, Trans, Abs = RTA3C(l, d, n, k, Ang)
     
-    Pour la notation des indices n et k, comprendre que 
-    @ 600 nm n = 1.5 pour le substrat , n = 1.23 pour la couche n°1 et n = 1.14 pour la couche n°2
-    @ 700 nm n = 1.5 pour le substrat , n = 1.20 pour la couche n°1 et n = 1.1 pour la couche n°2
-    @ 600 nm k = 0 pour le substrat , k = 0.1 pour la couche n°1 et k = 0.05 pour la couche n°2
-    @ 700 nm k = 0 pour le substrat , n = 0.1 pour la couche n°1 et k = 0.05 pour la couche n°2
+    For the indexes notation n and k, understand that
+    @ 600 nm n = 1.5 for the substrate, n = 1.23 for the layer n°1 and n = 1.14 for the layer n°2
+    @ 700 nm n = 1.5 for the substrate, n = 1.20 for the layer n°1 and n = 1.1 for the layer n°2
+    @ 600 nm k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2
+    @ 700 nm k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2
 
-    Cela permet d'obtenir : Refl = array([0.00767694, 0.00903544]), Trans = array([0.60022613, 0.64313401]), Abs = array([0.39209693, 0.34783055])
-    => La réflectivité vaut 0.00767694 (nombre entre 0 et 1) à 600 nm et 0.00903544 à 700 nm
+    We can get : Refl = array([0.00767694, 0.00903544]), Trans = array([0.60022613, 0.64313401]), Abs = array([0.39209693, 0.34783055])
+    => The reflectivity is 0.00767694 (number between 0 and 1) at 600 nm and 0.00903544 at 700 nm
     """
     # Add an air layer on top
     n = np.append(n, np.ones((len(Wl), 1)), axis=1) # remplacement de 2 par len(l)
@@ -75,22 +75,22 @@ def RTA3C(Wl, d, n, k, Ang=0):
     q0PolaP = N0/np.cos(Phi0)
     
     # Substrate
-    nS = n[:,0] # Je prend la 1er colone, qui contient le n du substrat pour les longueurs d'onde
+    nS = n[:,0] # I take the 1st column which includes the n of the substrate for wavelengths
     kS = k[:,0]
     Ns = nS + 1j*kS
     PhiS = np.arcsin(N0*np.sin(Phi0)/Ns)
     qSPolaS = Ns*np.cos(PhiS)
-    qSPolaP = Ns/np.cos(PhiS) # Ok jusque là 
+    qSPolaP = Ns/np.cos(PhiS) # Ok here 
     
     # Multilayers (layer 1 is the one closest to the substrate)
     nj= np.delete(n,0, axis=1)
     kj= np.delete(k,0, axis=1)
     dj= np.delete(d,0, axis=1)
 
-    numlayers = nj.shape[1] # nj est un tableau 
+    numlayers = nj.shape[1] # nj is just a table 
     Nj = np.zeros((numlayers,1,len(Wl)), dtype=complex) # OK
 
-    # colone dans Scilab, ligne ici
+    # was a column in Scilab, row here
     Phij = np.zeros((numlayers,1,len(Wl)), dtype=complex)
     qjPolaS = np.zeros((numlayers,1,len(Wl)), dtype=complex)
     qjPolaP = np.zeros((numlayers,1,len(Wl)), dtype=complex)
@@ -101,12 +101,12 @@ def RTA3C(Wl, d, n, k, Ang=0):
     Mp = np.zeros((2, 2,len(Wl)), dtype=complex)
 
     sous_tableaux = np.split(nj,nj.shape[1],axis=1)
-    nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux]) # el.reshape(1,2) devient el.reshape(1,len(l))
+    nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux]) # el.reshape(1,2) becomes el.reshape(1,len(l))
     sous_tableaux = np.split(kj,kj.shape[1],axis=1)
     kj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
 
     dj = np.squeeze(dj) #
-    # Note  : inverser un tableau avec numpy.transpose()
+    # Note  : invert table with numpy.transpose()
     for LayerJ in range(numlayers): 
         Nj[LayerJ] = nj[LayerJ] + 1j * kj[LayerJ]
         Phij[LayerJ] = np.arcsin(N0 * np.sin(Phi0) / Nj[LayerJ])
@@ -116,8 +116,8 @@ def RTA3C(Wl, d, n, k, Ang=0):
 
         # Characteristic matrix of layer j
         """ Calcul of MpolaS"""
-        MpolaS[0, 2*LayerJ] = np.cos(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ-1)
-        MpolaS[0, 2*LayerJ+1] = -1j/qjPolaS[LayerJ]*np.sin(thetaj[LayerJ]) # Dans Scilab MpolaS(1,2*LayerJ)
+        MpolaS[0, 2*LayerJ] = np.cos(thetaj[LayerJ]) # In Scilab MpolaS(1,2*LayerJ-1)
+        MpolaS[0, 2*LayerJ+1] = -1j/qjPolaS[LayerJ]*np.sin(thetaj[LayerJ]) # In Scilab MpolaS(1,2*LayerJ)
         MpolaS[1, 2*LayerJ] = -1j*qjPolaS[LayerJ]*np.sin(thetaj[LayerJ])
         MpolaS[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
         """ Calcul of MpolaP"""
@@ -133,15 +133,15 @@ def RTA3C(Wl, d, n, k, Ang=0):
         M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
         Ms = M1s
         Mp = M1p
-    elif numlayers == 2: # Substrat + 1 couche
+    elif numlayers == 2: # Substrate + 1 layer
         M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
         M2s = np.array([[MpolaS[0,2], MpolaS[0,3]], [MpolaS[1,2], MpolaS[1,3]]])
         M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
         M2p = np.array([[MpolaP[0,2], MpolaP[0,3]], [MpolaP[1,2], MpolaP[1,3]]])
-        # Multiplication de matrice en gardant le 3eme axe (z dans un rep ortho, ici nommé l ) constant
+        # Matrix multiplication with conservation of the 3rd axis (z in an orthonormal coordonate system, named 1 here) constant
         Ms = np.einsum('nkl,kml->nml', M2s, M1s)
         Mp = np.einsum('nkl,kml->nml', M2p, M1p)
-    elif numlayers == 3: # Substrat + 2 couches
+    elif numlayers == 3: # Substrate + 2 layers
         M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
         M2s = np.array([[MpolaS[0,2], MpolaS[0,3]], [MpolaS[1,2], MpolaS[1,3]]])
         M3s = np.array([[MpolaS[0,4], MpolaS[0,5]], [MpolaS[1,4], MpolaS[1,5]]])
@@ -236,22 +236,22 @@ def RTA(Wl, d, n, k, Ang=0):
     q0PolaP = N0/np.cos(Phi0)
     
     # Substrate
-    nS = n[:,0] # Je prend la 1er colone, qui contient le n du substrat pour les longueurs d'onde
+    nS = n[:,0] # I take the 1st column whihc includes the n of the substrate for wavelengths
     kS = k[:,0]
     Ns = nS + 1j*kS
     PhiS = np.arcsin(N0*np.sin(Phi0)/Ns)
     qSPolaS = Ns*np.cos(PhiS)
-    qSPolaP = Ns/np.cos(PhiS) # Ok jusque là 
+    qSPolaP = Ns/np.cos(PhiS) # Ok here 
     
     # Multilayers (layer 1 is the one closest to the substrate)
     nj= np.delete(n,0, axis=1)
     kj= np.delete(k,0, axis=1)
     dj= np.delete(d,0, axis=1)
 
-    numlayers = nj.shape[1] # nj est un tableau 
+    numlayers = nj.shape[1] # nj is just a table 
     Nj = np.zeros((numlayers,1,len(Wl)), dtype=complex) # OK
-    """Matrice tableau 3D ici. 
-    l'axe "z" correspond aux différentes longueurs d'ondes """
+    """3D Matrix here. 
+    "z" axis corresponds to different wavelengths"""
     Phij = np.zeros((numlayers,1,len(Wl)), dtype=complex)
     qjPolaS = np.zeros((numlayers,1,len(Wl)), dtype=complex)
     qjPolaP = np.zeros((numlayers,1,len(Wl)), dtype=complex)
@@ -260,13 +260,13 @@ def RTA(Wl, d, n, k, Ang=0):
     MpolaP = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
     Ms = np.zeros((2, 2,len(Wl)), dtype=complex)
     Mp = np.zeros((2, 2,len(Wl)), dtype=complex)
-    """Redimensionnement de nj et kj
+    """Resizing of nj and kj
     """
     sous_tableaux = np.split(nj,nj.shape[1],axis=1)
     nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
     sous_tableaux = np.split(kj,kj.shape[1],axis=1)
     kj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
-    """ Transforme un vecteur (1,3) en vecteur (3,)
+    """ Transform a (1,3) vector into a (3,) vector
     """
     dj = np.squeeze(dj) #    
     for LayerJ in range(numlayers): 
@@ -275,7 +275,7 @@ def RTA(Wl, d, n, k, Ang=0):
         qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
         qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
         thetaj[LayerJ] = (2 * np.pi / Wl) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
-        """Changement par rapport à Scilab, du au index de Python. La 1er case est noté 0,0 dans Python et 
+        """Modification compared to Scilab, due to Python indexes. The 1st case is noté 0,0 dans Python et 
         1,1 dans Scilab. Ici LayerJ commence à 0 et non plus à 1 mais l'arret de la boucle for reste le même (dernier interval 
         exclus dans Python.
         Chaque index x de Mpola doit être réduit de 1. L'Index y doit être augmenter de  +1 le LayerJ-1 devient LayerJ 
