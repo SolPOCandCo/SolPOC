@@ -44,8 +44,6 @@ parameters = {'Wl': Wl, # I store a variable named "Wl", and give it Wl value
             'n_Stack' : n_Stack,
             'k_Stack' : k_Stack,}
 
-# /!\ In Python, we must create empty lists before adding something in 
-
 print("Start of the program")
 launch_time = datetime.now().strftime("%Hh-%Mm-%Ss")
 print("Launch at " + launch_time)
