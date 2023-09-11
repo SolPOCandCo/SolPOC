@@ -112,7 +112,7 @@ if 'seed' in locals():
 if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
     
-if evaluate.__name__ == "evaluate_T_Human_eye":
+if evaluate.__name__ == "evaluate_T_vis":
     # Open a file with Human eye response 
     # eye is written fully for not misunderstood with the e for emissivity
     Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
