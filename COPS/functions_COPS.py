@@ -9,6 +9,7 @@ contact : antoine.grosjean@epf.fr
 import numpy as np
 import math
 from scipy.integrate import trapz
+from scipy.interpolate import interp1d
 import random
 
 def RTA3C(Wl, d, n, k, Ang=0):
@@ -363,6 +364,47 @@ def nb_compo(Mat_Stack):
             nb += 1
     return nb
 
+def interpolate_with_extrapolation(x_new, x, y):
+    """
+    This fonction provide linear extrapolation for refractive index data
+    Extrapolation is necessary, because refractive index may cannot covert the wavelenght domain used
+    
+    Parameters
+    ----------
+    x : Numpy array of float
+        Here, x represent the wavelegenth domain present in the materials files
+    y : Numpy array of float
+        Here, y represent the refractive index (n or k) present in the materials files
+    x_new : Numpy array of float
+        The new wavelenght domain where the refractive index (y) must be extrapoled
+
+    Returns
+    -------
+    TYPE
+        Numpy array of float
+        Here, y represent the refractive index (n or k) extrapoled
+        y_new have the same dimension than x_new
+
+    Exemple :
+        
+    # Original data
+    Wl_mat = np.array([400, 450, 500, 550, 600, 650, 700, 750, 800])
+    n_mat = np.array([1.75, 1.640625, 1.5625, 1.515625, 1.5, 1.515625, 1.5625, 1.640625, 1.75])
+    
+    # Wavelength domain used
+    Wl = np.arange(200, 1001, 50)
+    
+    # Interpolation with linear extrapolation 
+    n_mat = interpolate_with_extrapolation(Wl_mat, n_mat, Wl)
+    
+    n_map : array([2.1875  , 2.078125, 1.96875 , 1.859375, 1.75    , 1.640625,
+           1.5625  , 1.515625, 1.5     , 1.515625, 1.5625  , 1.640625,
+           1.75    , 1.859375, 1.96875 , 2.078125, 2.1875  ])
+    """
+    interp_function = interp1d(x, y, kind='linear', fill_value='extrapolate')
+    y_new = interp_function(x_new)
+    return y_new
+
 def Made_Stack(Mat_Stack, Wl):
     """
     This key fonction strat with a list a material with describe the stack 
@@ -416,8 +458,8 @@ def Made_Stack(Mat_Stack, Wl):
         for i in range(len(Mat_Stack)):
             Wl_mat, n_mat, k_mat = open_material(Mat_Stack[i])    
             # Interpolation 
-            n_mat = np.interp(Wl,Wl_mat, n_mat)
-            k_mat = np.interp(Wl,Wl_mat, k_mat)
+            n_mat = interpolate_with_extrapolation(Wl,Wl_mat, n_mat)
+            k_mat = interpolate_with_extrapolation(Wl,Wl_mat, k_mat)
             n_Stack[:,i] = n_mat[:,]
             k_Stack[:,i] = k_mat[:,]
     
@@ -435,23 +477,23 @@ def Made_Stack(Mat_Stack, Wl):
                 # Row: wavelenght, column : material indexes 
                 Wl_mat, n_mat, k_mat = open_material(Mat_Stack[i])    
                 # Interpolation 
-                n_mat = np.interp(Wl,Wl_mat, n_mat)
-                k_mat = np.interp(Wl,Wl_mat, k_mat)
+                n_mat = interpolate_with_extrapolation(Wl,Wl_mat, n_mat)
+                k_mat = interpolate_with_extrapolation(Wl,Wl_mat, k_mat)
                 n_Stack[:,i,0] = n_mat[:,]
                 k_Stack[:,i,0] = k_mat[:,]
             if len(list_mat) == 2: 
                 # the list includes two materials. I place the second on the z=2 axis
                 Wl_mat, n_mat, k_mat = open_material(list_mat[0])    
                 # Interpolation 
-                n_mat = np.interp(Wl,Wl_mat, n_mat)
-                k_mat = np.interp(Wl,Wl_mat, k_mat)
+                n_mat = interpolate_with_extrapolation(Wl,Wl_mat, n_mat)
+                k_mat = interpolate_with_extrapolation(Wl,Wl_mat, k_mat)
                 n_Stack[:,i,0] = n_mat[:,]
                 k_Stack[:,i,0] = k_mat[:,]    
                 # Opening of the second material 
                 Wl_mat, n_mat, k_mat = open_material(list_mat[1])    
                 # Interpolation 
-                n_mat = np.interp(Wl, Wl_mat, n_mat)
-                k_mat = np.interp(Wl, Wl_mat, k_mat)
+                n_mat = interpolate_with_extrapolation(Wl, Wl_mat, n_mat)
+                k_mat = interpolate_with_extrapolation(Wl, Wl_mat, k_mat)
                 n_Stack[:,i,1] = n_mat[:,]
                 k_Stack[:,i,1] = k_mat[:,]      
         return n_Stack, k_Stack
