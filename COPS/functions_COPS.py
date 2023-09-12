@@ -4,6 +4,8 @@ Created on 27 07 2023
 COPS v 0.9.0
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 contact : antoine.grosjean@epf.fr
+
+List of main functions used and developed for COPS. For use them without any implementation work see the other Python script
 """
 
 import numpy as np
