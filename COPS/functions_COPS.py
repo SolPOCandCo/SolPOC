@@ -395,7 +395,7 @@ def interpolate_with_extrapolation(x_new, x, y):
     Wl = np.arange(200, 1001, 50)
     
     # Interpolation with linear extrapolation 
-    n_mat = interpolate_with_extrapolation(Wl_mat, n_mat, Wl)
+    n_mat = interpolate_with_extrapolation(Wl, Wl_mat, n_mat)
     
     n_map : array([2.1875  , 2.078125, 1.96875 , 1.859375, 1.75    , 1.640625,
            1.5625  , 1.515625, 1.5     , 1.515625, 1.5625  , 1.640625,
