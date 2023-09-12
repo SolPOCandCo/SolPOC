@@ -32,7 +32,7 @@ Tair devient T_air - ok
 Tabs devient T_abs - ok
 Ecrit_Stack_Periode devient write_stack_period - ok
 optimize_agn est devenu optimize_gn - ok
-nb_lancement devient  - ok
+nb_lancement devient nb_run- ok
 
 Le fichier text empillement.txt devient StacksThicknesses.txt
 
