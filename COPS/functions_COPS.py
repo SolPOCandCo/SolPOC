@@ -1010,7 +1010,7 @@ def Wl_selectif():
     Wl = np.concatenate((Wl_1,Wl_2))
     return Wl
 
-def exemple_evaluate(individual): 
+def evaluate_example(individual): 
     """
     Example of an evaluate function. The individual is a list. 
     The sum of squares of each term in the list is sought. 
