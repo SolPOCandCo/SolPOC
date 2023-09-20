@@ -5,6 +5,8 @@ COPS v 0.9.0
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 contact : antoine.grosjean@epf.fr
 
+A specific presentation of the docstrings has been added to allow Sphinx software to generate a full documentation of this document
+
 List of main functions used and developed for COPS. For use them without any implementation work see the other Python script
 """
 
@@ -15,52 +17,56 @@ from scipy.interpolate import interp1d
 import random
 
 def RTA3C(Wl, d, n, k, Ang=0):
-    """_________________________________________________
-    Exemple of RTA
-    RTA is the key function : it's allow us to calcul reflectivity (R) transmissivity (T) and absorptivity(A)
-    This function is a exemple working only with 3 thin layer on the substrat
-    This tutorial functions is not used in the code
     """
+Exemple of RTA.
+\nRTA is the key function : it's allow us to calcul reflectivity (R) transmissivity (T) and absorptivity(A). 
+This function is an exemple working only with 3 thin layers on the substrat. 
+This tutorial functions is not used in the code.
 
-    """
-    The RTAA function calculates the reflectivity, the transmissivity, and the absorptivity of a group of thin layers applied on a substrate
-    as reflectivity + transmissivity + absorptivity = 1
-    The number after 'RTA' means the amount of thn layers applied on the substrate (we count the substrate in the amount). The RTA 3C code is logically for 1 substrate and 2 thin layers maximum
+The RTA function calculates the reflectivity, the transmissivity, and the absorptivity of a group of thin layers applied on a substrate
+as reflectivity + transmissivity + absorptivity = 1.
+\nThe number after 'RTA' means the amount of thin layers applied on the substrate (we count the substrate in the amount). The RTA 3C code is logically for 1 substrate and 2 thin layers maximum
 
-    The numpy (np) utilisation is a time saver on the launch
-    => the time saved compared to the launch of an RTA function for one wavelength in a for loop is about 100 times faster
+The numpy (np) utilisation is a time saver on the launch !
+=> the time saved compared to the launch of an RTA function for one wavelength in a for loop is about 100 times faster !
 
-    Input arguments :
-    l : the wavelength in nm, has a vector type
-    d : substrate and thin layers thickness in nm
-    n : real parts of materials refraction indexes. n is a 2D table with the thin layers indexes in the columns and the wavelengths in the rows
-    k : complex parts of material refraction indexes. k is a 2D table with the thin layers extinction coefficients in the columns and the wavelengths in the rows
-    Ang : incidence angle of the radiation in degrees
+-Input arguments :
+\nl : The wavelength in nm, has a vector type.
+\nd : Substrate and thin layers thickness in nm.
+\nn : Real parts of materials refraction indexes. n is a 2D table with the thin layers indexes in the columns and the wavelengths in the rows.
+\nk : Complex parts of material refraction indexes. k is a 2D table with the thin layers extinction coefficients in the columns and the wavelengths in the rows.
+\nAng : Incidence angle of the radiation in degrees.
 
-    Output :
-    Refl is a column vector which includes the reflectivity. Column indexes corresponds to wavelengths'
-    Trans is a column vector which includes the transmissivity. Column indexes corresponds to wavelengts'
-    Abs, a column vector which includes the absorptivity. Column indexes corresponds to wavelengths'
+-Output :
+\nRefl is a column vector which includes the reflectivity.
+    Column indexes corresponds to wavelengths. 
+\nTrans is a column vector which includes the transmissivity.
+    Column indexes corresponds to wavelengts'
+\nAbs is a column vector which includes the absorptivity.
+    Column indexes corresponds to wavelengths.
 
-    Test :
-    Write these variables :
-    l = np.arange(600,750,100). We can notice that two wavelengths are calculated : 600 and 700 nm
-    d = np.array([[1000000, 150, 180]]). 1 mm of substrate, 150 nm of n°1 layer, 180 of n°2 and empty space (n=1, k=0)
-    n = np.array([1.5, 1.23,1.14],[1.5, 1.2,1.1]])
-    k = np.array([[0, 0.1,0.05], [0, 0.1, 0.05]])
-    Ang = 0
+-Test :
+\n# Write these variables :
+\nl = np.arange(600,750,100). We can notice that two wavelengths are calculated : 600 and 700 nm.
+\nd = np.array([[1000000, 150, 180]]). 1 mm of substrate, 150 nm of n°1 layer, 180 of n°2 and empty space (n=1, k=0).
+\nn = np.array([1.5, 1.23,1.14],[1.5, 1.2,1.1]]).
+\nk = np.array([[0, 0.1,0.05], [0, 0.1, 0.05]]).
+\nAng = 0.
 
-    # Run functon
-    Refl, Trans, Abs = RTA3C(l, d, n, k, Ang)
+# Run function
+\nRefl, Trans, Abs = RTA3C(l, d, n, k, Ang).
     
-    For the indexes notation n and k, understand that
-    @ 600 nm n = 1.5 for the substrate, n = 1.23 for the layer n°1 and n = 1.14 for the layer n°2
-    @ 700 nm n = 1.5 for the substrate, n = 1.20 for the layer n°1 and n = 1.1 for the layer n°2
-    @ 600 nm k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2
-    @ 700 nm k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2
+For the indexes notation n and k, understand that:
+\n@ 600 nm, n = 1.5 for the substrate, n = 1.23 for the layer n°1 and n = 1.14 for the layer n°2.
+\n@ 700 nm, n = 1.5 for the substrate, n = 1.20 for the layer n°1 and n = 1.1 for the layer n°2.
+\n@ 600 nm, k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2.
+\n@ 700 nm, k = 0 for the substrate, k = 0.1 for the layer n°1 and k = 0.05 for the layer n°2.
 
-    We can get : Refl = array([0.00767694, 0.00903544]), Trans = array([0.60022613, 0.64313401]), Abs = array([0.39209693, 0.34783055])
-    => The reflectivity is 0.00767694 (number between 0 and 1) at 600 nm and 0.00903544 at 700 nm
+-We can get :
+\nRefl = array([0.00767694, 0.00903544]).
+\nTrans = array([0.60022613, 0.64313401]).
+\nAbs = array([0.39209693, 0.34783055]).
+\n=> The reflectivity is 0.00767694 (number between 0 and 1) at 600 nm and 0.00903544 at 700 nm.
     """
     # Add an air layer on top
     n = np.append(n, np.ones((len(Wl), 1)), axis=1) # replacement of 2 by len(l)
@@ -195,32 +201,32 @@ def RTA3C(Wl, d, n, k, Ang=0):
 
 def RTA(Wl, d, n, k, Ang=0):
     """
-    See the function RTA3C for a example / tutoral and the version of the function write for 3 layer (2 thin layer + the substrat)
-    RTA calculates the reflectivity, transmissivty and absorptivity using Abélès matrix formalism
-    The Abélès matrix formalism provide the best ratio accurency / speed for stack below 100 thin layers
-    The present version of RTA work for a infinit number of thin layer, but we not recommand to go over 100
-    Parameters
-    ----------
-    l : array
-        Wavelength, in nanometer
-    d : array
-        Tickness of stack, including the substrat
-    n : array 
-        DESCRIPTION.
-    k : array
-        DESCRIPTION.
-    Ang : int, optional
-        Incidence angle (in degres) of the light one the optical stack. The default is 0 degres, so light perpendicular at the substrat
+See the function RTA3C for an example/tutoral and the version of the function writen for 3 layers (2 thin layers + the substrat). 
+RTA calculates the reflectivity, transmissivity and absorptivity using Abélès matrix formalism.
+\nThe Abélès matrix formalism provides the best ratio accurency/speed for stack below 100 thin layers. 
+\nThe present version of RTA works for a infinite number of thin layer, but we not recommand to go over 100.
 
-    Returns
-    -------
-    Refl : array
-        the stack reflectivity, for each wavelength.
-    Trans : TYPE
-        the stack transmissivity, for each wavelength.
-    Abs : TYPE
-        the stack absorptivituy, for each wavelength.
+Parameters
+----------
+l : array
+    Wavelength, in nanometer
+d : array
+    Tickness of stack, including the substrat
+n : array 
+    Real part of the refractive index of the layers.
+k : array
+    Extinction coefficient of the layers.
+Ang : int, optional
+    Incidence angle (in degrees) of the light one the optical stack. The default is 0 degree, so light perpendicular at the substrat.
 
+Returns
+-------
+Refl : array
+    The stack reflectivity, for each wavelength.
+Trans : float
+    The stack transmissivity, for each wavelength.
+Abs : float
+    The stack absorptivituy, for each wavelength.
     """
 
     # Add an air layer on top
@@ -355,10 +361,11 @@ def RTA(Wl, d, n, k, Ang=0):
 
 def nb_compo(Mat_Stack):
     """
-    Gives back the amount of composite thin layers (made up of two materials). As a cermet or a porous material,
-    a composite thin layer includes the dash - in it string
-    Exemple : 'W-Al2O3' => composite layer of Al2O3 matrix with W inclusion (cermet type)
-              ' air-SiO2' =>  composite layer of SiO2 matrix with air inclusion, (porous type)
+Gives back the amount of composite thin layers (made up of two materials). As a cermet or a porous material,
+a composite thin layer includes the dash - in it string.
+\nExemple :
+\n'W-Al2O3' => composite layer of Al2O3 matrix with W inclusion (cermet type).
+\n' air-SiO2' =>  composite layer of SiO2 matrix with air inclusion, (porous type).
     """
     nb = 0 
     for i in Mat_Stack: 
@@ -368,40 +375,40 @@ def nb_compo(Mat_Stack):
 
 def interpolate_with_extrapolation(x_new, x, y):
     """
-    This fonction provide linear extrapolation for refractive index data
-    Extrapolation is necessary, because refractive index may cannot covert the wavelenght domain used
+This fonction provides linear extrapolation for refractive index data.
+Extrapolation is necessary, because refractive index may cannot covert the wavelenght domain used.
     
-    Parameters
-    ----------
-    x : Numpy array of float
-        Here, x represent the wavelegenth domain present in the materials files
-    y : Numpy array of float
-        Here, y represent the refractive index (n or k) present in the materials files
-    x_new : Numpy array of float
-        The new wavelenght domain where the refractive index (y) must be extrapoled
+Parameters
+----------
+x : Numpy array of float
+    Here, x represents the wavelegenth domain present into the materials files.
+y : Numpy array of float
+    Here, y represents the refractive index (n or k) present into the materials files.
+x_new : Numpy array of float
+    The new wavelenght domain where the refractive index (y) must be extrapoled.
 
-    Returns
-    -------
-    TYPE
-        Numpy array of float
-        Here, y represent the refractive index (n or k) extrapoled
-        y_new have the same dimension than x_new
+Returns
+-------
+TYPE
+    Numpy array of float.\n
+    Here, y represents the refractive index (n or k) extrapoled.\n
+    y_new has the same dimension than x_new.
 
-    Exemple :
+Exemple :
         
-    # Original data
-    Wl_mat = np.array([400, 450, 500, 550, 600, 650, 700, 750, 800])
-    n_mat = np.array([1.75, 1.640625, 1.5625, 1.515625, 1.5, 1.515625, 1.5625, 1.640625, 1.75])
+# Original data
+\nWl_mat = np.array([400, 450, 500, 550, 600, 650, 700, 750, 800])
+\nn_mat = np.array([1.75, 1.640625, 1.5625, 1.515625, 1.5, 1.515625, 1.5625, 1.640625, 1.75])
     
-    # Wavelength domain used
-    Wl = np.arange(200, 1001, 50)
+# Wavelength domain used
+\nWl = np.arange(200, 1001, 50)
     
-    # Interpolation with linear extrapolation 
-    n_mat = interpolate_with_extrapolation(Wl, Wl_mat, n_mat)
+# Interpolation with linear extrapolation 
+\nn_mat = interpolate_with_extrapolation(Wl, Wl_mat, n_mat)
     
-    n_map : array([2.1875  , 2.078125, 1.96875 , 1.859375, 1.75    , 1.640625,
-           1.5625  , 1.515625, 1.5     , 1.515625, 1.5625  , 1.640625,
-           1.75    , 1.859375, 1.96875 , 2.078125, 2.1875  ])
+n_map : array([2.1875  , 2.078125, 1.96875 , 1.859375, 1.75    , 1.640625,
+    1.5625  , 1.515625, 1.5     , 1.515625, 1.5625  , 1.640625,\n
+    1.75    , 1.859375, 1.96875 , 2.078125, 2.1875  ])
     """
     interp_function = interp1d(x, y, kind='linear', fill_value='extrapolate')
     y_new = interp_function(x_new)
@@ -409,41 +416,41 @@ def interpolate_with_extrapolation(x_new, x, y):
 
 def Made_Stack(Mat_Stack, Wl):
     """
-    This key fonction strat with a list a material with describe the stack 
-    It returns two table numpy array, on for the real part of the refractive index (n), and the other for the imaginary part (k) 
+This key fonction strat with a list a material with describe the stack.  
+It returns two table numpy array, on for the real part of the refractive index (n), and the other for the imaginary part (k). 
 
-    Parameters
-    ----------
-    Mat_Stack : List of string, with containt each material of the stack. See as exemple the function write_stack_period
-    Exemple : Mat_Stack = ['BK7', 'TiO2', 'SiO2'] is a stack of TiO2 and SiO2 deposited on BK7 subtrate
-    The SiO2 layer is in contact with the air
+Parameters
+----------
+Mat_Stack : List of string, which contain each material of the stack. See as exemple the function write_stack_period.
+\nExemple : Mat_Stack = ['BK7', 'TiO2', 'SiO2'] is a stack of TiO2 and SiO2 deposited on BK7 subtrate. 
+The SiO2 layer is in contact with the air.
     
-    DESCRIPTION.
-    Wl : numpy array
-        The list of the wavelenght
+Wl : numpy array
+    The list of the wavelenght.
 
-    Returns
-    -------
-    n_Stack : numpy array
-        Each line is a different wavelenght
-        Each colonne is a different material
-    k_Stack : nympy array
-        Same than for n_Stack, but for k (the imaginary part).
+Returns
+-------
+n_Stack : numpy array
+    Each line is a different wavelenght.\n
+    Each colonne is a different material.
+k_Stack : nympy array
+    Same than for n_Stack, but for k (the imaginary part).
 
-    Exemple 1
-    Mat_Stack = ['BK7', 'TiO2', 'SiO2']
-    Wl = [400, 450, 500]
     
-    n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
-    n_Stack : array([[1.5309    , 2.84076063, 1.48408   ],
-           [1.5253    , 2.78945014, 1.479844  ],
-           [1.5214    , 2.69067759, 1.476849  ]])
-    The value must be understand like : 
-                    BK7      TiO2    SiO2
-       400 nm     1.5309	2.84076	 1.48408
-       450 nm     1.5253	2.78945	 1.47984
-       500 nm     1.5214	2.69068	 1.47685
-    As exemple, le value 1.5214 is the real part of the refractive index of BK7, at 500 nm
+Exemple 1 :
+\nMat_Stack = ['BK7', 'TiO2', 'SiO2']
+\nWl = [400, 450, 500]
+    
+n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
+\nn_Stack : array([[1.5309    , 2.84076063, 1.48408   ],
+\n[1.5253    , 2.78945014, 1.479844  ],
+\n[1.5214    , 2.69067759, 1.476849  ]])
+\nThe value must be understand like : 
+                ____BK7 | TiO2 | SiO2
+400 nm|1.5309|2.84076|1.48408
+\n450 nm|1.5253|2.78945|1.47984
+\n500 nm|1.5214|2.69068|1.47685
+\nAs exemple, the value 1.5214 is the real part of the refractive index of BK7, at 500 nm.
     """
     # Creation of the Stack
     # I search if the name of a thin layer material is separated by a dash -
@@ -502,27 +509,30 @@ def Made_Stack(Mat_Stack, Wl):
 
 def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
     """
-    n_Stack_vf, or k_stack_vf means an n and k calculated by a Bruggeman function (EMA mixing law).
-    These are the values to be injected into RTA
-    If vf = 0 for all materials, then n_Stack_vf = n_Stack (idem for k)
-    Otherwise, calculate : 
+n_Stack_vf, or k_stack_vf means an n and k calculated by a Bruggeman function (EMA mixing law).
+\nThese are the values to be injected into RTA:
+\nIf vf = 0 for all materials, then n_Stack_vf = n_Stack (idem for k).
+\nOtherwise, calculate.
     
-    Parameters
-    ----------
-    n_Stack : array, in  3 dimensional
-        The real part of the refractive index
-    k_Stack : array, in 3 dimensional
-        The complexe part of the refractive index
-    vf : list of int, optional
-        The volumic fraction of all thin layer, as a list. The default is [0].
+Parameters
+----------
+n_Stack : array, in  3 dimensional
+    The real part of the refractive index
+k_Stack : array, in 3 dimensional
+    The complexe part of the refractive index
+vf : list of int, optional
+    The volumic fraction of all thin layer, as a list. The default is [0].
 
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-    TYPE
-        DESCRIPTION.
-
+Returns
+-------
+n_Stack : float array
+    Real part of the refractive index of the stack.
+k_Stack : float array
+    Extinction coefficient of the stack.
+n_Stack_vf : float array
+    Real part of the refractive index of the stack with volume fractions.
+k_Stack_vf : float array
+    Extinction coefficient of the stack with volume fractions.
     """
     if all(elem == 0 for elem in vf): #  (vf ==0).all():
         """ All ths vf(s) = 0. It's not necessary to launch Bruggman. 
@@ -557,32 +567,33 @@ def Made_Stack_vf(n_Stack, k_Stack, vf=[0]):
 
 def Bruggeman(nM, kM, nI, kI, VF):
     """
-    Bruggemann function. 
-    Allow us to calcalted the complexe refractive index of a mixture of two materials, using a EMA (Effective Medium Approximation)
-    Parameters
-    ----------
-    nM : array
-        Real part of refractive index of host Matrix (M is for Matrix)
-    kM : array
-        Complexe part of refractive index of host Matrix (M is for Matrix)
-    nI : array
-        Real part of refractive index of inclusion (I is for Inclusion)
-    kI : TYPE
-        Complexe part of refractive index of inclusion (I is for Inclusion)
-    VF : int
-        Volumic Fraction of inclusions in host matrix. Number between 0 et 1 (0 and 100%)     
+Bruggemann function. 
+Allow us to calculte the complex refractive index of a mixture of two materials, using an EMA (Effective Medium Approximation)
 
-    Returns
-    -------
-    nEffective : array
-        Real part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
-    kEffective : array
-        Complexe part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
+Parameters
+----------
+nM : array
+Real part of refractive index of host Matrix (M is for Matrix)
+\nkM : array
+Complex part of refractive index of host Matrix (M is for Matrix)
+\nnI : array
+Real part of refractive index of inclusion (I is for Inclusion)
+\nkI : TYPE
+Complex part of refractive index of inclusion (I is for Inclusion)
+\nVF : int
+Volumic Fraction of inclusions in host matrix. Number between 0 et 1 (0 and 100%)     
+
+Returns
+-------
+nEffective : array
+Real part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
+\nkEffective : array
+Complex part of the refractive index of the effective medium : the mixture of the host Matrix and the embedded particules
     
-    Noted than If vf = 0 :
-        nEffective = nM and kEffective = kM
-    Noted than If vf = 1.0 : 
-        nEffective = nI and kEffective = kI
+Noted than If vf = 0 :
+\nnEffective = nM and kEffective = kM
+\nNoted than If vf = 1.0 : 
+\nnEffective = nI and kEffective = kI
     """
     if VF == 0 :
         nEffective = nI
@@ -622,12 +633,13 @@ def BB(T, Wl):
     T : Int
         Black Body Temperature , in Kelvin
     Wl : 1D vector, array of int
-        Wavelenght, in nm 
+        Wavelenght, in nm
+
     Returns
     -------
     BB_spec : Array of float
-        Black Body Luminance, in W.m**-3
-        Note the pi factor, for transform W.m**-3.sr**-1 into W.m**-3
+        Black Body Luminance, in W.m^-3. 
+        Note the pi factor in the equation to transform W.m^-3.sr^-1 into W.m^-3
     """
     h = 6.62607015e-34 # Planck constant
     c = 299792458 # Speed of light
@@ -637,20 +649,22 @@ def BB(T, Wl):
 
 def SolarProperties(Wl, R, SolSpec):
     """
-    Parameters
-    ----------
-    R : array
-        Stack Optical Properties, for different Wavelength, properly intepoled
-        Not than R is not necessary the reflectivity, can be transmissivity or absorptivity
-    Wl : array
-        Wavelength, in nm
-    SolSpec : Vector. SolarSpectrum used, properly intepoled in W.m2nm-1
-    R and SolSpec must have the same length
-    Returns
-    -------
-    R_s : float
-        Solar Properties, accorting to the Strack Optical Properties
-        => not necessary Solar Reflectance. 
+Parameters
+----------
+R : array
+    Stack Optical Properties, for different Wavelengths, properly interpoled. 
+    Not than R is not necessary the reflectivity, can be transmissivity or absorptivity.
+Wl : array
+    Wavelength, in nm.
+SolSpec : Vector.
+    SolarSpectrum used, properly intepoled in W.m^2.nm^-1. 
+    R and SolSpec must have the same length.
+
+Returns
+-------
+R_s : float
+    Solar Properties, accorting to the Strack Optical Properties.
+    \n=> not necessary Solar Reflectance. 
     """
     if len(Wl) != len(R) or len(Wl) != len(SolSpec) or len(R) != len(SolSpec):
         raise ValueError("Vectors l, R, and SolSpec must have the same length.")
@@ -667,19 +681,21 @@ def SolarProperties(Wl, R, SolSpec):
 
 def E_BB(l, A, BB):
     """
-    Parameters
-    ----------
-    A : Arroy of float
-        Strack Absortivity Properties, for different Wavelength, properly intepoled
-    L : Vector
-        Wavelength, in nm
-    BB : Arroy of float
-        Black Body Luminance, in W.m**-3, properly intepoled
-    A and BB must have the same length ! 
-    Returns
-    -------
-    E_BB : float
-        Thermal emissivty, according to the black body irradiance BB
+Parameters
+----------
+A : Arroy of float
+    Strack Absortivity Properties, for different Wavelength, properly intepoled
+L : Vector
+    Wavelength, in nm
+BB : Arroy of float
+    Black Body Luminance, in W.m^-3, properly intepoled
+
+A and BB must have the same length !
+
+Returns
+-------
+E_BB : float
+Thermal emissivty, according to the black body irradiance BB
     """
     if len(l) != len(A) or len(l) != len(BB) or len(A) != len(BB):
         raise ValueError("Vectors l, R, and SolSpec must have the same length.")
@@ -696,30 +712,31 @@ def E_BB(l, A, BB):
 
 def helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
     """
-    Calculate the heliothermal efficiency
-    Parameters
-    ----------
-    A_s : Float
-        Solar Absoptivity, calculate previsouly
-    E_BB : Float
-        Thermal emissivity, calculate previsouly according to the temperature T_Stack
-    T_stack : Float
-        Temperature, in Kelvin, of the stack 
-    T_air : Float
-        Temperature, in Kevlin, of the environement.
-    C : Float
-        Solar concentration .
-    I : Float
-        Solar irradiance on the stack, in W/m2. Normaly calculat with integration of the solar spectrum
-    r_Opt : TYPE, optional
-        Optical performance of the optical concentrator, used with the solar selectiv stack. The default is 0.7.
-    FFabs : Float, optional
-        Ratio between the absorting surface and the emissivity surface. The default is 1.
+Calculates the heliothermal efficiency.
 
-    Returns
-    -------
-    rHelio : Flaot
-        Heliothermal efficiency, the conversion between photo to thermal, according the operatining conditions (T_stack, T_air, C, I etc)
+Parameters
+----------
+A_s : Float
+    Solar Absoptivity, calculated previsouly.
+E_BB : Float
+    Thermal emissivity, calculated previsouly according to the temperature T_Stack.
+T_stack : Float
+    Temperature, in Kelvin, of the stack. 
+T_air : Float
+    Temperature, in Kevlin, of the environement.
+C : Float
+    Solar concentration.
+I : Float
+    Solar irradiance on the stack, in W/m2. Normaly calculatated with integration of the solar spectrum.
+r_Opt : TYPE, optional
+    Optical performance of the optical concentrator, used with the solar selective stack. The default value is 0.7.
+FFabs : Float, optional
+    Ratio between the absorting surface and the emissivity surface. The default value is 1.
+
+Returns
+-------
+rHelio : Float
+    Heliothermal efficiency, the conversion between photo to thermal, according the operating conditions (T_stack, T_air, C, I etc).
     """
     sigma = 5.67037321e-8
     rHelio = A_s - E_BB * FFabs * sigma * (T_stack**4 - T_air**4)/(r_Opt * C * I)
@@ -727,25 +744,25 @@ def helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
 
 def open_material(name): 
     """
-    Open a text file which contain refractive index from Materials folder
-    Exemple Wl, n, k = open_material("Ag") open a file named Ag.txt, in the Materials/
-    ----------
-    name : a string
-        The name a texte files witch contain Wavelength, and refractive index values
-        The texte file must be formated according the following : 
-            1 row : wavelenght in nm
-            2 row : real part of refractive index
-            3 row : imaginary part of the refractive index
-            row seperate by a tabulation 
+Opens a text file which contains refractive index from Materials folder.
+\nExemple Wl, n, k = open_material("Ag") opens a file named Ag.txt, into the Materials.
 
-    Returns
-    -------
-    Wl : numpy array 
-        Wavelength, in nanometer (nm) 
-    n : numpy array
-        Real part of the Refractive Index
-    k : numpy array
-        Complexe part of the Refractive Index.
+name : string
+    The name of a text file which contains Wavelength, and refractive index values.\n
+    The texte file must be formated according the following :\n
+    1 row : wavelenght in nm\n
+    2 row : real part of refractive index\n
+    3 row : imaginary part of the refractive index\n
+    rows seperated by a tabulation
+
+Returns
+-------
+Wl : numpy array 
+    Wavelength, in nanometer (nm) .
+n : numpy array
+    Real part of the Refractive Index.
+k : numpy array
+    Complex part of the Refractive Index.
     """
     
     assert isinstance(name, str), f"Argument 'name' must be a string but had type {type(name)}"
@@ -786,17 +803,17 @@ def open_material(name):
 
 def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):     
     """
-    Name : string
-    Open txt file with the solar spectra data. Normal name is SolSpec.txt in material files
-    SolSpec is a table, with one wavelength per line. 
-    
-    type_spec : string 
-    Optional is for the type for solar spectra
-    DC : Direct and Circumsolar
-        The sun irradiance with come from directly from the sun and his corona
-    GT Global Tilt
-        The sun irradiance with comme from the sun and the near environement (reflexion / albedo)
-    Extr : Extra-terra solar spectrum. 
+Name : string
+    Opens txt file with the solar spectra data. Normal name is SolSpec.txt in material files.\n
+    SolSpec is a table, with one wavelength per line.  
+type_spec : string 
+    Optional is for the type for solar spectra.
+DC : Direct and Circumsolar
+    The sun irradiance which come from directly from the sun and his corona.
+GT Global Tilt
+    The sun irradiance which comme from the sun and the near environement (reflexion / albedo).
+Extr
+    Extra-terra solar spectrum.
     """
     # Initialise an empty table
     tableau3D = []
@@ -839,22 +856,24 @@ def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):
 
 def open_Spec_Signal(name, nb_col):  
     """
-    Open a spectral respond into a file
-    Parameters
-    ----------
-    name : The name of a file
-    nb_col : Int
-        The number of read colone in the file.
+Opens a spectral respond into a file.
 
-    Returns
-    -------
-    Wl : array
-        Wavelenght, must be in nm into the file
-    spec : array
-        The value present in the file, according the Wavelength
-    name_f : string
-        The name of the file open, with the number of the colomun used
-        As :  name + " ,col n° " + str(nb_col)
+Parameters
+----------
+\nname
+    The name of a file.
+nb_col : Int
+    The number of read column in the file.
+
+Returns
+-------
+Wl : array
+    Wavelenght, must be in nm into the file.
+spec : array
+    The value present in the file, according to the Wavelength.
+name_f : string
+    The name of the file opened, with the number of the column used.\n  
+    As :  name + " ,col n° " + str(nb_col)
     """
 
     # Initialise an empty table
@@ -890,21 +909,23 @@ def open_Spec_Signal(name, nb_col):
 
 def eliminate_duplicates(lst):
     """
-    Remove duplicates from a list
-    Exemple A = [1, 2, 3, 3, 4, 4, 5]
-    B, C = eleminate_duplicates(A)
-    B = [1, 2, 3, 4, 5]
-    C = [3, 5]
-    
-    Parameters
-    ----------
-    lst : List of values
+Removes duplicates from a list.
+\n-Exemple :
+\nA = [1, 2, 3, 3, 4, 4, 5].
+\nB, C = eleminate_duplicates(A).
+\nB = [1, 2, 3, 4, 5].
+\nC = [3, 5].
+   
+Parameters
+----------
+lst : List of values.
 
-    Returns
-    -------
-    unique_elements : List
-        List of values without duplica.
-    indices_removed : list of indice removed values in the list
+Returns
+-------
+unique_elements : List
+    List of values without duplica.
+indices_removed : 
+    List of indice removed values in the list.
     """
     unique_elements = []
     indices_removed = []
@@ -919,27 +940,27 @@ def eliminate_duplicates(lst):
 
 def write_stack_period (Subtrat, Mat_Periode, nb_periode):
     """
-    Builds a stack by repeating a material period multiple times on top of a substrate.
-        Exemple 1 : 
-        Mat_Stack = write_stack_period(["BK7"], ["TiO2_I", "SiO2_I"], 3)
-        Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
-        Exemple 2:
-        Mat_Stack = write_stack_period(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)
-        Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']
+Builds a stack by repeating a material period multiple times on top of a substrate.
+    Exemple 1 :\n 
+    Mat_Stack = write_stack_period(["BK7"], ["TiO2_I", "SiO2_I"], 3)\n
+    Mat_Stack :  ['BK7', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']\n
+    Exemple 2:\n
+    Mat_Stack = write_stack_period(["BK7", "TiO2", "Al2O3",], ["TiO2_I", "SiO2_I"], 2)\n
+    Mat_Stack  : ['BK7', 'TiO2', 'Al2O3', 'TiO2_I', 'SiO2_I', 'TiO2_I', 'SiO2_I']\n
 
-    Parameters
-    ----------
-    Subtrat : List of string
-         Each elements of this list is a string as valid material (a material with an associate texte files in Material/).
-    Mat_Periode : List of string
-        a list of a string. Each elements of this list is a string as valid material
-    nb_periode : Int 
-        the number of time were the Mat_Periode must be repeted
+Parameters
+----------
+Subtrat : List of string
+    Each elements of this list is a string as valid material (a material with an associatd text file in Material/).
+Mat_Periode : List of string
+    A list of strings. Each elements of this list is a string as valid material.
+nb_periode : Int 
+    The number of time were the Mat_Periode must be repeted.
 
-    Returns
-    -------
-    Subtrat : List of string
-        DESCRIPTION.
+Returns
+-------
+Subtrat : List of string
+    List which contains the different substrates.
     """
     for i in range(nb_periode):
         Subtrat += Mat_Periode 
@@ -947,16 +968,17 @@ def write_stack_period (Subtrat, Mat_Periode, nb_periode):
 
 def equidistant_values(lst):
     """
-    Returns a small list of y equidistant values from a large list lst.
-    Parameters
-    ----------
-    lst : List
-        Returns a small list of y equidistant values from a large list lst
-    Returns
-    -------
-    result : list
-        Returns a small list of y equidistant values from a large list lst.
+Returns a small list of y equidistant values from a large list lst.
 
+Parameters
+----------
+lst : List
+    Returns a small list of y equidistant values from a large list lst.
+
+Returns
+-------
+result : list
+    Returns a small list of y equidistant values from a large list lst.
     """
     # Enables to return a small list of y equidistant values from a long list
     x = 5
@@ -967,19 +989,19 @@ def equidistant_values(lst):
 
 def valeurs_equidistantes(liste, n=5):
     """
-    From a large list, returns a small list with equidistant values
+From a large list, returns a small list with equidistant values.
 
-    Parameters
-    ----------
-    liste : list or array
-        A large list 
-    n : Int number, optional
-        DESCRIPTION. The default is 5.
+Parameters
+----------
+liste : list or array
+    A large list.
+n : Int number, optional
+    Total of elements in the list. The default value is 5.
 
-    Returns
-    -------
-    petite_liste : list or array
-        Returns a small list of y equidistant values from a large list lst.
+Returns
+-------
+petite_liste : list or array
+    Returns a small list of y equidistant values from a large list.
     """
     # Determine the distance between every value
     distance = len(liste) / (n - 1)
@@ -995,15 +1017,14 @@ def valeurs_equidistantes(liste, n=5):
 
 def Wl_selectif():
     """
-    Give a vector of Wavelength (in nm), optimized for selectif coating optimisation / calculation of performancess
-        280 to 2500 nm (solar domain) with a 5 nm step for the calculation for performances
-        2500 nm to 30µm (IR domain) with a 50 nm step for the calculation of thermal emissivity (named E_BB in this code)
+Give a vector of Wavelength (in nm), optimized for selective coating optimisation/calculation of performances.
+    280 to 2500 nm (solar domain) with a 5 nm step for the calculation for performances.\n
+    2500 nm to 30µm (IR domain) with a 50 nm step for the calculation of thermal emissivity (named E_BB in this code).
 
-    Returns
-    -------
-    Wl : array
-        Wavelenght, in nm
-
+Returns
+-------
+Wl : array
+    Wavelenght, in nm.
     """
     Wl_1 = np.arange(280 , 2500 , 5)
     Wl_2 = np.arange(2500 , 30050 , 50)
@@ -1012,19 +1033,19 @@ def Wl_selectif():
 
 def evaluate_example(individual): 
     """
-    Example of an evaluate function. The individual is a list. 
-    The sum of squares of each term in the list is sought. 
-    Example of evaluate function (= cost function) for a optimisation method
-   
-    Parameters
-    ----------
-    individual : List
-        A list representing an individual solution.
+Example of an evaluate function. The individual is a list. 
+\nThe sum of squares of each term in the list is sought. 
+\nExample of evaluate function (= cost function) for an optimisation method.
+  
+Parameters
+----------
+individual : List
+    A list representing an individual solution.
 
-    Returns
-    -------
-    score : Float
-        The score calculated based on the squares of the values in the individual.
+Returns
+-------
+score : Float
+    The score calculated based on the squares of the values in the individual.
     """
 
     # Cenvert a list in an array np.array(population[1])
@@ -1036,73 +1057,73 @@ def evaluate_example(individual):
 
 def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, parameters) :
     """
-    For understand Individual_to_Stack work, we sudjet to run a lunche the main script with the following : 
-    Mat_Stack : ['BK7', 'W-Al2O3', 'SiO2']
-    Wl = np.arange(400 , 600, 50)
+To understand Individual_to_Stack work, we sudject to run the main script with the following : 
+\nMat_Stack : ['BK7', 'W-Al2O3', 'SiO2']
+\nWl = np.arange(400 , 600, 50)
     
-    Know note than the first thin layer is a composite layer, made of W and Al2O3 (BK7 is the stack):
-    We need the refractive index of W AND Al2O3 for the layer 1, and we need to optimise the tickness AND volumic fraction in the W-Al2O3 layer 
-    See EMA or Brugeman function for definition of volumuc fraction
-    Each individual is now a array of lenght 6, as exemple : 
-    individual : [1.00000000e+06, 40, 125, 0, 0.3, 0]
-        The [1.00000000e+06, 40, 125] part of the list contain the thickness, in nm
-        The [0, 0.3, 0] part of the list contain the volumic fraction, between 0 and 1
-    k_Stack and n_Stack are array of float, of size (4, 3, 2), noted here (x, y, z) dimension
-        x dimension is for wavelenght
-        y dimension is for each layer
-        z dimension is for stored the value of W AND Al2O3 with the same x and y dimension
-        
-    As exemple : 
-    n_Stack : 
-        array([[[1.5309    , 0.        ],
-                [3.39      , 1.66518263],
-                [1.48408   , 0.        ]],
+Now note than the first thin layer is a composite layer, made of W and Al2O3 (BK7 is the stack):
+We need the refractive index of W AND Al2O3 for the layer 1, and we need to optimise the tickness AND volumic fraction in the W-Al2O3 layer.
+See EMA or Brugeman function for definition of volumuc fraction.
+Each individual is now an array of lenght 6, as exemple : 
+\nindividual : [1.00000000e+06, 40, 125, 0, 0.3, 0]
+\nThe [1.00000000e+06, 40, 125] part of the list contain the thickness, in nm
+\nThe [0, 0.3, 0] part of the list contain the volumic fraction, between 0 and 1
+\nk_Stack and n_Stack are array of float, of size (4, 3, 2), noted here (x, y, z) dimension
+\nx dimension is for wavelenght
+\ny dimension is for each layer
+\nz dimension is for stored the value of W AND Al2O3 with the same x and y dimension
+       
+As exemple : 
+n_Stack :\n
+    array([[[1.5309    , 0.        ],
+    [3.39      , 1.66518263],
+    [1.48408   , 0.        ]],
 
-               [[1.5253    , 0.        ],
-                [3.30888889, 1.65954554],
-                [1.479844  , 0.        ]],
+    [[1.5253    , 0.        ],
+    [3.30888889, 1.65954554],
+    [1.479844  , 0.        ]],
 
-               [[1.5214    , 0.        ],
-                [3.39607843, 1.65544143],
-                [1.476849  , 0.        ]],
+    [[1.5214    , 0.        ],
+    [3.39607843, 1.65544143],
+    [1.476849  , 0.        ]],
 
-               [[1.5185    , 0.        ],
-                [3.5       , 1.65232045],
-                [1.474652  , 0.        ]]])
+    [1.5185    , 0.        ],
+    [3.5       , 1.65232045],
+    [1.474652  , 0.        ]]])
     
-    The purpose of Individual_to_Stack is to transform in such case the individual, n_Stack and k_Stack
+The purpose of Individual_to_Stack is to transform in such case the individual, n_Stack and k_Stack
     
-    Parameters
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index 
-    n_Stack : array 
-        The real part of refractive index. 
-        Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer
-    k_Stack : array
-        The complexe part of refractive index
-        Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer
-    Mat_Stack : List of string
-        List of materials.
-    parameters : Dict
-        dictionary witch contain all parameters 
+Parameters
+----------
+individual : array
+    \nindividual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractive index.
+\nn_Stack : array 
+    The real part of refractive index. 
+    Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer.
+k_Stack : array
+    The complex part of refractive index. 
+    Can be of size (x, y, 2), with x the len of wavelenght and y the number of layer.
+Mat_Stack : List of string
+    List of materials.
+parameters : Dict
+    Dictionary which contain all parameters. 
 
-    Raises
-    ------
-    ValueError
-        It is not possible to work with theoretical and composite layers at the same time.
+Raises
+------
+ValueError
+    It is not possible to work with theoretical and composite layers at the same time.
 
-    Returns
-    -------
-    d_Stack : 
-        List of only thickness in nm
-    n_Stack : array
-        The real part of refractive index. 
-        Must be size of (x, y) with x the len of wavelenght and y the number of layer    
-    k_Stack : array
-        The comlexe part of refractive index
-        Must be size of (x, y) with x the len of wavelenght and y the number of layer  
+Returns
+-------
+d_Stack : 
+    List of only thickness in nm
+n_Stack : array
+    The real part of refractive index. 
+    Must be size of (x, y) with x the len of wavelenght and y the number of layer    
+k_Stack : array
+    The comlex part of refractive index. 
+    Must be size of (x, y) with x the len of wavelenght and y the number of layer  
     """
     
     # Add in work with vf(s)
@@ -1142,24 +1163,24 @@ def Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, parameters) :
 
 def evaluate_R(individual, parameters):
     """
-    Cost function for the average reflectivity at one or several wavelength
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
-        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
-        The 70 nm thick layer is in contact with air
-        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
-        1 individual = 1 stack = 1 possible solution 
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Cost function for the average reflectivity at one or several wavelength.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo).\n
+    individual describe a stack of thin layers, substrat included. Each number are thickness in nm.\n
+    Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm.\n
+    The 70 nm thick layer is in contact with air.\n
+    The 100 nm thick layer is in contact with the substrat, here 1 mm thick.\n
+    1 individual = 1 stack = 1 possible solution.\n
+    List of thickness in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    R_mean : Int (float)
-        The average reflectance
+parameters : Dict
+    Dictionary witch contain all parameters. 
+
+Returns
+-------
+R_mean : Int (float)
+    The average reflectance.
     """
     Wl = parameters.get('Wl')
     Ang = parameters.get('Ang')
@@ -1175,19 +1196,19 @@ def evaluate_R(individual, parameters):
 
 def evaluate_T(individual, parameters):
     """
-    Cost function for the average transmissivity at one or several wavelength
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Cost function for the average transmissivity at one or several wavelength.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    T_mean: Int (float)
-        The average transmittance
+parameters : Dict
+    Dictionary which contains all parameters. 
+
+Returns
+-------
+T_mean: Int (float)
+    The average transmittance.
     """
     Wl = parameters.get('Wl')
     Ang = parameters.get('Ang')
@@ -1205,19 +1226,19 @@ def evaluate_T(individual, parameters):
 
 def evaluate_R_s(individual, parameters):
     """
-    Calcul the solar reflectance of an individual
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar reflectance of an individual.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    R_s : Int (float)
-        The solar reflectance
+parameters : Dict
+    Dictionary witch contains all parameters. 
+
+Returns
+-------
+R_s : Int (float)
+    The solar reflectance.
     """
     Wl = parameters.get('Wl')
     Ang = parameters.get('Ang')
@@ -1240,19 +1261,19 @@ def evaluate_R_s(individual, parameters):
 
 def evaluate_T_s(individual, parameters):
     """
-    Calcul the solar transmittance of an individual
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar transmittance of an individual.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    T_s : Int (float)
-        The solar transmittance
+parameters : Dict
+    Dictionary which contains all parameters.
+
+Returns
+-------
+T_s : Int (float)
+    The solar transmittance.
     """
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
     Ang = parameters.get('Ang')#, 0)
@@ -1274,19 +1295,18 @@ def evaluate_T_s(individual, parameters):
 
 def evaluate_A_s(individual, parameters):
     """
-    Calcul the solar absoptance of an individual
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar absoptance of an individual.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractive index.
+parameters : Dict
+    Dictionary which contain all parameters.
 
-    Returns
-    -------
-    A_s : Int (float)
-        The solar absoptance
+Returns
+-------
+A_s : Int (float)
+    The solar absoptance.
     """
 
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
@@ -1309,25 +1329,25 @@ def evaluate_A_s(individual, parameters):
 
 def evaluate_R_Brg(individual, parameters):
     """
-    Cost function for a Bragg mirror
-    Maximise the average reflectivity between 500 to 650 nm (defaut value)
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        individual describe a stack of thin layers, substrat included. Each number are thickness in nm
-        Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm
-        The 70 nm thick layer is in contact with air
-        The 100 nm thick layer is in contact with the substrat, here 1 mm thcik
-        1 individual = 1 stack = 1 possible solution 
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Cost function for a Bragg mirror.
+\nMaximises the average reflectivity between 500 to 650 nm (default value).
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo).\n
+    individual describes a stack of thin layers, substrat included. Each number are thickness in nm.\n
+    Exemple : [1000000, 100, 50, 120, 70] is a stack of 4 thin layers, respectivly of 100 nm, 50 nm, 120 nm and 70 nm.\n
+    The 70 nm thick layer is in contact with air.\n
+    The 100 nm thick layer is in contact with the substrat, here 1 mm thcik.\n
+    1 individual = 1 stack = 1 possible solution.\n
+    List of thicknesses in nm, witch can be added with volumic fraction or refractive index.\n
 
-    Returns
-    -------
-    R_mean : Int (float)
-        The average reflectance
+parameters : Dict
+    Dictionary witch contain all parameters. 
+
+Returns
+-------
+R_mean : Int (float)
+    The average reflectance.
     """
     Wl = parameters.get('Wl')
     Ang = parameters.get('Ang')
@@ -1351,23 +1371,23 @@ def evaluate_R_Brg(individual, parameters):
 
 def evaluate_T_pv(individual, parameters):
     """
-    Calculate the solar transmissivity WITH a PV cells signal
-    With the following ligne code in the main script
-    if evaluate.__name__ == "evaluate_T_PV":
-        parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
-    
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar transmissivity WITH a PV cells signal
+with the following line code in the main script.
+\nif evaluate.__name__ == "evaluate_T_PV":
+    parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
+   
+1 individual = 1 output of one optimization function = 1 possible solution
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    T_PV: Int (float)
-        Solar transmissivity WITH a PV cells signal
+parameters : Dict
+    Dictionary which contains all parameters. 
+
+Returns
+-------
+T_PV: Int (float)
+    Solar transmissivity WITH a PV cells signal.
     """
 
     Wl = parameters.get('Wl')#,
@@ -1391,23 +1411,21 @@ def evaluate_T_pv(individual, parameters):
 
 def evaluate_A_pv(individual, parameters):
     """
-    Calculate the solar absoptivity WITH a PV cells signal
-    With the following ligne code in the main script
-    if evaluate.__name__ == "evaluate_T_PV":
-        parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
-    
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar absoptivity WITH a PV cells signal with the following ligne code in the main script:\n
+if evaluate.__name__ == "evaluate_T_PV":\n  
+    parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec  
+1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    T_PV: Int (float)
-        Solar transmissivity WITH a PV cells signal
+Parameters : Dict
+    Dictionary which contain all parameters.
+
+Returns
+-------
+T_PV: Int (float)
+    Solar transmissivity WITH a PV cells signal.
     """
 
     Wl = parameters.get('Wl')#,
@@ -1431,27 +1449,27 @@ def evaluate_A_pv(individual, parameters):
 
 def evaluate_T_vis(individual, parameters):
     """
-    Calculate the optical transmittance with a human eye input
-    The solar spectrum (Sol_Spec) has been remplaced by a human eye sensivity to wavelenght during the process
-    See the following code lines in the main script
+Calculates the optical transmittance with a human eye input.
+\nThe solar spectrum (Sol_Spec) has been replaced by a human eye sensivity to wavelenght during the process.
+\nSee the following code lines in the main script.
     
-    Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
-    Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye) # Interpolate the signal
+Wl_H_eye , Signal_H_eye , name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
+\nSignal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye) # Interpolate the signal
     
-    parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye 
+\nparameters["Sol_Spec_with_Human_eye"] = Signal_H_eye 
     
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+\n1 individual = 1 output of one optimization function = 1 possible solution
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    T_PV: Int (float)
-        Solar transmissivity WITH a PV cells signal
+parameters : Dict
+    Dictionary which contains all parameters.
+
+Returns
+-------
+T_PV: Int (float)
+    Solar transmissivity WITH a PV cells signal.
     """
     
     Wl = parameters.get('Wl')#,
@@ -1474,19 +1492,19 @@ def evaluate_T_vis(individual, parameters):
 
 def evaluate_low_e(individual, parameters):
     """
-    Calculate the low_e performances
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the low_e performances.
+\n1 individual = 1 output of one optimization function = 1 possible solution
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    P_low_e: Int (float)
-        Low_e performances 
+parameters : Dict
+    Dictionary which contain all parameters.
+
+Returns
+-------
+P_low_e: Int (float)
+    Low_e performances.
     """
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
     Ang = parameters.get('Ang')#, 0)
@@ -1518,19 +1536,19 @@ def evaluate_low_e(individual, parameters):
 
 def evaluate_rh(individual, parameters):
     """
-    Calculate the heliothermal efficiency 
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the heliothermal efficiency.
+\n1 individual = 1 output of one optimization function = 1 possible solution
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    rH: Int (float)
-        Heliothermal efficiency 
+parameters : Dict
+    Dictionary which contain all parameters.
+
+Returns
+-------
+rH: Int (float)
+    Heliothermal efficiency.
     """
     
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
@@ -1570,19 +1588,19 @@ def evaluate_rh(individual, parameters):
     
 def evaluate_RTR(individual, parameters):
     """
-    Calculate the performance according a RTR shape
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the performance according an RTR shape.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    P_RTR: Int (float)
-        performance according a RTR shape
+parameters : Dict
+    Dictionary witch contain all parameters. 
+
+Returns
+-------
+P_RTR: Int (float)
+    Performance according an RTR shape.
     """  
     Wl = parameters.get('Wl')#
     Ang = parameters.get('Ang')#
@@ -1614,19 +1632,19 @@ def evaluate_RTR(individual, parameters):
 
 def evaluate_netW_PV_CSP(individual, parameters):
     """
-    Calculate the performance according a RTR shape
-    1 individual = 1 output of one optimization function = 1 possible solution
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the performance according an RTR shape.
+\n1 individual = 1 output of one optimization function = 1 possible solution
+\nindividual : array
+    individual is an output of optimisation method (algo).
+    List of thicknesses in nm, which can be added with volumic fraction or refractive index.
 
-    Returns
-    -------
-    P_RTR: Int (float)
-        performance according a RTR shape
+parameters : Dict
+    Dictionary which contain all parameters.
+
+Returns
+-------
+P_RTR: Int (float)
+    Performance according an RTR shape.
     """  
     
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
@@ -1671,24 +1689,26 @@ def evaluate_netW_PV_CSP(individual, parameters):
 
 def evaluate_RTA_s(individual, parameters):
     """
-    Calcul the solar reflectance, the solar transmittance and the solar absoptance 
-    for a ful spectrum
-    Parameters
-    ----------
-    individual : array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary witch contain all parameters 
+Calculates the solar reflectance, the solar transmittance and the solar absoptance 
+for a full spectrum.
 
-    Returns
-    -------
-    R_s : Float
-        solar reflectanc
-    T_s : Float
-        solar transmittance
-    A_s : Float
-        solar absorptance
+Parameters
+----------
+individual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractive index.
+
+parameters : Dict
+    Dictionary witch contain all parameters.
+
+Returns
+-------
+R_s : Float
+    Solar reflectance.
+T_s : Float
+    Solar transmittance.
+A_s : Float
+    Solar absorptance.
     """
     # Calculates the solar reflectance, solar transmittance and the absorptance
     # Every individual is a list of thickness. 
@@ -1719,21 +1739,22 @@ def evaluate_RTA_s(individual, parameters):
 
 def RTA_curve(individual, parameters):
     """
-    Parameters
-    ----------
-    individual : numpy array
-        individual is an output of optimisation method (algo)
-        List of thickness in nm, witch can be added with volumic fraction or refractif index
-    parameters : Dict
-        dictionary with contain all "global" variables
-    Returns
-    -------
-    R : List
-        Reflectance of the stack, according the wavelenght list in the parameters
-    T : List
-        Transmittance of the stack, according the wavelenght list in the parameters
-    A : List
-        Absoptance of the stack, according the wavelenght list in the parameters
+Parameters
+----------
+individual : numpy array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractif index.
+parameters : Dict
+    Dictionary with contain all "global" variables.
+
+Returns
+-------
+R : List
+    Reflectance of the stack, according the wavelenght list in the parameters.
+T : List
+    Transmittance of the stack, according the wavelenght list in the parameters.
+A : List
+    Absoptance of the stack, according the wavelenght list in the parameters.
     """
     Wl = parameters.get('Wl')#, np.arange(280,2505,5))
     Ang = parameters.get('Ang')#, 0)
@@ -1748,21 +1769,21 @@ def RTA_curve(individual, parameters):
 
 def generate_population(chromosome_size, parameters):
     """
-    See : function optimize_gn
-    This function generates the 1st generation for the genetic optimization process. 
-    That is, a series of thin film stacks, each thickness of which is within the range for genetic algo, optimize_gn'.
+See : function optimize_gn.
+\nThis function generates the 1st generation for the genetic optimization process. 
+\nThat is, a series of thin film stacks, each thickness of which is within the range for genetic algo, optimize_gn'.
 
-    Parameters
-    ----------
-    chromosome_size : Int 
-        The lenght of individual, so the number of chromosone 
-    parameters : TYPE
-        DESCRIPTION.
+Parameters
+----------
+chromosome_size : Int 
+    The lenght of individual, so the number of chromosone 
+parameters : Dict
+    Dictionary which contains necessary settings to generate a population.
 
-    Returns
-    -------
-    population : numpy array
-        DESCRIPTION.
+Returns
+-------
+population : numpy array
+    Contains generated population.
     """
     pop_size= parameters.get('pop_size')
     Th_range = parameters.get('Th_range')
@@ -1791,27 +1812,27 @@ def generate_population(chromosome_size, parameters):
 
 def selection_min(population, evaluate, evaluate_rate, parameters):
     """
-    Parameters
-    ----------
-    population : List of array 
-        Population is a list of the different indivudals 
-        Each individual is a stack, so a list of ticknesss
-    evaluate : fonction
-        the name of a evluatuib fonction (the cost function), defined previously. 
-    evaluate_rate : Float
-        DESCRIPTION.
-    parameters : Dict
-        "parameters" is a dictionary with contain all "global" variables
+Parameters
+----------
+population : List of array 
+    Population is a list of the different indivudals.\n
+    Each individual is a stack, so a list of ticknesses.
+evaluate : callable
+    The name of an evaluation fonction (the cost function), defined previously. 
+evaluate_rate : Float
+    Rate of individuals in the population that will be conserved as parents in the next generation.
+parameters : Dict
+    "parameters" is a dictionary which contains all "global" variables.
         
-    Returns
-    -------
-    parents : TYPE
-        DESCRIPTION.
-    Uses the evaluate function to calculate indiduals performances according to a function
-    In the evaluate program, if the fuction callvalue is evaluate_R_s, the code replaces "evaluate" by "evaluate_R_s"
-    => the function name is adaptative ! 
+Returns
+-------
+parents : List
+Selected individuals to become parents after the reproduction process.
+\nUses the evaluate function to calculate individuals' performances according to a function.
+\nIn the evaluate program, if the function callvalue is evaluate_R_s, the code replaces "evaluate" by "evaluate_R_s".
+\n=> the function name is adaptative ! 
     
-    Select according to the minimum
+Selects according to the minimum.
     """
     scores = [evaluate(individual, parameters) for individual in population]
     parents = []
@@ -1823,7 +1844,7 @@ def selection_min(population, evaluate, evaluate_rate, parameters):
 
 def selection_max(population, evaluate, evaluate_rate, parameters):
     """
-    Selectionne selon le max 
+    Selects the maximum.
     """
     scores = [evaluate(individual, parameters) for individual in population]
     parents = []
@@ -1836,7 +1857,7 @@ def selection_max(population, evaluate, evaluate_rate, parameters):
 # New crossover version, by mask. # We totally mix the genes
 def crossover(parents, crossover_rate , pop_size):
     """
-    See : optimize_gn
+See : optimize_gn.
     """
     children = []
     for i in range((pop_size-len(parents))//2): # We make two child for each parents
@@ -1857,12 +1878,12 @@ def crossover(parents, crossover_rate , pop_size):
 # Each gene of the child has mutatin_rate chance of mutate 
 def mutation(children, mutation_rate, mutation_delta, d_Stack_Opt):
     """
-    See : optimize_gn
+    See : optimize_gn.
 
-    This function enables the mutation of the childs (the new stacks), during their births.
-    During his birth, a child has a % of chance (mutatin_rate) to mutate
-    Some thicknesses vary about +/- mutation_delta
-    Addition of an if loop to avoid a negative thickness
+    This function enables the mutation of the childs (the new stacks), during their births.\n
+    During his birth, a child has a % of chance (mutatin_rate) to mutate.\n
+    Some thicknesses vary about +/- mutation_delta.\n
+    Addition of an if loop to avoid a negative thickness.
     """
     for i in range(1, len(children)):
         for j in range(np.shape(children)[1] - 1):
@@ -1880,24 +1901,23 @@ def mutation(children, mutation_rate, mutation_delta, d_Stack_Opt):
 
 def optimize_ga(evaluate, selection, parameters):
     """
-    Parameters
-    ----------
-    evaluate : String
-        Name of the evaluation fonction 
-    selection : String
-        Name of the selection fonction 
+Parameters
+----------
+evaluate : String
+    Name of the evaluation fonction.
+selection : String
+    Name of the selection fonction.
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
-
+Returns
+-------
+best_solution : numpy array
+    The best stack of thin film (a list a thickness = individual) which provides the high cost function.
+dev : numpy array
+    The value of the best solution during the optimisation process.
+nb_run : Int 
+    The number of epoch.
+seed : Int
+    Value of the seed, used in the random number generator.
     """
     Mat_Stack = parameters.get('Mat_Stack')
     mod = parameters.get('Mod_Algo')
@@ -1972,24 +1992,23 @@ def optimize_ga(evaluate, selection, parameters):
 
 def optimize_strangle(evaluate, selection, parameters):
     """
-    Parameters
-    ----------
-    evaluate : String
-        Name of the evaluation fonction 
-    selection : String
-        Name of the selection fonction 
+Parameters
+----------
+evaluate : String
+    Name of the evaluation function.
+selection : String
+    Name of the selection function.
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
-
+Returns
+-------
+best_solution : numpy array
+    The best stack of thin film (a list a thickness = individual) which provides the high cost function. 
+dev : numpy array
+    The value of the best solution during the optimization process.
+nb_run : Int 
+    The number of epoch.
+seed : Int
+    Value of the seed, used in the random number generator.
     """
     # I search for the variables in the settings
     Mat_Stack = parameters.get('Mat_Stack')
@@ -2053,22 +2072,21 @@ def optimize_strangle(evaluate, selection, parameters):
 
 def children_strangle(pop_size, parents, chromosome_size):
     """
-    See : the function optimize_strangle
+See : the function optimize_strangle.
 
-    Parameters
-    ----------
-    pop_size : Int
-        the number of individuals in the population.
-    parents : List of array 
-        List of individuals selected for be the parent of the next generation 
-    chromosome_size : Int
-        The length of each individual
+Parameters
+----------
+pop_size : Int
+    The number of individuals in the population.
+parents : List of array 
+    List of individuals selected for being the parent of the next generation.
+chromosome_size : Int
+    The length of each individual.
 
-    Returns
-    -------
-    children : List of array 
-        List of individuals born from the parent 
-
+Returns
+-------
+children : List of array 
+    List of individuals born from the parent.
     """
     children = []
     for i in range(pop_size-len(parents)):
@@ -2083,29 +2101,30 @@ def children_strangle(pop_size, parents, chromosome_size):
 
 def DEvol(f_cout, f_selection, parameters):
     """
-    Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
-    "This DE is a current to best. Hypertuned on the chirped problem 
-    Abrupt elimination of individuals not respecting the bounds
-    (compare with what happens if you just put back to the edge
-     could be a good idea on some problems)"
+Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
+"This DE is a current to best. Hypertuned on the chirped problem.
+Abrupt elimination of individuals not respecting the bounds
+(compare with what happens if you just put back to the edge
+could be a good idea on some problems)"
 
-    Parameters
-    ----------
-    evaluate : Collable 
-        evaluation fonction, give in evaluate
-    selection : Collable
-        selection fonction, give in selection
+Parameters
+----------
+    
+evaluate : Callable 
+\nevaluation fonction, give in evaluate
+\nselection : Callable
+\nselection fonction, give in selection
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
+Returns
+-------
+best_solution : numpy array
+    The best stack of thin film (a list a thickness = individual) which provide the high cost function 
+dev : numpy array
+    The value of the best solution during the optimisation process
+nb_run : Int 
+    The number of epoch
+seed : Int
+    Value of the seed, used in the random number generator
     """
     selection = f_selection.__name__, 
 
@@ -2279,9 +2298,9 @@ def DEvol(f_cout, f_selection, parameters):
 
 def DEvol_Video(f_cout, f_selection, parameters):
     """ 
-    Sub version of DE.
-    Used by the main author of COPS for provide video of the optimization process
-    The stack tickness is save during the process
+Sub version of DE.
+Used by the main author of COPS for provide video of the optimization process. 
+The stack tickness is save during the process
     """
     selection = f_selection.__name__, 
 
@@ -2451,8 +2470,8 @@ def DEvol_Video(f_cout, f_selection, parameters):
 
 class Particle():
     """
-    Class Particle, for PSO (Particle Swarm Optimization) optimization 
-    see function "PSO()"
+Class Particle, for PSO (Particle Swarm Optimization) optimization.
+\nSee function "PSO()".
     """
     def __init__(self, position, velocity, score_ref = 0):
         self.position = position
@@ -2462,33 +2481,33 @@ class Particle():
 
 def PSO(evaluate, selection, parameters):
     """
-    PSO : particle swarm optimization 
-    Need to work with class Particle()
+PSO : particle swarm optimization 
+Need to work with class Particle()
     
-    The proposed parameters for PSO are defaults values. They are NOT optimized for coatings optimization
-        inertia_weight = 0.8
-        cognitive_weight = 1.5
-        social_weight = 1.5
+The proposed parameters for PSO are defaults values. They are NOT optimized for coatings optimization:
+    inertia_weight = 0.8
+    cognitive_weight = 1.5
+    social_weight = 1.5
         
-    Parameters
-    ----------
-    evaluate : Collable 
-        evaluation fonction, give in evaluate
-    selection : Collable
-        selection fonction, give in selection
+Parameters
+----------
+evaluate : Callable 
+    Evaluation fonction, give in evaluate.
+selection : Callable
+    Selection fonction, give in selection.
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
+Returns
+-------
+best_solution : numpy array
+    The best stack of thin film (a list a thickness = individual) which provide the high cost function. 
+dev : numpy array
+    The value of the best solution during the optimisation process.
+nb_run : Int 
+    The number of epoch.
+seed : Int
+    Value of the seed, used in the random number generator.
     
-    Need  generate_neighbor() and  acceptance_probability() functions 
+Need  generate_neighbor() and acceptance_probability() functions.
     """
 
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
@@ -2609,19 +2628,19 @@ def PSO(evaluate, selection, parameters):
 
 def generate_neighbor(solution, parameters):
     """
-    Generates a neighboring solution for the simulated annealing algorithm.
+Generates a neighboring solution for the simulated annealing algorithm.
 
-    Parameters
-    ----------
-    solution : array
-        The current solution represented as a list.
-    parameters : Dict
-        A dictionary containing relevant parameters and constraints.
+Parameters
+----------
+solution : array
+    The current solution represented as a list.
+parameters : Dict
+    A dictionary containing relevant parameters and constraints.
 
-    Returns
-    -------
-    neighbor : array
-        The generated neighboring solution obtained by modifying a randomly selected value in the solution.
+Returns
+-------
+neighbor : array
+    The generated neighboring solution obtained by modifying a randomly selected value in the solution.
     """   
     Th_range = parameters.get('Th_range')
     
@@ -2633,16 +2652,15 @@ def generate_neighbor(solution, parameters):
 
 def acceptance_probability(current_score, new_score, temperature):
     """
-    Calculates the acceptance probability for the simulated annealing algorithm.
+Calculates the acceptance probability for the simulated annealing algorithm.
 
-    Args:
-        current_score: The current score or energy.
-        new_score: The score or energy of the new state.
-        temperature: The current temperature of the system.
+Args:
+    current_score: The current score or energy.\n
+    new_score: The score or energy of the new state.\n
+    temperature: The current temperature of the system.
 
-    Returns:
-        The acceptance probability based on the current and new scores and the temperature.
-
+Returns:
+    The acceptance probability based on the current and new scores and the temperature.
     """
     if new_score < current_score:
         return 1.0
@@ -2650,25 +2668,25 @@ def acceptance_probability(current_score, new_score, temperature):
 
 def simulated_annealing(evaluate, selection, parameters):
     """
-    Parameters
-    ----------
-    evaluate : Collable 
-        evaluation fonction, give in evaluate
-    selection : Collable
-        selection fonction, give in selection
+Parameters
+----------
+evaluate : Callable 
+    Evaluation function, give in evaluate.
+selection : Callable
+    Selection function, give in selection.
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
+Returns
+-------
+best_solution : numpy array
+    The best stack of thin film (a list a thickness = individual) which provides the high cost function.
+dev : numpy array
+    The value of the best solution during the optimization process.
+nb_run : Int 
+    The number of epoch.
+seed : Int
+    Value of the seed, used in the random number generator.
     
-    Need  generate_neighbor() and  acceptance_probability() functions 
+Need generate_neighbor() and acceptance_probability() functions.
     """
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
     Mat_Stack = parameters.get('Mat_Stack')
@@ -2742,20 +2760,19 @@ def simulated_annealing(evaluate, selection, parameters):
 
 def generate_mutant(solution, step_size):
     """
-    Function for One_plus_One optimisation method
+Function for One_plus_One optimisation method.
     
-    Parameters
-    ----------
-    solution : TYPE
-        DESCRIPTION.
-    step_size : TYPE
-        DESCRIPTION.
+Parameters
+----------
+solution : List
+    Initial solution.
+step_size : Float
+    Disruption amplitude.
 
-    Returns
-    -------
-    mutant : TYPE
-        DESCRIPTION.
-
+Returns
+-------
+mutant : List
+    List based on solution with random values added.
     """
     # Modification of the mutant start at 1 and not 0, because the 1st value is the substrat thickness, witch cannot be modified
     mutant = solution.copy()  # Copy of the initial solution
@@ -2765,38 +2782,38 @@ def generate_mutant(solution, step_size):
 
 def One_plus_One_ES(evaluate, selection, parameters):
     """
-    The algorithm mentioned here is referred to as One_plus_One instead of (1+1) 
-    because using (1+1)as a name for a function is not recommended. 
-    However, it is important to note that the presented algorithm may not be the (1+1)-ES version.
-    Although the algorithm presented here is (1+1)-ES, we cannot confirm with certainty 
-    that it is theexact (1+1)-ES implementation based on information at our disposal 
-    See P.Bennet thesis and or Nikolaus Hansen et al. Comparing results of 31 algorithms from the black-box optimization
-    benchmarking BBOB-2009 | Proceedings of the 12th annual conference companion on Genetic
-    and evolutionary computation. 2010.
+The algorithm mentioned here is referred to as One_plus_One instead of (1+1) 
+because using (1+1) as a name for a function is not recommended. 
+\nHowever, it is important to note that the presented algorithm may not be the (1+1)_ES version.
+\nAlthough the algorithm presented here is (1+1)_ES, we cannot confirm with certainty 
+that it is the exact (1+1)_ES implementation based on information at our disposal. 
+\nSee P.Bennet thesis and/or Nikolaus Hansen and al. Comparing results of 31 algorithms from the black-box optimization
+benchmarking BBOB-2009 | Proceedings of the 12th annual conference companion on Genetic
+and evolutionary computation. 2010.
     
-    Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
-    "This DE is a current to best. Hypertuned on the chirped problem 
-    Abrupt elimination of individuals not respecting the bounds
-    (compare with what happens if you just put back to the edge
-     could be a good idea on some problems)"
+Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
+"This DE is a current to best. Hypertuned on the chirped problem. 
+Abrupt elimination of individuals not respecting the bounds
+(compare with what happens if you just put back to the edge
+could be a good idea on some problems)".
 
-    Parameters
-    ----------
-    evaluate : Collable 
-        evaluation fonction, give in evaluate
-    selection : Collable
-        selection fonction, give in selection
+Parameters
+----------
+evaluate : Callable 
+    evaluation fonction, give in evaluate
+selection : Callable
+    selection fonction, give in selection
 
-    Returns
-    -------
-    best_solution : numpy array
-        The best stack of thn film (a list a thickness = individual) whitch provide the high cost function 
-    dev : numpy array
-        the value of the best solution during the optimisation process
-    nb_run : Int 
-        The number of epoch
-    seed : Int
-        Value of the seed, used in the random number generator
+Returns
+-------
+best_solution : numpy array
+    The best stack of thn film (a list a thickness = individual) whitch provide the high cost function.
+dev : numpy array
+    The value of the best solution during the optimisation process.
+nb_run : Int 
+    The number of epoch.
+seed : Int
+    Value of the seed, used in the random number generator.
     """
 
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
