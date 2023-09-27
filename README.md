@@ -1,5 +1,5 @@
-## SPOC
-SPOC (Solar Performance Optimization Code fors) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. 
+## COPS
+COPS (Solar Performance Optimization Code in english) is a simple and fast code running under Python 3.9. The code has been developed during the author's Ph.D Thesis at PROMES CNRS (Perpignan, 66, France) defended in 2018. 
 
 COPS is a code designed to solve Maxwell's equations in a multilayered thin film structure.
 COPS is specifically designed for research in coatings, thin film deposition, and materials research for solar energy applications (thermal and PV).
