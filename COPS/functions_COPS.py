@@ -1534,6 +1534,47 @@ P_low_e: Int (float)
     
     return P_low_e
 
+def evaluate_EBB(individual, parameters):
+    """
+    Calculate the thermal emissivity
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    parameters : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    EBB_T_abs: Int (float)
+        Thermal emissiviy according the absorber (abs) temperature (T)
+    """
+    
+    Wl = parameters.get('Wl')#, np.arange(280,2505,5))
+    Ang = parameters.get('Ang')
+    T_air = parameters.get('T_air')
+    T_abs = parameters.get('T_abs')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    # Creation of the stack
+    d_Stack = np.array(individual)
+    Mat_Stack = parameters.get('Mat_Stack')
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
+    # Calculation of the RTA
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    BB_shape = BB(T_abs, Wl)
+    # calculation of the emittance of the surface
+    E_BB_T_abs = E_BB(Wl, A, BB_shape)
+    
+    return E_BB_T_abs
+
 def evaluate_rh(individual, parameters):
     """
 Calculates the heliothermal efficiency.
