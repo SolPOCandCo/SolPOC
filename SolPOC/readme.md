@@ -1,6 +1,6 @@
-Welcome to the main folder of SolPOC. This folder contain the code with the refractive index necessary for the code
-As commande as `pip instal` is not available, install SolPOC mean downloading this folder
-Pip install as no interest, as we recommand to directly use the main scrip `optimization_multiprocess.py`
+Welcome to the main folder of SolPOC. This folder contain the code with the refractive index necessary for the code. 
+As commande as `pip instal` is not available, install SolPOC mean downloading the full folder. 
+Pip install as no interest, as we recommand to directly use the main scrip `optimization_multiprocess.py`. 
 
 This folder contain :
 
