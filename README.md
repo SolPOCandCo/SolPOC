@@ -9,7 +9,7 @@ In the end, SolPOC is simple to use for no-coder users thanks to main script, wh
 The code are tested under Windows, using different IDE. 
 This code can be used for scientific research or academic educations. 
 
-## About SolPOC
+## SolPOC highlights
 - Study the optical behavior of thin-film stacks, calculating reflectivity, transmissivity and absorptivity over the solar spectrum (280 - 2500 nm) and beyond.
 - Working with thin layers stack ranging from a substrate (without thin film) to an 'infinite' stack of thin films. 
 - Work with refractive index data of real materials, found in peer-reviewed papers.  
