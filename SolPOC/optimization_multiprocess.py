@@ -13,7 +13,9 @@ import os
 from functions_SolPOC import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
-
+#----------------------------------------------------------------------------#
+#                   SCRIPT PARAMETERS - START                                #
+#----------------------------------------------------------------------------#
 # %%  Main : You can start to modified something
 Comment = "A sentence to be written in the final text file" # Comment to be written in the simulation text file
 Mat_Stack = ["BK7", "TiO2", "SiO2"]
@@ -64,6 +66,9 @@ precision_AlgoG = 1e-5 # accurency for stop the optimisation processs for some o
 nb_run = 48 # Number of run
 cpu_used = 48  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 #seed = 45 # Seed of the random number generator. Uncommet for fix the seed
+#----------------------------------------------------------------------------#
+#                   SCRIPT PARAMETERS - END                                  #
+#----------------------------------------------------------------------------#
 #%% You should stop modifying anything :) 
 """_________________________________________________________________________"""
 # Open and interpol the refractive index
