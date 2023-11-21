@@ -44,7 +44,7 @@ The code can be used for several purposes, but not limited :
 - reflective coatings, using metallic or dielectric layers
 - selective coatings for solar thermal applications (absorb the solar spectrum without radiative losses) 
 
-See the tutorial folder for more details. 
+See the [tutorial folder](./JupyterNotebook/) for more details. 
 
 ## For specialists
 
