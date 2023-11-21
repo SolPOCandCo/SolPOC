@@ -17,7 +17,7 @@ This code can be used for scientific research or academic educations.
 - Propose 6 different optimization methods based on Evolutionary Algorithm (EA) 
 - Work with multiprocessing (using more of 1 CPU), using a pool
 - Work with a spectral range from UV to IR (typically 280 nm to 30 µm, can be modified by the users) 
-- Automatically write results (``.txt` files and `.png` images) to a folder 
+- Automatically write results (`.txt` files and `.png` images) to a folder 
 - Use Effective Medium Approximation methods (EMA) to model the optical behavior of material mixtures (dielectric mixtures, metal-ceramic composites, porous materials, etc.). 
 - Propose a simplified user interface, bringing together useful variables in a few lines of code.
 
