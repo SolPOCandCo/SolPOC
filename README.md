@@ -6,7 +6,7 @@ The code is specifically designed for research in coatings, thin film deposition
 The code uses a stable method to quickly calculate reflectivity, transmissivity, and absorptivity from a stack of thin films over a full solar spectrum. SolPOC comes with several optimization methods, a multiprocessing pool, and a comprehensive database of refractive indices for real materials.
 In the end, SolPOC is simple to use for no-coder users thanks to main script, which regroup all necessary variables and automatically save important results in text files and PNG images.
 
-The code are tested under Windows, using different as IDE. 
+The code are tested under Windows, using different IDE. 
 This code can be used for scientific research or academic educations. 
 
 ## About SolPOC
