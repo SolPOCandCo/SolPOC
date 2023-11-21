@@ -1,0 +1,36 @@
+The filename is: functions_SolPOC.py
+Launch time: 16h-56m-58s
+A sentence to be written in the final text file
+_____________________________________________
+The name of the optimization function is: DEvol
+The name of the evaluation function is: evaluate_rh
+The name of the selection function is: selection_max
+If optimizing with DE, the mutation is: current_to_best
+
+The location and name of the solar spectrum is: Materials/SolSpec.txt type_de_spectre:GT
+The irradiance value: 1003.1 W/m²
+
+Folder name: 2023-11-20-16h56
+Materials in the stack: ['Fe', 'W', 'W-Al2O3', 'W', 'W-Al2O3', 'Al2O3', 'SiO2']
+The number of thin layers: 7
+Wavelength range: 280 nm to 30000 nm, step of 5 nm
+Substrate thickness, in nm: 1000000.0
+Range of thin layer thickness: 0 to 200 nm
+Range of thin layer indices: 1.3 to 3.0
+Incident angle on the stack: 0°
+Concentration ratio: 80
+Air temperature: 293 K
+Absorber temperature: 573 K
+Population size: 30
+Crossover rate: None
+Evaluation rate: None
+Mutation rate: 0.5
+Values of f1 and f2: 0.9 & 0.8
+Mutation range: 15
+Precision of the algorithm in auto: None
+Number of generations: 100
+Number of run: 48
+Number of available CPU: 96
+Number of used CPU: None
+Total execution time (in s): 569.83
+Sum of processor computation time (in s): 23465.05

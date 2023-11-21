@@ -1,0 +1,36 @@
+The filename is: functions_SolPOC.py
+Launch time: 15h-18m-52s
+Solar mirror made of Al with 5 bilayers
+_____________________________________________
+The name of the optimization function is: DEvol
+The name of the evaluation function is: evaluate_R_s
+The name of the selection function is: selection_max
+If optimizing with DE, the mutation is: current_to_best
+
+The location and name of the solar spectrum is: Materials/SolSpec.txt type_de_spectre:GT
+The irradiance value: 994.0 W/m²
+
+Folder name: 2023-11-21-15h18
+Materials in the stack: ['BK7', 'Al_Rakic', 'SiO2', 'TiO2', 'SiO2', 'TiO2', 'SiO2', 'TiO2', 'SiO2', 'TiO2', 'SiO2', 'TiO2']
+The number of thin layers: 12
+Wavelength range: 320 nm to 2500 nm, step of 5 nm
+Substrate thickness, in nm: 1000000.0
+Range of thin layer thickness: 0 to 200 nm
+Range of thin layer indices: 1.3 to 3.0
+Incident angle on the stack: 0°
+Concentration ratio: 80
+Air temperature: 293 K
+Absorber temperature: 573 K
+Population size: 30
+Crossover rate: None
+Evaluation rate: None
+Mutation rate: 0.5
+Values of f1 and f2: 0.9 & 0.8
+Mutation range: 15
+Precision of the algorithm in auto: None
+Number of generations: 10
+Number of run: 48
+Number of available CPU: 96
+Number of used CPU: None
+Total execution time (in s): 10.38
+Sum of processor computation time (in s): 268.96
