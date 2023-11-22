@@ -4,25 +4,44 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solpoc"
-version = "0.0.1"
+
 authors = [
     {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"}
 ]
 description = "Solar Performances Optimization Code (SolPOC) is an Academic research code, used for solar energy. SolPOC can solve and optimize a stack of thin layers for designed solar mirror, antireflective coating, thermal absorber etc."
-readme = {file  = "README.md", content-type = "text/markdown"}
+
 requires-python = ">=3.9"
+
 keywords = ["SolPOC", "thin layers stack", "multilayer coating", "global optimization", "solar energy", "optics"]
+
 license = {text = "GNU-GPL-3.0"}
+readme = {file  = "README.md", content-type = "text/markdown"}
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 dependencies = [
     "numpy",
+    "scipy",
     "matplotlib",
     "jupyter",
 ]
 
+version = "0.1.0"
+
+# XXX dynamic version is not working 
+# get a module not found error
+# dynamic = ["version"]
+# [tool.setuptools.dynamic]
+# version = {attr = "solpoc.__version__"}
+
 [project.urls]
 Homepage = "https://github.com/mrgrosjeanantoine/SolPOC"
 Issues = "https://github.com/mrgrosjeanantoine/SolPOC/issues"
+
+
+[tool.setuptools.packages]
+find = {}
+
+

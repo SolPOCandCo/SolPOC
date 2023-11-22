@@ -1,0 +1,80 @@
+__version__ = __import__('importlib.metadata').metadata.version(__package__)
+
+from .functions_SolPOC import BB
+from .functions_SolPOC import Bruggeman
+from .functions_SolPOC import Consistency_curve_plot
+from .functions_SolPOC import Convergence_plots
+from .functions_SolPOC import Convergences_txt
+from .functions_SolPOC import DEvol
+from .functions_SolPOC import DEvol_Video
+from .functions_SolPOC import E_BB
+from .functions_SolPOC import Explain_results
+from .functions_SolPOC import Generate_materials_txt
+from .functions_SolPOC import Generate_txt
+from .functions_SolPOC import Individual_to_Stack
+from .functions_SolPOC import Made_Stack
+from .functions_SolPOC import Made_Stack_vf
+from .functions_SolPOC import One_plus_One_ES
+from .functions_SolPOC import OpticalStackResponse_plot
+from .functions_SolPOC import Optimization_txt
+from .functions_SolPOC import Optimum_refractive_index_plot
+from .functions_SolPOC import Optimum_thickness_plot
+from .functions_SolPOC import PSO
+from .functions_SolPOC import Particle
+
+from .functions_SolPOC import RTA
+from .functions_SolPOC import RTA3C
+from .functions_SolPOC import RTA_curve
+
+from .functions_SolPOC import Reflectivity_plot
+from .functions_SolPOC import Simulation_amont_aval_txt
+from .functions_SolPOC import SolarProperties
+from .functions_SolPOC import Stack_plot
+from .functions_SolPOC import Transmissivity_plot
+from .functions_SolPOC import Volumetric_parts_plot
+from .functions_SolPOC import Wl_selectif
+
+from .functions_SolPOC import acceptance_probability
+from .functions_SolPOC import children_strangle
+
+from .functions_SolPOC import crossover
+from .functions_SolPOC import eliminate_duplicates
+from .functions_SolPOC import equidistant_values
+from .functions_SolPOC import evaluate_A_pv
+from .functions_SolPOC import evaluate_A_s
+from .functions_SolPOC import evaluate_EBB
+from .functions_SolPOC import evaluate_R
+from .functions_SolPOC import evaluate_RTA_s
+from .functions_SolPOC import evaluate_RTR
+from .functions_SolPOC import evaluate_R_Brg
+from .functions_SolPOC import evaluate_R_s
+from .functions_SolPOC import evaluate_T
+from .functions_SolPOC import evaluate_T_pv
+from .functions_SolPOC import evaluate_T_s
+from .functions_SolPOC import evaluate_T_vis
+from .functions_SolPOC import evaluate_example
+from .functions_SolPOC import evaluate_low_e
+from .functions_SolPOC import evaluate_netW_PV_CSP
+from .functions_SolPOC import evaluate_rh
+from .functions_SolPOC import generate_mutant
+from .functions_SolPOC import generate_neighbor
+from .functions_SolPOC import generate_population
+from .functions_SolPOC import helio_th
+
+from .functions_SolPOC import interpolate_with_extrapolation
+
+from .functions_SolPOC import mutation
+from .functions_SolPOC import nb_compo
+
+from .functions_SolPOC import open_SolSpec
+from .functions_SolPOC import open_Spec_Signal
+from .functions_SolPOC import open_material
+from .functions_SolPOC import optimize_ga
+from .functions_SolPOC import optimize_strangle
+
+from .functions_SolPOC import selection_max
+from .functions_SolPOC import selection_min
+from .functions_SolPOC import simulated_annealing
+
+from .functions_SolPOC import valeurs_equidistantes
+from .functions_SolPOC import write_stack_period
