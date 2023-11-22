@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
-from functions_SolPOC import *
+from solpoc import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
