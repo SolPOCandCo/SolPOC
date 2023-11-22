@@ -3152,8 +3152,8 @@ def Consistency_curve_plot(parameters, Experience_results, directory):#parameter
         ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # Change y-axis' scale
     ax1.set_xlabel('Best cases (left) to worse (right)')
     ax1.set_ylabel('Cost function (-)', color=color)
-    ax1.plot(tab_perf_sorted, color=color)
-    ax1.tick_params(axis='y', linestyle='dotted', marker ='o', labelcolor=color)
+    ax1.plot(tab_perf_sorted, linestyle='dotted', marker ='o', color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
     plt.title("Consistency Curve")
     plt.savefig(directory + "/" + "ConsistencyCurve.png", dpi = 300, bbox_inches='tight')
     plt.show()
@@ -3254,7 +3254,6 @@ def Volumetric_parts_plot(parameters, Experience_results, directory):
         plt.show()
         parameters.update({'vf_range' : vf_range,})
 
-
 def Stack_plot(parameters, Experience_results, directory):
     """
 The goal of this function is to help th user to visualize the generated stack in a way to understand
@@ -3316,13 +3315,13 @@ if it's considered as a metal or his vf is it's a Cermet.
         k_Stack_Wl.append(k_Stack[line][i])
         if Mat_Stack_print!=None and Mat_Stack_print[i]=='X':
             Mat_Stack.append('n = ' + str(round(n_Stack_Wl[i], 3)))
-        if '-' in Mat_Stack[i]: #finding cermets and puting them in a special list
+        if '-' in Mat_Stack[i] and ('air' not in Mat_Stack[i] and 'Air' not in Mat_Stack[i] and 'AIR' not in Mat_Stack[i] and 'vaccum' not in Mat_Stack[i] and 'Vaccum' not in Mat_Stack[i] and 'VACCUM' not in Mat_Stack[i]): #finding cermets and puting them in a special list
             Cermets.append(Mat_Stack[i])
             Cermets.append(i)
             Cermets.append(vf[i])
     for i in range(1, len(d_Stack)):
         Full_Stack_Th = Full_Stack_Th + d_Stack[i] #incrementing the full thickness variable in a way to have the stack length
-        if '-' in Mat_Stack[i]: #I'm starting to fin the color of each material with the cermets. Here, the color is purple and higher is the vf, the darker it is.
+        if '-' in Mat_Stack[i] and ('air' not in Mat_Stack[i] and 'Air' not in Mat_Stack[i] and 'AIR' not in Mat_Stack[i] and 'vaccum' not in Mat_Stack[i] and 'Vaccum' not in Mat_Stack[i] and 'VACCUM' not in Mat_Stack[i]): #I'm starting to fin the color of each material with the cermets. Here, the color is purple and higher is the vf, the darker it is.
             r = 1-0.67*vf[i]
             g = 0.75-0.75*vf[i]
             b = 0.76-0.22*vf[i] #defining a type of "range" for the color betwin a low vf and a high vf
@@ -3420,9 +3419,9 @@ if it's considered as a metal or his vf is it's a Cermet.
         ax.add_patch(rectangle) #adding the rectangle to the plot zone
         if '-' in Mat_Stack[i]: #if the material is a cermet, we want to show it by addind circles into the rectangle of the concerned cermet
             if 'air' in Mat_Stack[i] or 'Air' in Mat_Stack[i] or 'AIR' in Mat_Stack[i] or 'vaccum' in Mat_Stack[i] or 'Vaccum' in Mat_Stack[i] or 'VACCUM' in Mat_Stack[i]:
-                circle_color = 'black'#finding his color
+                circle_color = 'white'#finding his color
             else:
-                circle_color = 'white'
+                circle_color = 'black'
             nb_circle = 0 #the number of circle is the number of lines of circles into the rectangle depending of the thickness of the rectangle
             if New_d_Stack[i]<5*Full_Stack_Th/137:#longer is the material's layer,
                 nb_circle = 1
@@ -3526,7 +3525,7 @@ if it's considered as a metal or his vf is it's a Cermet.
     M_multiples = []
     for i in range(len(Metals)):
         for j in range(len(Mat_Stack)):
-            if(Metals[i]==Mat_Stack[j] and Mat_Stack[j] not in M_multiples):# to avoid a legend where there are multiple time the same material in a case that we have a repetition of one or more materials in the stack.
+            if(Metals[i]==Mat_Stack[j] and Mat_Stack[j] not in M_multiples and color[j]!=''):# to avoid a legend where there are multiple time the same material in a case that we have a repetition of one or more materials in the stack.
                 legend.append(Mat_Stack[j])
                 legend_color.append(color[j])
                 M_multiples.append(Mat_Stack[j])
@@ -3534,10 +3533,14 @@ if it's considered as a metal or his vf is it's a Cermet.
     if len(Cermets)>3 and len(Cermets)!=0:
         for i in range(len(Cermets)):
             present = False
-            if isinstance(Cermets[i], str) and i!=0:
-                for j in range (i-3):
-                    if Cermets[i]==Cermets[j] and Cermets[i+2]==Cermets[j+2]:
-                        present=True
+            if isinstance(Cermets[i], str):
+                if i!=0 and i!=3:
+                    for j in range (i-2):
+                        if Cermets[i]==Cermets[j] and Cermets[i+2]==Cermets[j+2]:
+                            present=True
+                elif i==3:
+                    if Cermets[i]==Cermets[0] and Cermets[i+2]==Cermets[2]:
+                            present=True
                 if present==False:
                     text = Cermets[i] + ', vf = ' + str(round(Cermets[i+2], 3))
                     legend.append(text)
@@ -3550,11 +3553,28 @@ if it's considered as a metal or his vf is it's a Cermet.
     Die_multiples = []
     for i in range(len(Dielectrics)):
         for j in range(len(Mat_Stack)):
-            if(Dielectrics[i]==Mat_Stack[j] and Mat_Stack[j] not in Die_multiples):
-                legend.append(Mat_Stack[j])
-                legend_color.append(color[j])
-                Die_multiples.append(Mat_Stack[j])
-                break
+            present = False
+            if(Dielectrics[i]==Mat_Stack[j] and color[j]!=''):
+                if '-' in Mat_Stack[j]:
+                    for k in range(len(Die_multiples)-1):
+                        if Die_multiples[k] == Mat_Stack[j] and vf[j] == Die_multiples[k+1]:
+                            present = True
+                            break
+                    if present == False:
+                        legend.append(Mat_Stack[j] + ', vf = ' + str(round(vf[j], 3)))
+                        legend_color.append(color[j])
+                        Die_multiples.append(Mat_Stack[j])
+                        Die_multiples.append(vf[j])
+                        break
+                elif Mat_Stack[j] not in Die_multiples:
+                    legend.append(Mat_Stack[j])
+                    legend_color.append(color[j])
+                    Die_multiples.append(Mat_Stack[j])
+                    if vf is not None:
+                        Die_multiples.append(vf[j])
+                    else:
+                        Die_multiples.append(1)
+                    break                       
     legend_rectangles = []
     for i in range(len(legend)):
         legend_rectangles.append(mpatches.Rectangle((0, 0), 20, 10, facecolor=legend_color[i], edgecolor='black', label=legend[i]))#plotting rectangles for the legend
@@ -3563,6 +3583,7 @@ if it's considered as a metal or his vf is it's a Cermet.
     plt.gca().xaxis.set_ticks([])
     plt.savefig(directory + "/" + "Stack_plot.png", dpi = 300, bbox_inches='tight') #saving figure
     plt.show()
+
 
 def Explain_results(parameters, Experience_results):
     # Go to find the best in all the result
@@ -3592,25 +3613,25 @@ def Explain_results(parameters, Experience_results):
     # Reminder: GT spectrum => Global spectrum, i.e., the spectrum of the sun + reflection from the environment
     # GT Spectrum = Direct Spectrum (DC) + Diffuse Spectrum
     # This is the spectrum seen by the surface
-    Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-    Sol_Spec = np.interp(parameters["Wl"], Wl_Sol, Sol_Spec)
+    Wl_Sol_1, Sol_Spec_1, name_Sol_Spec_1 = open_SolSpec('Materials/SolSpec.txt', 'GT')
+    Sol_Spec_1 = np.interp(parameters["Wl"], Wl_Sol_1, Sol_Spec_1)
     # Integration of the solar spectrum, raw in W/m2
-    Sol_Spec_int = trapz(Sol_Spec, parameters["Wl"])
+    Sol_Spec_int_1 = trapz(Sol_Spec_1, parameters["Wl"])
     # Writing the solar spectrum modified by the treatment's transmittance
-    Sol_Spec_mod_T = T * Sol_Spec
+    Sol_Spec_mod_T = T * Sol_Spec_1
     Sol_Spec_mod_T_int = trapz(Sol_Spec_mod_T, parameters["Wl"])  # integration of the T-modified solar spectrum, result in W/m2
     # Integration of the solar spectrum modified by the treatment's reflectance, according to the spectrum
-    Sol_Spec_mod_R = R * Sol_Spec
+    Sol_Spec_mod_R = R * Sol_Spec_1
     Sol_Spec_mod_R_int = trapz(Sol_Spec_mod_R, parameters["Wl"])  # integration of the R-modified solar spectrum, result in W/m2
     # Integration of the solar spectrum modified by the treatment's absorbance, according to the spectrum
-    Sol_Spec_mod_A = A * Sol_Spec
+    Sol_Spec_mod_A = A * Sol_Spec_1
     Sol_Spec_mod_A_int = trapz(Sol_Spec_mod_A, parameters["Wl"])  # integration of the A-modified solar spectrum, result in W/m2
     # Calculation of the upstream solar efficiency, for example, the efficiency of the PV solar cell with the modified spectrum
     Ps_amont = SolarProperties(parameters["Wl"], parameters["Signal_PV"], Sol_Spec_mod_T)
     # Calculation of the upstream treatment solar efficiency with an unmodified spectrum
-    Ps_amont_ref = SolarProperties(parameters["Wl"], parameters["Signal_PV"], Sol_Spec)
+    Ps_amont_ref = SolarProperties(parameters["Wl"], parameters["Signal_PV"], Sol_Spec_1)
     # Calculation of the integration of the useful upstream solar spectrum
-    Sol_Spec_mod_amont = Sol_Spec * parameters["Signal_PV"]
+    Sol_Spec_mod_amont = Sol_Spec_1 * parameters["Signal_PV"]
     Sol_Spec_mod_amont_int = trapz(Sol_Spec_mod_amont, parameters["Wl"])
     # Calculation of the integration of the useful upstream solar spectrum with T-modified spectrum
     Sol_Spec_mod_T_amont = Sol_Spec_mod_T * parameters["Signal_PV"]
@@ -3636,6 +3657,7 @@ def Explain_results(parameters, Experience_results):
     # Calculation of the integration of the useful downstream solar spectrum
     Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * parameters["Signal_Th"]
     Sol_Spec_mod_R_aval_int = trapz(Sol_Spec_mod_R_aval, parameters["Wl"])
+    # Update the results
     Experience_results.update({
         "Rs" : Rs,
         "Ts" : Ts,
@@ -3643,10 +3665,7 @@ def Explain_results(parameters, Experience_results):
         "R" : R,
         "T" : T,
         "A" : A,
-        "Wl_Sol" : Wl_Sol, 
-        "Sol_Spec" : Sol_Spec,
-        "name_Sol_Spec" : name_Sol_Spec,
-        "Sol_Spec_int" : Sol_Spec_int,
+        "Sol_Spec_int_1" : Sol_Spec_int_1,
         "Sol_Spec_mod_T" : Sol_Spec_mod_T,
         "Sol_Spec_mod_T_int" : Sol_Spec_mod_T_int,
         "Sol_Spec_mod_R" : Sol_Spec_mod_R,
@@ -3795,9 +3814,11 @@ def Optimization_txt(parameters, Experience_results, directory):
     evaluate = parameters.get("evaluate")
     selection = parameters.get("selection")
     mutation_DE = parameters.get("mutation_DE")
-    name_Sol_Spec = Experience_results.get("name_Sol_Spec")
-    Sol_Spec = Experience_results.get("Sol_Spec")
+    
+    name_Sol_Spec = parameters.get("name_Sol_Spec")
+    Sol_Spec = parameters.get("Sol_Spec")
     Wl = parameters.get("Wl")
+    
     Mat_Stack_print = parameters.get("Mat_Stack_print")
     nb_total_layer = parameters.get("nb_total_layer")
     Th_Substrate = parameters.get("Th_Substrate")
@@ -4062,3 +4083,21 @@ def Generate_materials_txt(parameters, Experience_results, directory):
         with open(filename, "w") as file:
             for i in range(len(n)):
                 file.write(str(Wl[i]) + "\t" + str(n[i]) + "\t" + str(k[i])+ "\n")
+    if language == "en":           
+        print("The n,k of each material have been writed in a file named as them")
+    elif language == "fr":
+        print("Les n et k de chaque matériau ont été écrits dans un fichier du même nom")
+    fig, ax1 = plt.subplots()
+    color = 'black' # Basic colors available: b g r c m y k w
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Reflectivity, transmissivity or absorptivity (-)', color=color)
+    ax1.plot(Wl, R, 'black', label='Reflectivity')
+    ax1.plot(Wl, T, 'blue', label='Transmissivity')
+    ax1.plot(Wl, A, 'red', label='Absorptivity')
+    ax1.tick_params(axis='y', labelcolor=color)
+    #plt.title("Optical stack respond")
+    ax1.set_ylim(0, 1) # Change y-axis scale
+    ax1.grid(True)
+    plt.legend()
+    plt.savefig(directory + "/" + "OpticalStackRespond.png", dpi = 300, bbox_inches='tight')
+    plt.show()
