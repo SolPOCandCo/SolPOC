@@ -86,6 +86,7 @@ parameters = {'Wl': Wl, # I store a new variable called "Wl", and I give it Wl's
             'T_abs' : T_abs,
             'T_air' : T_air,
             'Sol_Spec' : Sol_Spec,
+            'name_Sol_Spec' : name_Sol_Spec,
             'Th_range' : Th_range,
             'Th_Substrate' : Th_Substrate,
             'Signal_PV' : Signal_PV,
@@ -334,6 +335,14 @@ if __name__=="__main__":
     
     Explain_results(parameters, Experience_results)
     
+    """_____________________Write results in a text file_________________"""
+
+    Convergences_txt(parameters, Experience_results, directory)
+    Generate_txt(parameters, Experience_results, directory)
+    Optimization_txt(parameters, Experience_results, directory)
+    Simulation_amont_aval_txt(parameters, Experience_results, directory)
+    Generate_materials_txt(parameters, Experience_results, directory)
+    
     """________________________Plot creation_________________________"""
 
     Reflectivity_plot(parameters, Experience_results, directory)
@@ -346,10 +355,3 @@ if __name__=="__main__":
     Volumetric_parts_plot(parameters, Experience_results, directory)
     Stack_plot(parameters, Experience_results, directory)
     
-    """_____________________Write results in a text file_________________"""
-
-    Convergences_txt(parameters, Experience_results, directory)
-    Generate_txt(parameters, Experience_results, directory)
-    Optimization_txt(parameters, Experience_results, directory)
-    Simulation_amont_aval_txt(parameters, Experience_results, directory)
-    Generate_materials_txt(parameters, Experience_results, directory)
