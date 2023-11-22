@@ -6,7 +6,7 @@ contact : antoine.grosjean@epf.fr
 """
 import numpy as np
 import time
-from functions_COPS import *
+from solpoc import *
 import random 
 import os
 import math
