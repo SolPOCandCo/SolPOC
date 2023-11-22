@@ -10,6 +10,8 @@ A specific presentation of the docstrings has been added to allow Sphinx softwar
 List of main functions used and developed for COPS. For use them without any implementation work see the other Python script
 """
 
+import importlib
+from importlib import resources as impresources
 import numpy as np
 import math
 from scipy.integrate import trapz
@@ -784,13 +786,7 @@ k : numpy array
     tableau3D = []
     name="Materials/" + name + ".txt"
     try: 
-        # Open the file in read-only mode
-        file = open(name, "r")
-        # use readlines to read all the lines of the file
-        # The "lines" variable is a list with all the lines from the file
-        lines = file.readlines()
-        # Close the file after reading the lines
-        file.close()
+        lines = _flexible_open_resource(name)
         
         # Make an iteration on the lines
         nb_line = len(lines)
@@ -815,6 +811,32 @@ k : numpy array
     
     return Wl, n, k
 
+_valid_materials = list(map(lambda p: p.name ,
+                            impresources.files('solpoc').joinpath('Materials').glob("*.txt")))
+
+def _flexible_open_resource(filepath, resource_dir = "Materials"):
+    name = os.path.basename(filepath)
+    user_dir = os.path.dirname(os.path.abspath(filepath))
+    pkg_path = impresources.files('solpoc')
+    # First try finding the resource file within the package install folder
+    try:
+        pkg_filepath = pkg_path.joinpath(resource_dir, name)
+        with pkg_filepath.open("r") as fp:
+            return fp.readlines()
+    except FileNotFoundError:
+        try:
+            with open(filepath, "r") as fp:
+                return fp.readlines()
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"{name} as not found neither in your local directory '{user_dir}' nor in the package install directory. "
+                f"Please supply a valid name from {_valid_materials},"
+                f" OR create the file {filepath} within {user_dir}.")
+
+            
+        
+
+
 def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):     
     """
 Name : string
@@ -829,16 +851,11 @@ GT Global Tilt
 Extr
     Extra-terra solar spectrum.
     """
+
     # Initialise an empty table
     tableau3D = []
     try: 
-        # Open the file in read-only mode
-        file = open(name, "r")
-        # use readlines to read all the lines of the file
-        # The "lines" variable is a list with all the lines from the file
-        lines = file.readlines()
-        # Close the file after reading the lines
-        file.close()
+        lines = _flexible_open_resource(name)
         
         # Make an iteration on the lines
         nb_line = len(lines)
@@ -893,13 +910,7 @@ name_f : string
     # Initialise an empty table
     tableau3D = []
     try: 
-        # Open the file in read-only mode
-        file = open(name, "r")
-        # use readlines to read all the lines of the file
-        # The "lines" variable is a list with all the lines from the file
-        lines = file.readlines()
-        # Close the file after reading the lines
-        file.close()
+        lines = _flexible_open_resource(name)
         
         # Make an iteration on the lines
         nb_line = len(lines)
