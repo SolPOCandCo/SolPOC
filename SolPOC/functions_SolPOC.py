@@ -801,7 +801,7 @@ k : numpy array
             tableau3D.append(values)
             
     except FileNotFoundError:
-        print(f"File {name} was not found.")
+        raise FileNotFoundError(f"File {name} not found")
     # Transform the list into a numpy table
     tableau3D = np.array(tableau3D)
     
@@ -849,7 +849,7 @@ Extr
             tableau3D.append(values)
             
     except FileNotFoundError:
-        print("Le fichier n'a pas été trouvé.")
+        raise FileNotFoundError(f"File {name} not found")
     # Transform the list into a numpy table
     tableau3D = np.array(tableau3D)
     # Extract wished datas   
@@ -910,7 +910,7 @@ name_f : string
             tableau3D.append(values)
             
     except FileNotFoundError:
-        print("Le fichier n'a pas été trouvé.")
+        raise FileNotFoundError(f"File {name} not found")
     # Transform the list into a numpy table
     tableau3D = np.array(tableau3D)
     # Extract wished datas   
