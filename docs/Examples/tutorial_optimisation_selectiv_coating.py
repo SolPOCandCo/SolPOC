@@ -113,7 +113,7 @@ else:
     parameters["d_Stack_Opt"] = d_Stack_Opt
 if 'nb_layer' in locals() and nb_layer != 0:
     parameters["nb_layer"] = nb_layer
-    parameters["n_plage"] = n_range
+    parameters["n_range"] = n_range
 # if the seed variable exists, i add it in the dictionary 
 if 'seed' in locals():
     parameters["seed"] = seed

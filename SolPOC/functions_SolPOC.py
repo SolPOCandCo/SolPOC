@@ -2249,8 +2249,8 @@ seed : Int
             X_min += [Th_range[0]]
             X_max += [Th_range[1]]
          
-    if 'n_plage' in parameters:
-        n_range = parameters.get('n_plage')
+    if 'n_range' in parameters:
+        n_range = parameters.get('n_range')
         for i in range(nb_layer):
             X_min += [n_range[0]]
             X_max += [n_range[1]]
@@ -2417,8 +2417,8 @@ The stack tickness is save during the process
          X_min += [Th_range[0]]
          X_max += [Th_range[1]]
          
-    if 'n_plage' in parameters:
-        n_range = parameters.get('n_plage')
+    if 'n_range' in parameters:
+        n_range = parameters.get('n_range')
         for i in range(nb_layer):
             X_min += [n_range[0]]
             X_max += [n_range[1]]
