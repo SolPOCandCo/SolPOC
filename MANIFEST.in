@@ -1,2 +1,4 @@
 include *.md
 include-recursive solpoc *.md *.txt
+global-exclude */__pycache__/*
+global-exclude *.pyc
