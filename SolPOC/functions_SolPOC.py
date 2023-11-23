@@ -2812,7 +2812,7 @@ Need generate_neighbor() and acceptance_probability() functions.
             
             neighbor_score = evaluate(neighbor_solution, parameters)
 
-            if acceptance_probability(evaluate(current_solution), neighbor_score, current_temperature) > random.uniform(0, 1):
+            if acceptance_probability(evaluate(current_solution, parameters), neighbor_score, current_temperature) > random.uniform(0, 1):
                 current_solution = neighbor_solution
                 # Keeping the current solution, depending of the selection method (min or max)
                 if selection[0] == "selection_max" and neighbor_score > best_score:
