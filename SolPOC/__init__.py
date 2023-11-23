@@ -1,4 +1,13 @@
-__version__ = __import__('importlib.metadata').metadata.version(__package__)
+from importlib import metadata
+__version__ = metadata.version(__package__)
+_metadata = metadata.metadata(__package__).get_payload()
+_summary = _metadata.split('\n\n',1)[1]  # get readme part of the metadata
+
+__doc__ = f"""
+ Version {__version__}  
+
+{_summary}
+"""
 
 from .functions_SolPOC import BB
 from .functions_SolPOC import Bruggeman
@@ -78,3 +87,5 @@ from .functions_SolPOC import simulated_annealing
 
 from .functions_SolPOC import valeurs_equidistantes
 from .functions_SolPOC import write_stack_period
+
+from .cli import init

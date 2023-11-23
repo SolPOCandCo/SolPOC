@@ -162,3 +162,4 @@ cython_debug/
 # vscode files
 *.code-workspace
 .vscode
+.pypirc

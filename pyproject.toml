@@ -45,4 +45,8 @@ Issues = "https://github.com/mrgrosjeanantoine/SolPOC/issues"
 [tool.setuptools.packages]
 find = {}
 
+[project.scripts]
+solpoc-init = "solpoc:init"
 
+[tool.setuptools]
+include-package-data = true

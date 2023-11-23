@@ -23,15 +23,21 @@ This code can be used for scientific research or academic educations.
 
 ## Installation
 
-Currently, a command such as `pip install solpoc` is not available. 
+Within your python installation (e.g. within Anaconda prompt or Anaconda Powershell) you can install SolPOC with the following command:
 
-"Installing" SolPOC means downloading the entire project, including the /Materials folder, which contains the optical indices of the materials as txt files. Then open the file "optimisation_multiprocess.py" from an IDE who can run Python code. The "function_SolPOC.py" file contains all functions and must be visible to optimisation_multiprocess.py file. All the code in "function_SolPOC.py" does not need to be modified for run a optimisation process. 
+`pip install solpoc`
 
-SolPOC can be used from optimisation_multiprocess.py simply by modifying the code from line 17 to line 67. This replaces a kind of GUI (Graphic Users Interface). SolPOC is designed to be used by users with little knowledge of Python. Lines 17 to 67 describe the problem to be optimized and set the parameters. You don't need to modify a single line of code after line 67. If launched correctly, the code synthesizes the results. It automatically writes the results to a folder, named with the date and time of execution with several pictures and textes files. 
+To get a folder with the basic optimization script, use the following command: `solpoc-init`. This will create a folder called `ProjectSolPoc` containing the base `optimisation_multiprocess.py` script inside.
+
+Then open the file `optimisation_multiprocess.py` from an IDE who can run Python code. 
+
+## Usage
+
+SolPOC can be used from `optimisation_multiprocess.py` simply by modifying the code from line 17 to line 67. This replaces a kind of GUI (Graphic Users Interface). SolPOC is designed to be used by users with little knowledge of Python. Lines 17 to 67 describe the problem to be optimized and set the parameters. You don't need to modify a single line of code after line 67. If launched correctly, the code synthesizes the results. It automatically writes the results to a folder, named with the date and time of execution with several pictures and textes files. 
 
 ## User Guide
 
-A User Guide and different tutorials are present in the tutorial folders. As first users, give us any feedback that will help us make the code easier to understand for others users. 
+A User Guide and different tutorials are present in the [docs](./docs/Readme.md) folders. As first users, give us any feedback that will help us make the code easier to understand for others users. 
 
 ## Example of SolPOC use
 
@@ -44,7 +50,7 @@ The code can be used for several purposes, but not limited :
 - reflective coatings, using metallic or dielectric layers
 - selective coatings for solar thermal applications (absorb the solar spectrum without radiative losses) 
 
-See the [tutorial folder](./JupyterNotebook/) for more details. 
+See the [examples folder](./Examples/) for more details. 
 
 ## For specialists
 
