@@ -1856,16 +1856,6 @@ def get_seed_from_randint(size=None, rng=None):
                        size=size, dtype=np.uint32)
 
 
-def get_seed_for_run(ith_run, nb_run, initial_seed):
-    """Computes a common list of nb_run seeds and returns the i-th seed."""
-    # get a common RNG for all runs
-    rng = np.random.RandomState(initial_seed)
-    # extract a common list of nb_run integer seeds
-    seed_list = get_seed_from_randint(size=nb_run, rng=rng)
-    # return ith seed
-    return seed_list[ith_run]
-
-
 def generate_population(chromosome_size, parameters):
     """
 See : function optimize_gn.

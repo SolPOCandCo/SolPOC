@@ -74,7 +74,6 @@ from .functions_SolPOC import generate_mutant
 from .functions_SolPOC import generate_neighbor
 from .functions_SolPOC import generate_population
 from .functions_SolPOC import get_seed_from_randint
-from .functions_SolPOC import get_seed_for_run
 from .functions_SolPOC import helio_th
 
 from .functions_SolPOC import interpolate_with_extrapolation

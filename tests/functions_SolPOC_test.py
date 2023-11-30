@@ -42,6 +42,40 @@ def test_get_seed_for_run():
     out_call2 = solpoc.get_seed_for_run(5, 10, 24)
     assert np.all(np.equal(out_call1, out_call2))
 
+# test for multiprocessing
+# elements that go through the pool need to be declared at top level
+from multiprocessing import Pool
+parameters = {'seed':123}
+nb_run=10
+parameters['seed_list'] = solpoc.get_seed_from_randint(
+    nb_run, 
+    rng=np.random.RandomState(parameters['seed']))
+
+def single_run(i):
+    # global parameters
+    this_run_params = {}
+    this_run_params.update(parameters)
+    this_run_params['seed'] = parameters['seed_list'][i]
+    return this_run_params['seed']
+
+
+def test_multiprocessesing_seeds():
+    global parameters, nb_run
+
+    # ensure same list is generated
+    initial_rng = np.random.RandomState(parameters['seed'])
+    seed_list_initial = solpoc.get_seed_from_randint(nb_run, initial_rng)
+
+    assert np.all(np.equal(seed_list_initial, parameters['seed_list']))
+
+    # ensure seeds reach the different processes
+    # we make them return the seed they got, 
+    # then check if we get the same seeds in the same order
+    pool = Pool(2)
+    seed_list_after_map = pool.map(single_run, range(nb_run))
+    assert np.all(np.equal(
+        seed_list_initial, seed_list_after_map))
+
 
 @fixture()
 def base_parameters():
