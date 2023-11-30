@@ -1841,19 +1841,29 @@ A : List
 
 
 def get_seed_from_randint(size=None, rng=None):
-    """Uses numpy randint to generate integer seeds between int32 min and int32 max.
+    """Uses numpy randint to generate integer seeds between uint32 min and uint32 max (i.e. 0 and 2^32 - 1).
 
     Args:
         size (int, optional): number of integer seeds to generate. If None, a single scalar is returned. Defaults to None.
         rng (numpy RNG, optional): If given, sets the numpy RNG onto which randint is called. If left to be None, np.random.randint is used. Defaults to None.
 
     Returns:
-        int or ndarray(int): the seed (or array of seeds) generated
+        int or ndarray(uint32): the seed (or array of seeds) generated
     """
     if rng is None:
         rng = np.random
-    return rng.randint(np.iinfo(np.int32).min, np.iinfo(np.int32).max+1,
-                       size=size)
+    return rng.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max,
+                       size=size, dtype=np.uint32)
+
+
+def get_seed_for_run(ith_run, nb_run, initial_seed):
+    """Computes a common list of nb_run seeds and returns the i-th seed."""
+    # get a common RNG for all runs
+    rng = np.random.RandomState(initial_seed)
+    # extract a common list of nb_run integer seeds
+    seed_list = get_seed_from_randint(size=nb_run, rng=rng)
+    # return ith seed
+    return seed_list[ith_run]
 
 
 def generate_population(chromosome_size, parameters):
