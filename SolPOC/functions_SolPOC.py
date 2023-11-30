@@ -1839,6 +1839,23 @@ A : List
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
     return R , T , A
 
+
+def get_seed_from_randint(size=None, rng=None):
+    """Uses numpy randint to generate integer seeds between int32 min and int32 max.
+
+    Args:
+        size (int, optional): number of integer seeds to generate. If None, a single scalar is returned. Defaults to None.
+        rng (numpy RNG, optional): If given, sets the numpy RNG onto which randint is called. If left to be None, np.random.randint is used. Defaults to None.
+
+    Returns:
+        int or ndarray(int): the seed (or array of seeds) generated
+    """
+    if rng is None:
+        rng = np.random
+    return rng.randint(np.iinfo(np.int32).min, np.iinfo(np.int32).max+1,
+                       size=size)
+
+
 def generate_population(chromosome_size, parameters):
     """
 See : function optimize_gn.
