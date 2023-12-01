@@ -1,6 +1,11 @@
 from importlib import metadata
 __version__ = metadata.version(__package__)
+# Note: the metadata method returns an object representing an email-like message
+# payload corresponds to it's content, which is equal to the PKG_INFO file 
+# within the egg-info folder
 _metadata = metadata.metadata(__package__).get_payload()
+# there is a blank line separating the readme part from the "header" of the PKG-INFO
+# so we split the content at that line and get the second part
 _summary = _metadata.split('\n\n',1)[1]  # get readme part of the metadata
 
 __doc__ = f"""
@@ -68,6 +73,7 @@ from .functions_SolPOC import evaluate_rh
 from .functions_SolPOC import generate_mutant
 from .functions_SolPOC import generate_neighbor
 from .functions_SolPOC import generate_population
+from .functions_SolPOC import get_seed_from_randint
 from .functions_SolPOC import helio_th
 
 from .functions_SolPOC import interpolate_with_extrapolation

@@ -1,5 +1,18 @@
 import solpoc
 import numpy as np
+from pytest import fixture
+
+from fixture_data import get_DEvol_parameters, get_base_parameters
+
+@fixture()
+def base_parameters():
+    return get_base_parameters()
+
+@fixture
+def DEvol_parameters():
+    return get_DEvol_parameters()
+
+
 
 def test_RTA3C():
     # Test case taken from function docstring
@@ -16,5 +29,54 @@ def test_RTA3C():
     assert np.allclose(Refl, np.array([0.00767694, 0.00903544]))
     assert np.allclose(Trans, np.array([0.60022613, 0.64313401]))
     assert np.allclose(Abs, np.array([0.39209693, 0.34783055]))
+
+
+def test_get_seed_from_randint():
+    # no args
+    seed = solpoc.get_seed_from_randint()
+    assert seed.dtype == 'uint32'
+    # with size argument
+    seed_list = solpoc.get_seed_from_randint(size=5)
+    assert seed_list.shape[0] == 5
+    assert seed_list.dtype == 'uint32'
+    # with rng input
+    rng = np.random.RandomState(24)
+    seed = solpoc.get_seed_from_randint(rng=rng)
+    assert seed.dtype == 'uint32'
+
+
+def test_get_seed_for_run():
+    out_call1 = solpoc.get_seed_for_run(0, 1, 24)
+    out_call2 = solpoc.get_seed_for_run(0, 1, 24)
+    assert np.all(np.equal(out_call1, out_call2))
+
+    out_call1 = solpoc.get_seed_for_run(5, 10, 24)
+    out_call2 = solpoc.get_seed_for_run(5, 10, 24)
+    assert np.all(np.equal(out_call1, out_call2))
+
+
+
+
+
+
+
+
+
+def test_DEvol(base_parameters, DEvol_parameters):
+    # only tests if it is running
+    parameters = base_parameters
+    parameters.update(DEvol_parameters)
+
+    best_solution, dev, n_iter, seed = parameters['algo'](
+        parameters['evaluate'], 
+        parameters['selection'], 
+        parameters)
+
+    best_solution = np.array(best_solution)
+    perf = parameters['evaluate'](best_solution, parameters)
+
+
+
+
 
 # TODO complete with tests for other functions in file
