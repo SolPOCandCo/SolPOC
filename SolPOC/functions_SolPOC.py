@@ -3893,7 +3893,8 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("Le nom de la fonction d'optimisation est : " + str(algo.__name__) + "\n")
             file.write("Le nom de la fonction d'évaluation est : " + str(evaluate.__name__) + "\n")
             file.write("Le nom de la fonction de sélection est : " + str(selection.__name__) + "\n")
-            file.write("Si optimisation par DE, la mutation est : " + mutation_DE + "\n")
+            if mutation_DE is not None:
+                file.write("Si optimisation par DE, la mutation est : " + mutation_DE + "\n")
             file.write("\n")
             file.write("L'emplacement et le nom du spectre solaire est :"  + str(name_Sol_Spec) + "\n")
             file.write("La valeur d'irradiance : " + str("{:.1f}".format(trapz(Sol_Spec, Wl))) + " W/m²" + "\n")
@@ -3940,7 +3941,8 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("The name of the optimization function is: " + str(algo.__name__) + "\n")
             file.write("The name of the evaluation function is: " + str(evaluate.__name__) + "\n")
             file.write("The name of the selection function is: " + str(selection.__name__) + "\n")
-            file.write("If optimizing with DE, the mutation is: " + mutation_DE + "\n")
+            if mutation_DE is not None:
+                file.write("If optimizing with DE, the mutation is: " + mutation_DE + "\n")
             file.write("\n")
             file.write("The location and name of the solar spectrum is: " + str(name_Sol_Spec) + "\n")
             file.write("The irradiance value: " + str("{:.1f}".format(trapz(Sol_Spec, Wl))) + " W/m²" + "\n")
