@@ -1634,7 +1634,7 @@ P_RTR: Int (float)
     # The profile is reflective from 0 to Lambda_cut_1
     Lambda_cut_1 = parameters.get('Lambda_cut_1')
     # The profile is transparent from Lambda_cut_1 to Lambda_cut_1
-    Lambda_cut_1 = parameters.get('Lambda_cut_2')
+    Lambda_cut_2 = parameters.get('Lambda_cut_2')
     # Treatment of the optimization of the n(s)
     Mat_Stack = parameters.get('Mat_Stack')
     """
@@ -1645,7 +1645,7 @@ P_RTR: Int (float)
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
     
     Wl_1 = np.arange(min(Wl),Lambda_cut_1+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
-    Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_1+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
+    Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_2+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     # Calculation of the RTA
     d_Stack = d_Stack.reshape(1, len(individual))
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
@@ -2782,14 +2782,15 @@ Need generate_neighbor() and acceptance_probability() functions.
     Th_Substrate = parameters.get('Th_Substrate')
     # number of iteration of the annealing
     nb_generation = parameters.get('nb_generation')
+    pop_size = parameters.get('pop_size')
+    budget = pop_size * nb_generation
     Th_range = parameters.get('Th_range')
     
     # Get the name of the selection function
     selection = selection.__name__,
     
     # Settings of the simulated annealing
-    initial_temperature = 3000.0
-    final_temperature = 0.01
+    initial_temperature = 4500.0
     cooling_rate = 0.95
     current_temperature = initial_temperature
     
@@ -2814,40 +2815,40 @@ Need generate_neighbor() and acceptance_probability() functions.
     
     convergence = [] # List of best values durint the optimization process
     convergence.append(best_score)  # First best values 
+    i = 0 
 
     # Start of annealing
-    while current_temperature > final_temperature:
+    while i < budget:
         
-        for _ in range(nb_generation):
-            neighbor_solution = generate_neighbor(current_solution, parameters)
-            
-            # Evaluate the score of the neighbor according of 
-            if selection[0] == "selection_min":
-                neighbor_score = evaluate(neighbor_solution, parameters)
-            elif selection[0] == "selection_max": 
-                neighbor_score = 1- evaluate(neighbor_solution, parameters)
-            
+        neighbor_solution = generate_neighbor(current_solution, parameters)
+        
+        # Evaluate the score of the neighbor according of 
+        if selection[0] == "selection_min":
             neighbor_score = evaluate(neighbor_solution, parameters)
+        elif selection[0] == "selection_max": 
+            neighbor_score = 1- evaluate(neighbor_solution, parameters)
+        
+        neighbor_score = evaluate(neighbor_solution, parameters)
 
-            if acceptance_probability(evaluate(current_solution, parameters), neighbor_score, current_temperature) > random.uniform(0, 1):
-                current_solution = neighbor_solution
-                # Keeping the current solution, depending of the selection method (min or max)
-                if selection[0] == "selection_max" and neighbor_score > best_score:
-                    best_solution = current_solution
-                    best_score = neighbor_score
-                    convergence.append(best_score)
-                    
-                if selection[0] == "selection_min" and neighbor_score < best_score:
-                    best_solution = current_solution
-                    best_score = neighbor_score
-                    convergence.append(best_score)
-                    
+        if acceptance_probability(evaluate(current_solution, parameters), neighbor_score, current_temperature) > random.uniform(0, 1):
+            current_solution = neighbor_solution
+            # Keeping the current solution, depending of the selection method (min or max)
+            if selection[0] == "selection_max" and neighbor_score > best_score:
+                best_solution = current_solution
+                best_score = neighbor_score
+                convergence.append(best_score)
+                
+            if selection[0] == "selection_min" and neighbor_score < best_score:
+                best_solution = current_solution
+                best_score = neighbor_score
+                convergence.append(best_score)
+        i = i + 1            
         current_temperature *= cooling_rate
         
     #best_score : score (cost function) of the best solution
     return [best_solution, convergence, nb_generation, seed] 
 
-def generate_mutant(solution, step_size):
+def generate_mutant(solution, step_size, Th_range):
     """
 Function for One_plus_One optimisation method.
     
@@ -2863,9 +2864,18 @@ Returns
 mutant : List
     List based on solution with random values added.
     """
+    if step_size < 1:
+        step_size = 1
+    if step_size > Th_range[1]:
+        step_size =Th_range[1]
     # Modification of the mutant start at 1 and not 0, because the 1st value is the substrat thickness, witch cannot be modified
     mutant = solution.copy()  # Copy of the initial solution
-    mutant[1:] +=  np.random.normal(0, step_size, len(solution)-1)
+    for i in range(len(solution)-1):
+        mutant[i+1] =  np.random.normal(solution[i+1], step_size)
+    # Modification if the mutant is below or upper the limite
+    for i in range(1, len(mutant)):
+        mutant[i] = max(min(mutant[i], Th_range[1]), Th_range[0])
+   
     #return mutant.tolist()
     return mutant
 
@@ -2879,12 +2889,6 @@ that it is the exact (1+1)_ES implementation based on information at our disposa
 \nSee P.Bennet thesis and/or Nikolaus Hansen and al. Comparing results of 31 algorithms from the black-box optimization
 benchmarking BBOB-2009 | Proceedings of the 12th annual conference companion on Genetic
 and evolutionary computation. 2010.
-    
-Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
-"This DE is a current to best. Hypertuned on the chirped problem. 
-Abrupt elimination of individuals not respecting the bounds
-(compare with what happens if you just put back to the edge
-could be a good idea on some problems)".
 
 Parameters
 ----------
@@ -2916,7 +2920,7 @@ seed : Int
     Th_range = parameters.get('Th_range')
     
     # Step size scaling factor
-    step_size_factor = parameters.get('mutation_delta')
+    step_size_factor = 0.99
     
     # Get the selection function name
     selection = selection.__name__,
@@ -2936,7 +2940,7 @@ seed : Int
     
     chromosome_size = len(Mat_Stack) - 1 # Number of thin layers
     # Generation of the initial solution
-    initial_solution = [random.uniform(Th_range[0], Th_range[1]) for _ in range(chromosome_size)]  # Generate a random solution
+    initial_solution = [np.random.uniform(Th_range[0], Th_range[1]) for _ in range(chromosome_size)]  # Generate a random solution
     initial_solution = np.insert(initial_solution, 0, Th_Substrate) # I add the thickness of the substrate between bounds      
     
     current_solution = initial_solution
@@ -2948,7 +2952,7 @@ seed : Int
     convergence.append(current_score)
 
     for _ in range(num_iterations):
-        mutant_solution = generate_mutant(current_solution, current_step_size)
+        mutant_solution = generate_mutant(current_solution, current_step_size, Th_range)
         mutant_score = evaluate(mutant_solution, parameters)
         
         if selection[0] == "selection_max" and mutant_score > current_score:
@@ -2966,6 +2970,11 @@ seed : Int
             current_step_size *= step_size_factor
         else:
             current_step_size /= step_size_factor
+            
+        if current_step_size > 50:
+            current_step_size = 50
+        if current_step_size < 0:
+            current_step_size = 5
 
     return [current_solution, convergence, num_iterations, seed]
 
