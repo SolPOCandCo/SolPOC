@@ -1,5 +1,4 @@
 import numpy as np
-from pytest import fixture
 import solpoc
 
 
@@ -77,6 +76,3 @@ def get_DEvol_parameters():
         'f1': 0.9, 'f2': 0.8,  # Hyperparameter for DEvol
     })
     return parameters
-
-
-
