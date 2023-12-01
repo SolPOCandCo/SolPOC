@@ -2,7 +2,7 @@ import solpoc
 import numpy as np
 from pytest import fixture
 
-from fixture_data import get_DEvol_parameters, get_base_parameters
+from .fixture_data import get_DEvol_parameters, get_base_parameters
 
 
 @fixture()

@@ -1,8 +1,8 @@
 # test for multiprocessing
 
-import solpoc
 import numpy as np
-from fixture_data import get_DEvol_parameters, get_base_parameters
+import solpoc
+from .fixture_data import get_DEvol_parameters, get_base_parameters
 
 from multiprocessing import Pool
 
