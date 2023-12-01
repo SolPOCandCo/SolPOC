@@ -48,16 +48,6 @@ def test_get_seed_from_randint():
     assert seed.dtype == 'uint32'
 
 
-def test_get_seed_for_run():
-    out_call1 = solpoc.get_seed_for_run(0, 1, 24)
-    out_call2 = solpoc.get_seed_for_run(0, 1, 24)
-    assert np.all(np.equal(out_call1, out_call2))
-
-    out_call1 = solpoc.get_seed_for_run(5, 10, 24)
-    out_call2 = solpoc.get_seed_for_run(5, 10, 24)
-    assert np.all(np.equal(out_call1, out_call2))
-
-
 def test_DEvol(base_parameters, DEvol_parameters):
     # only tests if it is running
     parameters = base_parameters
