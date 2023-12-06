@@ -833,10 +833,6 @@ def _flexible_open_resource(filepath, resource_dir = "Materials"):
                 f"Please supply a valid name from {_valid_materials},"
                 f" OR create the file {filepath} within {user_dir}.")
 
-            
-        
-
-
 def open_SolSpec(name = 'Materials/SolSpec.txt', type_spec="DC"):     
     """
 Name : string
@@ -3632,6 +3628,9 @@ def Explain_results(parameters, Experience_results):
 
     # I've just found my maximum, out of all my runs. It's the best of the best! Congratulations! 
     
+    Sol_Spec = parameters.get("Sol_Spec")
+    Sol_Spec_int = trapz(Sol_Spec, parameters["Wl"])
+    
     # Calculation of Rs, Ts, As du max (solar performances)
     Rs, Ts, As = evaluate_RTA_s(Experience_results["tab_best_solution"][max_index], parameters) 
     # Calculation le R, T, A (Reflectivity and other, for plot a curve)
@@ -3702,6 +3701,7 @@ def Explain_results(parameters, Experience_results):
         "R" : R,
         "T" : T,
         "A" : A,
+        "Sol_Spec_int" : Sol_Spec_int,
         "Sol_Spec_int_1" : Sol_Spec_int_1,
         "Sol_Spec_mod_T" : Sol_Spec_mod_T,
         "Sol_Spec_mod_T_int" : Sol_Spec_mod_T_int,
@@ -3881,6 +3881,7 @@ def Optimization_txt(parameters, Experience_results, directory):
     cpu_used = parameters.get("cpu_used")
     time_real = parameters.get("time_real")
     tab_temps = Experience_results.get("tab_temps")
+    seed = parameters.get("seed")
 
     filename = directory + "/Optimization.txt"
     script_name = os.path.basename(__file__)
@@ -3930,6 +3931,7 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("Nb de processeur utilisé\t" +str(cpu_used) + "\n")
             file.write("Le temps réel d'éxécution (en s) total est de :\t" + str("{:.2f}".format(time_real))  + "\n")
             file.write("La somme du temps de calcul (en s) processeur est de :\t" + str("{:.2f}".format(sum(tab_temps)) +  "\n"))
+            file.write("La valeur du seed est: " +str(seed) + "\n") 
         
         print("Les noms et valeurs des variables de la simulation ont été écrites")
     if language == "en":
@@ -3978,7 +3980,7 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("Number of used CPU: " + str(cpu_used) + "\n")
             file.write("Total execution time (in s): " + str("{:.2f}".format(time_real)) + "\n")
             file.write("Sum of processor computation time (in s): " + str("{:.2f}".format(sum(tab_temps)) + "\n"))
-        
+            file.write("Seed value : " +str(seed) + "\n")
         print("The names and values of the simulation variables have been written.")
 
 def Simulation_amont_aval_txt(parameters, Experience_results, directory):
@@ -3990,7 +3992,7 @@ def Simulation_amont_aval_txt(parameters, Experience_results, directory):
     name_Sol_Spec = Experience_results.get("name_Sol_Spec")
     name_Sol_Spec_2 = Experience_results.get("name_Sol_Spec_2")
     Sol_Spec_int = Experience_results.get("Sol_Spec_int")
-    Sol_Spec = Experience_results.get("Sol_Spec")
+    Sol_Spec = parameters.get("Sol_Spec")
     Sol_Spec_2 = Experience_results.get("Sol_Spec_2")
     Lambda_cut_1 = parameters.get("Lambda_cut_1")
     Lambda_cut_2 = parameters.get("Lambda_cut_2")
@@ -4010,6 +4012,9 @@ def Simulation_amont_aval_txt(parameters, Experience_results, directory):
     Sol_Spec_mod_R_aval_int = Experience_results.get("Sol_Spec_mod_R_aval_int")
     R = Experience_results.get('R')
     T = Experience_results.get('T')
+    
+    Lambda_cut_1 = parameters.get('Lambda_cut_1')
+    Lambda_cut_2 = parameters.get('Lambda_cut_2')
 
     if evaluate.__name__ == "evaluate_netW_PV_CSP" or evaluate.__name__ == "evaluate_RTR" or evaluate.__name__ == "evaluate_low_e":
     
