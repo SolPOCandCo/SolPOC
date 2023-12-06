@@ -127,9 +127,9 @@ if 'seed' in locals():
 else:
     parameters["seed"] = get_seed_from_randint()
 # Create seed list for multiprocessing
-    parameters['seed_list'] = get_seed_from_randint(
-        nb_run,
-        rng=np.random.RandomState(parameters['seed']))
+parameters['seed_list'] = get_seed_from_randint(
+    nb_run,
+    rng=np.random.RandomState(parameters['seed']))
 # If I optimized an antireflective coating for PV, I need the PV signal shape
 if evaluate.__name__ == "evaluate_T_pv" or evaluate.__name__ == "evaluate_A_pv":
     parameters["Sol_Spec_with_PV"] = Signal_PV * Sol_Spec
@@ -220,7 +220,7 @@ def run_problem_solution(i):
     this_run_params.update(parameters)
     this_run_params['seed'] = parameters['seed_list'][i]
     # Run the optimisation process (algo), with an evaluate method, a selection method and the parameters dictionary.
-    best_solution, dev, n_iter, seed = algo(evaluate, selection, parameters)
+    best_solution, dev, n_iter, seed = algo(evaluate, selection, this_run_params)
     # calculate the time used
     t2 = time.time()
     temps = t2 - t1
