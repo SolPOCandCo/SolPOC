@@ -71,7 +71,6 @@ from .functions_SolPOC import evaluate_T_s
 from .functions_SolPOC import evaluate_T_vis
 from .functions_SolPOC import evaluate_example
 from .functions_SolPOC import evaluate_low_e
-from .functions_SolPOC import evaluate_netW_PV_CSP
 from .functions_SolPOC import evaluate_rh
 from .functions_SolPOC import generate_mutant
 from .functions_SolPOC import generate_neighbor
