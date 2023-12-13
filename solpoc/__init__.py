@@ -1,18 +1,21 @@
 from importlib import metadata
-__version__ = metadata.version(__package__)
-# Note: the metadata method returns an object representing an email-like message
-# payload corresponds to it's content, which is equal to the PKG_INFO file 
-# within the egg-info folder
-_metadata = metadata.metadata(__package__).get_payload()
-# there is a blank line separating the readme part from the "header" of the PKG-INFO
-# so we split the content at that line and get the second part
-_summary = _metadata.split('\n\n',1)[1]  # get readme part of the metadata
+try:
+    __version__ = metadata.version(__package__)
+    # Note: the metadata method returns an object representing an email-like message
+    # payload corresponds to it's content, which is equal to the PKG_INFO file 
+    # within the egg-info folder
+    _metadata = metadata.metadata(__package__).get_payload()
+    # there is a blank line separating the readme part from the "header" of the PKG-INFO
+    # so we split the content at that line and get the second part
+    _summary = _metadata.split('\n\n',1)[1]  # get readme part of the metadata
 
-__doc__ = f"""
- Version {__version__}  
+    __doc__ = f"""
+    Version {__version__}  
 
-{_summary}
-"""
+    {_summary}
+    """
+except metadata.PackageNotFoundError:
+    pass
 
 from .functions_SolPOC import BB
 from .functions_SolPOC import Bruggeman
@@ -68,7 +71,6 @@ from .functions_SolPOC import evaluate_T_s
 from .functions_SolPOC import evaluate_T_vis
 from .functions_SolPOC import evaluate_example
 from .functions_SolPOC import evaluate_low_e
-from .functions_SolPOC import evaluate_netW_PV_CSP
 from .functions_SolPOC import evaluate_rh
 from .functions_SolPOC import generate_mutant
 from .functions_SolPOC import generate_neighbor

@@ -5,7 +5,7 @@ name: Python package
 
 on:
   push:
-    branches: [ "main", "dev-protov1" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -28,9 +28,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Install package
-      run: |
-        python -m pip install .
     - name: Test with pytest
       run: |
-        pytest
+        python -m pytest

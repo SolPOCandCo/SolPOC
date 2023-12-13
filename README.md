@@ -22,14 +22,54 @@ This code can be used for scientific research or academic educations.
 - Propose a simplified user interface, bringing together useful variables in a few lines of code.
 
 ## Installation
-
-Within your python installation (e.g. within Anaconda prompt or Anaconda Powershell) you can install SolPOC with the following command:
+### From PyPI (Python Package Index)
+From a Python IDE (e.g. Spyder) type the following command in the IPython Console:
 
 `pip install solpoc`
 
-To get a folder with the basic optimization script, use the following command: `solpoc-init`. This will create a folder called `ProjectSolPoc` containing the base `optimisation_multiprocess.py` script inside.
+This will download and install solpoc. 
+You may need to restart the IPython kernel so the new package is taken into account.
+Once this is done, type the following command (again into the IPython Console): 
 
-Then open the file `optimisation_multiprocess.py` from an IDE who can run Python code. 
+`!solpoc-init`
+
+This will create a folder called `ProjectSolPoc` (within your Windows user folder), containing the base `optimisation_multiprocess.py` script inside. For instance, if your username is `toto`, then the file will be at 
+`C:\Users\toto\ProjectSolPoc`. Your are free to move and rename this folder as you see fit.
+
+Now you can open and launch the file `optimisation_multiprocess.py` from an IDE which can run Python code. 
+
+### From sources (i.e. by downloading this repo)
+Clone or download the repo to your machine. If you've downloaded an archive, you need to unzip it. After that you should have a folder containing the full repo:
+
+```
+C:\<path_to_repo_folder>\SolPOC
+   | ---  Examples
+   | ---  docs
+   | ---  solpoc
+          | --- scripts
+          | --- Materials
+          | --- __init__.py
+          | --- ...
+   | ---  ...
+   | ---  pyproject.toml
+```
+
+Open this folder with your Python IDE. Then, on the IPython Console, type the following command:
+
+`pip install -e .`
+
+This will install the local version of solpoc (instead of the one in PyPI archives).
+You may need to restart the IPython kernel so the new package is taken into account.
+
+You may navigate to `solpoc\scripts` to recover the main script `optimisation_multiprocess.py`, that you can launch with your IDE.
+
+### Uninstalling
+In either case, to uninstalll the package, open your Python IDE and type on the IPython kernel:
+
+`pip uninstall solpoc -y`
+
+You may need to restart the IPython kernel so the change is taken into account.
+
 
 ## Usage
 
