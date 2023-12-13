@@ -8,7 +8,7 @@ contact : antoine.grosjean@epf.fr
 
 A specific presentation of the docstrings has been added to allow Sphinx software to generate a full documentation of this document
 
-List of main functions used and developed for COPS. For use them without any implementation work see the other Python script
+List of main functions used and developed for SolPOC. For use them without any implementation work see the other Python script
 """
 
 import importlib
