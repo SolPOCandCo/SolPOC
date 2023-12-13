@@ -3,6 +3,7 @@
 Created on 27 07 2023
 COPS v 0.9.1
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
+Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
 
 A specific presentation of the docstrings has been added to allow Sphinx software to generate a full documentation of this document
