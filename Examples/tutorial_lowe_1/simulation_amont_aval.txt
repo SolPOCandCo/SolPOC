@@ -1,0 +1,7 @@
+Le nom du fichier est : functions_SolPOC.py
+Heure de lancement 19h-12m-27s
+A low emissivity coating for building
+_____________________________________________
+Le nom du fichier amont et le n° de la colone est : Materials/PV_cells.txt ,col n° 1
+Le nom du fichier avant et le n° de la colone est : Materials/Thermal_absorber.txt ,col n° 1
+Le nom du spectre solaire utilisé pour l'optimisation ': Materials/SolSpec.txt type_de_spectre:GT

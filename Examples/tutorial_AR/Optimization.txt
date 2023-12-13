@@ -1,0 +1,36 @@
+The filename is: functions_SolPOC.py
+Launch time: 18h-16m-38s
+Tutorial : anti-reflective coating for human eye, with research of the best theorical refractiv index
+_____________________________________________
+The name of the optimization function is: DEvol
+The name of the evaluation function is: evaluate_T_vis
+The name of the selection function is: selection_max
+If optimizing with DE, the mutation is: current_to_best
+
+The location and name of the solar spectrum is: Materials/SolSpec.txt type_de_spectre:GT
+The irradiance value: 10.0 W/m²
+
+Folder name: 2023-11-22-18h16
+Materials in the stack: ['BK7', 'X', 'X', 'X']
+The number of thin layers: 4
+Wavelength range: 280 nm to 800 nm, step of 5 nm
+Substrate thickness, in nm: 1000000.0
+Range of thin layer thickness: 0 to 200 nm
+Range of thin layer indices: 1.442 to 2.42
+Incident angle on the stack: 0°
+Concentration ratio: 80
+Air temperature: 293 K
+Absorber temperature: 573 K
+Population size: 30
+Crossover rate: None
+Evaluation rate: None
+Mutation rate: 0.5
+Values of f1 and f2: 0.9 & 0.8
+Mutation range: 15
+Precision of the algorithm in auto: None
+Number of generations: 100
+Number of run: 8
+Number of available CPU: 8
+Number of used CPU: None
+Total execution time (in s): 9.83
+Sum of processor computation time (in s): 53.53
