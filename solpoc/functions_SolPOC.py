@@ -188,7 +188,7 @@ For the indexes notation n and k, understand that:
     
     # Power transmittance
     Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
-    Rp = (np.real(rs)) ** 2 + (np.imag(rp)) ** 2;
+    Rp = (np.real(rp)) ** 2 + (np.imag(rp)) ** 2;
     Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
         
     # Power transmittance
@@ -348,7 +348,7 @@ Abs : float
     
     # Power transmittance
     Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
-    Rp = (np.real(rs)) ** 2 + (np.imag(rp)) ** 2;
+    Rp = (np.real(rp)) ** 2 + (np.imag(rp)) ** 2;
     Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
         
     # Power transmittance
