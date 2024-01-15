@@ -8,14 +8,14 @@ version = "0.9.2"
 
 authors = [
     {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"},
-    {name = "Audrey Soum-Glaude"},
-    {name = "Antoine Moreau"},
-    {name = "Pauline Bennet"},
-    {name = "Thalita Drumond"}
+    {name = "Audrey Soum-Glaude", email = "Audrey.Soum-Glaude@promes.cnrs.fr"},
+    {name = "Antoine Moreau", email = "antoine.moreau@uca.fr" },
+    {name = "Pauline Bennet", email = "pauline.bennet.pro@gmail.com"},
+    {name = "Thalita Drumond", email = "thalita.drumond@epf.fr"}
 ]
 maintainers = [
     {name = "Thalita Drumond", email = "thalita.drumond@epf.fr"},
-    {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"}
+    {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"},
 ]
 description = "Solar Performances Optimization Code (SolPOC) is an Academic research code, used for solar energy. SolPOC can solve and optimize a stack of thin layers for designed solar mirror, antireflective coating, thermal absorber etc."
 
