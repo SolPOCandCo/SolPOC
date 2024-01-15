@@ -3,11 +3,12 @@
 Created on 27 07 2023
 COPS v 0.9.2
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
+Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
 
 A specific presentation of the docstrings has been added to allow Sphinx software to generate a full documentation of this document
 
-List of main functions used and developed for COPS. For use them without any implementation work see the other Python script
+List of main functions used and developed for SolPOC. For use them without any implementation work see the other Python script
 """
 
 import importlib
@@ -187,7 +188,7 @@ For the indexes notation n and k, understand that:
     
     # Power transmittance
     Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
-    Rp = (np.real(rs)) ** 2 + (np.imag(rp)) ** 2;
+    Rp = (np.real(rp)) ** 2 + (np.imag(rp)) ** 2;
     Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
         
     # Power transmittance
@@ -347,7 +348,7 @@ Abs : float
     
     # Power transmittance
     Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
-    Rp = (np.real(rs)) ** 2 + (np.imag(rp)) ** 2;
+    Rp = (np.real(rp)) ** 2 + (np.imag(rp)) ** 2;
     Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
         
     # Power transmittance
