@@ -3222,7 +3222,7 @@ def Optimum_thickness_plot(parameters, Experience_results, directory):
     ax.set_xticklabels([str(i) for i in range(1, len(ep))])
     for i, val in enumerate(ep[1:]):
         ax.annotate(str("{:.0f}".format(val)), xy=(i + 1, val), xytext=(i + 1.1, val + 1.1 ))
-    plt.xlabel("Number of layers, subtrate to air")
+    plt.xlabel("Number of layers, substrate to air")
     plt.ylabel("Thickness (nm)")
     plt.title("Optimum Thickness ")
     plt.savefig(directory + "/" + "Optimum_Thickness_Stack.png", dpi = 300, bbox_inches='tight')
@@ -3281,7 +3281,7 @@ def Volumetric_parts_plot(parameters, Experience_results, directory):
             ax.annotate(str("{:.3f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
         # Fix y-axis limits : from 1 to 3 here 
         ax.set_ylim((min(vf_range)), (max(vf_range))) # Change y-axis' scale
-        plt.xlabel("Number of layers, substrat to air")
+        plt.xlabel("Number of layers, substrate to air")
         plt.ylabel("Volumic Fraction (-)")
         plt.title("Volumic Fraction ")
         plt.savefig(directory + "/" + "Optimum_VolumicFraction.png", dpi = 300, bbox_inches='tight')
