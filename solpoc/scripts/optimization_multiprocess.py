@@ -10,8 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
-#from solpoc import * # run v 0.9.4
-from functions_SolPOCv095 import * # run v 0.9.5
+from solpoc import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 
@@ -278,10 +277,10 @@ if __name__ == "__main__":
     # Writing of the backup folder, with current date/time
     directory = date_time
     base_directory = directory
-    count = 1
+    count = 2
     while os.path.exists(directory):
-        count += 1
         directory = f"{base_directory}-{count}"
+        count += 1
     os.makedirs(directory)
     if language == "fr":
         print("Le dossier '" + directory + "' a été créé.")

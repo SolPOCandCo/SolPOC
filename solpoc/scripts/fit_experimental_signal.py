@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 2023-11-17
-SolPOC v 0.9.3
+SolPOC v 0.9.4
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
 """
@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
-from functions_SolPOCv095 import * # run v 0.9.5
+from solpoc import *
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
 #----------------------------------------------------------------------------#
@@ -40,9 +40,9 @@ seed = 42 # Seed of the random number generator. Uncomment for fix the seed
 # %% You should stop modifying anything :)
 """_________________________________________________________________________"""
 """
-Based on few experimented, DEvol (current to best) is usufel for "fitting" process. 
+Based on few experimented, DEvol (current to best) is useful for "fitting" process. 
 Is here an optimization : we reduce the difference between a reflectance and transmittance with an 
-experimentale reflectance and transmittance (in texte file, placed in the Fit folder) 
+experimental reflectance and transmittance (in text file, placed in the Fit folder) 
 If cost function near 0 : the difference is few, and the model reflectance is near the real reflectance. 
 """
 algo = DEvol  # Name of the optimization method

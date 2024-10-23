@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on 12 07 2023
+SolPOC v 0.9.4
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
 """
 import numpy as np
 import time
-#from solpoc import *
-from functions_SolPOCv095 import *
+from solpoc import *
 import os
 from datetime import datetime
 import matplotlib.pyplot as plt

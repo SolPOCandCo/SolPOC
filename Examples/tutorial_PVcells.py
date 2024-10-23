@@ -358,26 +358,26 @@ if __name__=="__main__":
     Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
     Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
     # Integration of the solar spectrum, raw in W/m2
-    Sol_Spec_int = trapz(Sol_Spec, Wl)
+    Sol_Spec_int = trapezoid(Sol_Spec, Wl)
     # Writing the solar spectrum modified by the treatment's transmittance
     Sol_Spec_mod_T = T * Sol_Spec
-    Sol_Spec_mod_T_int = trapz(Sol_Spec_mod_T, Wl)  # integration of the T-modified solar spectrum, result in W/m2
+    Sol_Spec_mod_T_int = trapezoid(Sol_Spec_mod_T, Wl)  # integration of the T-modified solar spectrum, result in W/m2
     # Integration of the solar spectrum modified by the treatment's reflectance, according to the spectrum
     Sol_Spec_mod_R = R * Sol_Spec
-    Sol_Spec_mod_R_int = trapz(Sol_Spec_mod_R, Wl)  # integration of the R-modified solar spectrum, result in W/m2
+    Sol_Spec_mod_R_int = trapezoid(Sol_Spec_mod_R, Wl)  # integration of the R-modified solar spectrum, result in W/m2
     # Integration of the solar spectrum modified by the treatment's absorbance, according to the spectrum
     Sol_Spec_mod_A = A * Sol_Spec
-    Sol_Spec_mod_A_int = trapz(Sol_Spec_mod_A, Wl)  # integration of the A-modified solar spectrum, result in W/m2
+    Sol_Spec_mod_A_int = trapezoid(Sol_Spec_mod_A, Wl)  # integration of the A-modified solar spectrum, result in W/m2
     # Calculation of the upstream solar efficiency, for example, the efficiency of the PV solar cell with the modified spectrum
     Ps_amont = SolarProperties(Wl, Signal_PV, Sol_Spec_mod_T)
     # Calculation of the upstream treatment solar efficiency with an unmodified spectrum
     Ps_amont_ref = SolarProperties(Wl, Signal_PV, Sol_Spec)
     # Calculation of the integration of the useful upstream solar spectrum
     Sol_Spec_mod_amont = Sol_Spec * Signal_PV
-    Sol_Spec_mod_amont_int = trapz(Sol_Spec_mod_amont, Wl)
+    Sol_Spec_mod_amont_int = trapezoid(Sol_Spec_mod_amont, Wl)
     # Calculation of the integration of the useful upstream solar spectrum with T-modified spectrum
     Sol_Spec_mod_T_amont = Sol_Spec_mod_T * Signal_PV
-    Sol_Spec_mod_T_amont_int = trapz(Sol_Spec_mod_T_amont, Wl)
+    Sol_Spec_mod_T_amont_int = trapezoid(Sol_Spec_mod_T_amont, Wl)
 
     # Downstream
     # Opening the solar spectrum, which may be different from the first one depending on the cases
@@ -385,20 +385,20 @@ if __name__=="__main__":
     Wl_Sol_2, Sol_Spec_2, name_Sol_Spec_2 = open_SolSpec('Materials/SolSpec.txt', 'DC')
     Sol_Spec_2 = np.interp(Wl, Wl_Sol_2, Sol_Spec_2)
     # Integration of the solar spectrum, raw in W/m2
-    Sol_Spec_int_2 = trapz(Sol_Spec_2, Wl)
+    Sol_Spec_int_2 = trapezoid(Sol_Spec_2, Wl)
     # Writing the solar spectrum modified by the treatment's reflectance
     Sol_Spec_mod_R_2 = R * Sol_Spec_2
-    Sol_Spec_mod_R_int_2 = trapz(Sol_Spec_mod_R_2, Wl)  # integration of the R-modified solar spectrum, result in W/m2
+    Sol_Spec_mod_R_int_2 = trapezoid(Sol_Spec_mod_R_2, Wl)  # integration of the R-modified solar spectrum, result in W/m2
     # Calculation of the downstream solar efficiency, for example, the efficiency of the thermal absorber
     Ps_aval = SolarProperties(Wl, Signal_Th, Sol_Spec_mod_R_2)
     # Calculation of the downstream treatment solar efficiency with an unmodified spectrum
     Ps_aval_ref = SolarProperties(Wl, Signal_Th, Sol_Spec_2)
     # Calculation of the integration of the useful downstream solar spectrum
     Sol_Spec_mod_aval = Sol_Spec_2 * Signal_Th
-    Sol_Spec_mod_aval_int = trapz(Sol_Spec_mod_aval, Wl)
+    Sol_Spec_mod_aval_int = trapezoid(Sol_Spec_mod_aval, Wl)
     # Calculation of the integration of the useful downstream solar spectrum
     Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * Signal_Th
-    Sol_Spec_mod_R_aval_int = trapz(Sol_Spec_mod_R_aval, Wl)
+    Sol_Spec_mod_R_aval_int = trapezoid(Sol_Spec_mod_R_aval, Wl)
     
     Explain_results(parameters, Experience_results)
 
