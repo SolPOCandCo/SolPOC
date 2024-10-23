@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 27 07 2023
-COPS v 0.9.1
+SolPOC v 0.9.4
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
@@ -24,6 +24,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import matplotlib.patches as mpatches
 from matplotlib.patches import Circle
+from solcore.structure import Structure
+from solcore.absorption_calculator import calculate_rat
+
 
 def RTA3C(Wl, d, n, k, Ang=0):
     """
@@ -238,135 +241,108 @@ Abs : float
     The stack absorptivituy, for each wavelength.
     """
 
-    # Add an air layer on top
-    n = np.append(n, np.ones((len(Wl), 1)), axis=1)
-    k = np.append(k, np.zeros((len(Wl), 1)), axis=1)
-    d = np.append(d, np.zeros((1, 1)), axis=1)
-
-    # Incidence angle of solar radiation on the absorber = normal incidence
-    Phi0 = Ang*math.pi/180
-    
-    # Ambient medium = vaccum
-    n0 = 1
-    k0 = 0
-    N0 = n0 + 1j*k0
-    q0PolaS = N0*np.cos(Phi0)
-    q0PolaP = N0/np.cos(Phi0)
-    
-    # Substrate
-    nS = n[:,0] # I take the 1st column whihc includes the n of the substrate for wavelengths
-    kS = k[:,0]
-    Ns = nS + 1j*kS
-    PhiS = np.arcsin(N0*np.sin(Phi0)/Ns)
-    qSPolaS = Ns*np.cos(PhiS)
-    qSPolaP = Ns/np.cos(PhiS) # Ok here 
-    
-    # Multilayers (layer 1 is the one closest to the substrate)
-    nj= np.delete(n,0, axis=1)
-    kj= np.delete(k,0, axis=1)
-    dj= np.delete(d,0, axis=1)
-
-    numlayers = nj.shape[1] # nj is just a table 
-    Nj = np.zeros((numlayers,1,len(Wl)), dtype=complex) # OK
-    """3D Matrix here. 
-    "z" axis corresponds to different wavelengths"""
-    Phij = np.zeros((numlayers,1,len(Wl)), dtype=complex)
-    qjPolaS = np.zeros((numlayers,1,len(Wl)), dtype=complex)
-    qjPolaP = np.zeros((numlayers,1,len(Wl)), dtype=complex)
-    thetaj = np.zeros((numlayers,1,len(Wl)), dtype=complex)
-    MpolaS = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
-    MpolaP = np.zeros((2, 2*numlayers,len(Wl)), dtype=complex)
-    Ms = np.zeros((2, 2,len(Wl)), dtype=complex)
-    Mp = np.zeros((2, 2,len(Wl)), dtype=complex)
-    """Resizing of nj and kj
-    """
-    sous_tableaux = np.split(nj,nj.shape[1],axis=1)
-    nj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
-    sous_tableaux = np.split(kj,kj.shape[1],axis=1)
-    kj = np.array([el.reshape(1,len(Wl)) for el in sous_tableaux])
-    """ Transforms a (1,3) vector into a (3,) vector
-    """
-    dj = np.squeeze(dj) #    
-    for LayerJ in range(numlayers): 
-        Nj[LayerJ] = nj[LayerJ] + 1j * kj[LayerJ]
-        Phij[LayerJ] = np.arcsin(N0 * np.sin(Phi0) / Nj[LayerJ])
-        qjPolaS[LayerJ] = Nj[LayerJ] * np.cos(Phij[LayerJ])
-        qjPolaP[LayerJ] = Nj[LayerJ] / np.cos(Phij[LayerJ])
-        thetaj[LayerJ] = (2 * np.pi / Wl) * dj[LayerJ] * Nj[LayerJ] * np.cos(Phij[LayerJ]) # OK
-        
-        # Characteristic matrix of layer j
-        """ Calculation of MpolaS"""
-        MpolaS[0, 2*LayerJ] = np.cos(thetaj[LayerJ]) # In Scilab MpolaS(1,2*LayerJ-1)
-        MpolaS[0, 2*LayerJ+1] = -1j/qjPolaS[LayerJ]*np.sin(thetaj[LayerJ]) # In Scilab MpolaS(1,2*LayerJ)
-        MpolaS[1, 2*LayerJ] = -1j*qjPolaS[LayerJ]*np.sin(thetaj[LayerJ])
-        MpolaS[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
-        """ Calculation of MpolaP"""
-        MpolaP[0, 2*LayerJ] = np.cos(thetaj[LayerJ])
-        MpolaP[0, 2*LayerJ+1] = -1j/qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
-        MpolaP[1, 2*LayerJ] = -1j*qjPolaP[LayerJ]*np.sin(thetaj[LayerJ])
-        MpolaP[1, 2*LayerJ+1] = np.cos(thetaj[LayerJ])
-        #print(MpolaS)
-    
-    # Global characteristic (transfer) matrix [Furman92, Andersson80]
-    if numlayers == 1: # Substrate only
-        M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
-        M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
-        Ms = M1s
-        Mp = M1p
-    else : # The ultime code =D
-        M1s = np.array([[MpolaS[0,0], MpolaS[0,1]], [MpolaS[1,0], MpolaS[1,1]]])
-        for i in range(numlayers):
-            exec(f"M{i + 1}s = np.array([[MpolaS[0,{i * 2}], MpolaS[0,{i * 2 + 1}]], [MpolaS[1,{i * 2}], MpolaS[1,{i * 2 + 1}]]])")
-        # Calculation of Mp elements
-        M1p = np.array([[MpolaP[0,0], MpolaP[0,1]], [MpolaP[1,0], MpolaP[1,1]]])
-        for i in range(numlayers):
-            exec(f"M{i + 1}p = np.array([[MpolaP[0,{i * 2}], MpolaP[0,{i * 2 + 1}]], [MpolaP[1,{i * 2}], MpolaP[1,{i * 2 + 1}]]])")
-        # Calculation of Ms and Mp 
-        Ms = M1s
-        Mp = M1p
-        for i in range(2, numlayers + 1):
-            Mi_s = eval(f"M{i}s")
-            Mi_p = eval(f"M{i}p")
-            Ms = np.einsum('nkl,kml->nml', Mi_s, Ms)
-            Mp = np.einsum('nkl,kml->nml', Mi_p, Mp)
-    # Matrix element
-    m11s = Ms[0,0]
-    m12s = Ms[0,1]
-    m21s = Ms[1,0]
-    m22s = Ms[1,1]
-        
-    m11p = Mp[0,0]
-    m12p = Mp[0,1]
-    m21p = Mp[1,0]
-    m22p = Mp[1,1]
-        
-    # Fresnel total reflexion and transmission coefficient
-    rs = (q0PolaS*m11s-qSPolaS*m22s+q0PolaS*qSPolaS*m12s-m21s)/(q0PolaS*m11s+qSPolaS*m22s+q0PolaS*qSPolaS*m12s+m21s)
-    rp = (q0PolaP*m11p-qSPolaP*m22p+q0PolaP*qSPolaP*m12p-m21p)/(q0PolaP*m11p+qSPolaP*m22p+q0PolaP*qSPolaP*m12p+m21p)
-    ts = 2*q0PolaS/(q0PolaS*m11s+qSPolaS*m22s+q0PolaS*qSPolaS*m12s+m21s)
-    tp = 2*q0PolaP/(q0PolaP*m11p+qSPolaP*m22p+q0PolaP*qSPolaP*m12p+m21p)
-    
-    # Power transmittance
-    Rs = (np.real(rs)) ** 2 + (np.imag(rs)) ** 2;
-    Rp = (np.real(rp)) ** 2 + (np.imag(rp)) ** 2;
-    Refl = (Rs + Rp) / 2 # this stands only when the incident light is unpolarized (ambient)
-        
-    # Power transmittance
-    #Transmittance of the multilayer stack only (substrate transmittance is not taken into account !)
-    Ts = np.real(qSPolaS) / np.real(q0PolaS) * ((np.real(ts) ** 2) + (np.imag(ts) ** 2))
-    Tp = np.real(qSPolaP) / np.real(q0PolaP) * ((np.real(tp) ** 2) + (np.imag(tp) ** 2))
-    TransMultilayer = (Ts + Tp) / 2 # This stands only when the incident light is unpolarized (ambient)
-        
-    # Transmittance of the substrate
-    d = np.squeeze(d)
-    TransSub = np.exp((-4*np.pi*kS*d[0])/Wl)
-        
-    # Transmittance of the substrate + multilayer stack
+    # Convertir les angles en radians
+    Phi0 = Ang * math.pi / 180
+ 
+    # Définir les constantes initiales
+    num_wl = len(Wl)
+    N0 = 1 + 1j * 0
+    sin_Phi0 = np.sin(Phi0)
+    cos_Phi0 = np.cos(Phi0)
+    q0PolaS = N0 * cos_Phi0
+    q0PolaP = N0 / cos_Phi0
+ 
+    # Ajouter les couches d'air et de substrat
+    n = np.hstack((n, np.ones((num_wl, 1))))
+    k = np.hstack((k, np.zeros((num_wl, 1))))
+    d = np.hstack((d, np.zeros((1, 1))))
+ 
+    # Calcul des valeurs pour le substrat
+    nS = n[:, 0]
+    kS = k[:, 0]
+    Ns = nS + 1j * kS
+    sin_PhiS = sin_Phi0 / Ns
+    cos_PhiS = np.sqrt(1 - sin_PhiS**2)
+    qSPolaS = Ns * cos_PhiS
+    qSPolaP = Ns / cos_PhiS
+ 
+    # Supprimer la première couche (couche d'air)
+    nj = n[:, 1:]
+    kj = k[:, 1:]
+    dj = d[:, 1:].squeeze()
+ 
+    numlayers = nj.shape[1]
+    Nj = nj + 1j * kj
+    sin_Phij = sin_Phi0 / Nj
+    cos_Phij = np.sqrt(1 - sin_Phij**2)
+    qjPolaS = Nj * cos_Phij
+    qjPolaP = Nj / cos_Phij
+    thetaj = (2 * np.pi / Wl[:, np.newaxis]) * dj * Nj * cos_Phij
+ 
+    # Pré-calcul des valeurs trigonométriques
+    cos_thetaj = np.cos(thetaj)
+    sin_thetaj = np.sin(thetaj)
+ 
+    # Initialisation des matrices de transfert
+    MpolaS = np.zeros((2, 2 * numlayers, num_wl), dtype=complex)
+    MpolaP = np.zeros((2, 2 * numlayers, num_wl), dtype=complex)
+ 
+    # Remplissage des matrices de transfert
+    MpolaS[0, 0::2] = cos_thetaj.T
+    MpolaS[0, 1::2] = (-1j / qjPolaS * sin_thetaj).T
+    MpolaS[1, 0::2] = (-1j * qjPolaS * sin_thetaj).T
+    MpolaS[1, 1::2] = cos_thetaj.T
+ 
+    MpolaP[0, 0::2] = cos_thetaj.T
+    MpolaP[0, 1::2] = (-1j / qjPolaP * sin_thetaj).T
+    MpolaP[1, 0::2] = (-1j * qjPolaP * sin_thetaj).T
+    MpolaP[1, 1::2] = cos_thetaj.T
+ 
+    # Initialisation des matrices M1s et M1p
+    M1s = MpolaS[:, :2]
+    M1p = MpolaP[:, :2]
+ 
+    # Calcul des matrices Ms et Mp pour tous les couches
+    Ms = M1s
+    Mp = M1p
+    for i in range(1, numlayers):
+        Mi_s = MpolaS[:, i*2:i*2 + 2]
+        Mi_p = MpolaP[:, i*2:i*2 + 2]
+        Ms = np.einsum('ijm,jkm->ikm', Mi_s, Ms)
+        Mp = np.einsum('ijm,jkm->ikm', Mi_p, Mp)
+ 
+    # Extraction des éléments des matrices finales
+    m11s, m12s, m21s, m22s = Ms[0, 0], Ms[0, 1], Ms[1, 0], Ms[1, 1]
+    m11p, m12p, m21p, m22p = Mp[0, 0], Mp[0, 1], Mp[1, 0], Mp[1, 1]
+ 
+    # Calcul des coefficients de réflexion et transmission
+    denom_s = (q0PolaS * m11s + qSPolaS * m22s + q0PolaS * qSPolaS * m12s + m21s)
+    denom_p = (q0PolaP * m11p + qSPolaP * m22p + q0PolaP * qSPolaP * m12p + m21p)
+    rs = (q0PolaS * m11s - qSPolaS * m22s + q0PolaS * qSPolaS * m12s - m21s) / denom_s
+    rp = (q0PolaP * m11p - qSPolaP * m22p + q0PolaP * qSPolaP * m12p - m21p) / denom_p
+    ts = 2 * q0PolaS / denom_s
+    tp = 2 * q0PolaP / denom_p
+ 
+    # Calcul des intensités de réflexion et de transmission
+    Rs = np.abs(rs)**2
+    Rp = np.abs(rp)**2
+    Refl = (Rs + Rp) / 2
+ 
+    Ts = np.real(qSPolaS) / np.real(q0PolaS) * np.abs(ts)**2
+    Tp = np.real(qSPolaP) / np.real(q0PolaP) * np.abs(tp)**2
+    TransMultilayer = (Ts + Tp) / 2
+ 
+    # Transmission à travers le substrat
+    TransSub = np.exp((-4 * np.pi * kS * d[0, 0]) / Wl)
+ 
+    # Transmission totale
     Trans = TransMultilayer * TransSub
-        
-    # Power absorptance
+ 
+    # Calcul de l'absorption
     Abs = 1 - Refl - Trans
+ 
     return Refl, Trans, Abs
+
 
 def nb_compo(Mat_Stack):
     """
@@ -612,36 +588,36 @@ Noted than If vf = 0 :
 \nNoted than If vf = 1.0 : 
 \nnEffective = nI and kEffective = kI
     """
-    if VF == 0 :
-        nEffective = nI
-        kEffective = kI
-        return nEffective, kEffective
+    if VF == 0:
+        return nI, kI
     
-    eM = (nM + 1j*kM)**2
-    eI = (nI + 1j*kI)**2
+    eM = (nM + 1j * kM) ** 2
+    eI = (nI + 1j * kI) ** 2
     y = 2
-    nEffective = np.zeros(np.shape(nM))
-    kEffective = np.zeros(np.shape(nM))
-    for l in range(np.shape(nM)[0]):
-        a = -y
-        b = (VF*y + VF - 1)*eI[l] - (VF*y + VF - y)*eM[l]
-        c = eM[l]*eI[l]
-        p = np.roots([a, b, c])
-        e1 = p[0]
-        e2 = p[1]
-        if np.imag(e1) > 0:
-            Neffective = np.sqrt(e1)
-        elif np.imag(e2) > 0:
-            Neffective = np.sqrt(e2)
-        else:
-            if np.real(e1) > 0:
-                Neffective = np.sqrt(e1)
-            elif np.real(e2) > 0:
-                Neffective = np.sqrt(e2)
-        nEffective[l] = np.real(Neffective)
-        kEffective[l] = np.imag(Neffective)
     
-    return nEffective , kEffective
+    # Calculating coefficients for the quadratic equation
+    a = -y
+    b = (VF * y + VF - 1) * eI - (VF * y + VF - y) * eM
+    c = eM * eI
+    
+    # Solving the quadratic equation using NumPy's vectorized roots
+    discriminant = np.sqrt(b**2 - 4 * a * c)
+    e1 = (-b + discriminant) / (2 * a)
+    e2 = (-b - discriminant) / (2 * a)
+    
+    # Choosing the appropriate roots
+    positive_imaginary = np.imag(e1) > 0
+    positive_real = np.real(e1) > 0
+    
+    Neffective = np.where(positive_imaginary, np.sqrt(e1), 
+                 np.where(np.imag(e2) > 0, np.sqrt(e2),
+                 np.where(positive_real, np.sqrt(e1), np.sqrt(e2))))
+    
+    # Extracting the real and imaginary parts
+    nEffective = np.real(Neffective)
+    kEffective = np.imag(Neffective)
+    
+    return nEffective, kEffective
 
 def BB(T, Wl):
     """
@@ -1744,8 +1720,28 @@ A_s : Float
     
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
     
+    if 'coherency_limit' in parameters:
+        coherency_limit = parameters.get('coherency_limit')
+    else : 
+        coherency_limit  = 2e4
+    
+    # Check if one or several layer are coherent
+    # uncoherent if thickness up to 2500 nm or if presence of air or vaccum in the stack
+    cl, coherency =  Stack_coherency(d_Stack.flatten().tolist(), Mat_Stack, coherency_limit) # d_Stack is array 
+    
+    if coherency : # if coherency is True, I use my own function (much more faster)
+        R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    else :# if coherency is True, I use my own function (faster)
+        # Fonction calculate_rat from solcore
+        stack = Made_SolCORE_Stack(d_Stack, Wl, n_Stack, k_Stack)
+        rat_data = calculate_rat(stack, angle = Ang, wavelength = Wl, coherent = False, coherency_list = cl)
+        size = np.shape(rat_data["A_per_layer"])
+        R = rat_data["A_per_layer"][0]
+        T = rat_data["A_per_layer"][size[0]-2]
+        A = 1 - R - T
+    
     R_s, T_s, A_s = 0 , 0 , 0
-    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
     if all(value == 0 for value in T):
         T[0] = 10**-301
     if all(value == 0 for value in R):
@@ -1757,13 +1753,6 @@ A_s : Float
     T_s = SolarProperties(Wl, T, Sol_Spec)
     A_s = SolarProperties(Wl, A, Sol_Spec)
     return R_s, T_s, A_s
-
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct  4 10:36:49 2023
-
-@author: agrosjean
-"""
 
 def evaluate_EBB(individual, parameters):
     """
@@ -1806,6 +1795,289 @@ def evaluate_EBB(individual, parameters):
     
     return E_BB_T_abs
 
+def evaluate_fit_R(individual, parameters):
+    """
+    Calculate the stack thin layers thickness for fit a experimental reflectivity signal
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    parameters : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    cost: Int (float)
+        Normalize the MSE to be between 0 and 1 
+    """
+    Wl = parameters.get('Wl')#, np.arange(280,2505,5))
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    signal = parameters.get('Signal_fit')
+               
+    # Creation of the stack
+    d_Stack = np.array(individual)
+    Mat_Stack = parameters.get('Mat_Stack')
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
+    # Calculation of the RTA
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
+    # Normalize the MSE to be between 0 and 1
+    #  If R and signal are identical, the cost will be 0, and the more they differ, the closer the cost will be to 1.
+    cost = normalized_mse(R, signal)
+
+    return cost
+
+def evaluate_fit_T(individual, parameters):
+    """
+    Calculate the stack thin layers thickness for fit a experimental transmissivity signal
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    parameters : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    cost: Int (float)
+        Normalize the MSE to be between 0 and 1 
+    """
+    Wl = parameters.get('Wl')#, np.arange(280,2505,5))
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    signal = parameters.get('Signal_fit')
+               
+    # Creation of the stack
+    d_Stack = np.array(individual)
+    Mat_Stack = parameters.get('Mat_Stack')
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
+    # Calculation of the RTA
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
+    # Normalize the MSE to be between 0 and 1
+    #  If T and signal are identical, the cost will be 0, and the more they differ, the closer the cost will be to 1.
+    cost = normalized_mse(T, signal)
+
+    return cost
+
+def evaluate_fit_T2face(individual, parameters):
+    """
+    Calculate the stack thin layers thickness for fit a experimental transmissivity signal
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    parameters : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    cost: Int (float)
+        Normalize the MSE to be between 0 and 1 
+    """
+    Wl = parameters.get('Wl')#, np.arange(280,2505,5))
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    signal = parameters.get('Signal_fit')
+               
+    # Creation of the stack
+    d_Stack = np.array(individual)
+
+    # Calculation of the RTA
+    d_Stack[0] = 1000
+    d_Stack[1] = 2e6
+    R, T, A = RTA_curve_inco(d_Stack, parameters)
+    
+    # Normalize the MSE to be between 0 and 1
+    #  If T and signal are identical, the cost will be 0, and the more they differ, the closer the cost will be to 1.
+    cost = normalized_mse(T, signal)
+
+    return cost
+
+
+def evaluate_fit_RT(individual, parameters):
+    """
+    Calculate the stack thin layers thickness for fit a experimental transmissivity signal
+    1 individual = 1 output of one optimization function = 1 possible solution
+    ----------
+    individual : array
+        individual is an output of optimisation method (algo)
+        List of thickness in nm, witch can be added with volumic fraction or refractif index
+    parameters : Dict
+        dictionary witch contain all parameters 
+
+    Returns
+    -------
+    cost: Int (float)
+        Normalize the MSE to be between 0 and 1 
+    """
+    Wl = parameters.get('Wl')#, np.arange(280,2505,5))
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    signal = parameters.get('Signal_fit') # Spectral reflectance
+    signal_2 = parameters.get('Signal_fit_2') # Spectral transmittance 
+    
+    if signal.shape != signal_2.shape:
+        raise ValueError("signal and signal_2 must have the same dimensions")
+    
+    if np.array_equal(signal, signal_2):
+        raise ValueError("signal and signal_2 are egal. Check your data")
+        
+    # Creation of the stack
+    d_Stack = np.array(individual)
+    Mat_Stack = parameters.get('Mat_Stack')
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
+    # Calculation of the RTA
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    
+    # Normalize the MSE to be between 0 and 1
+    # cost for R
+    #cost_R = chi_square(R, signal)
+    cost_R = normalized_mse(R, signal)
+    # cost for T
+    #cost_T = chi_square(T, signal_2)
+    cost_T = normalized_mse(T, signal_2)
+
+    # Total cost average of R and T
+    return (cost_R + cost_T)/2
+
+def normalized_mse(R, signal):
+    """
+Parameters
+----------
+R : Array of floats
+    Optical properties (reflectance or transmisstance) calculate by the code
+signal : Array of floats
+    Reflectance mesured on real sample.
+    
+Returns
+-------
+normalized_error : float
+    Normalize the MSE to be between 0 and 1. 0 mean the reflectance calculate fit with the mesured
+    """   
+    # Check that R and signal have the same dimensions
+    if R.shape != signal.shape:
+        raise ValueError("Optical properties and signal must have the same dimensions")
+    
+    # Calculate the Mean Squared Error (MSE)
+    mse = np.mean((R - signal) ** 2)
+    
+    # Calculate the range of possible values (max difference in signal)
+    range_max = np.max(signal) - np.min(signal)
+    
+    # Normalize the MSE to be between 0 and 1
+    normalized_error = mse / (range_max ** 2)
+    
+    return normalized_error
+
+def chi_square(R, signal):
+    """
+Parameters
+----------
+R : Array of floats
+    Optical properties (reflectance or transmisstance) calculate by the code
+signal : Array of floats
+    Reflectance mesured on real sample.
+    
+Returns
+-------
+normalized_error : float
+    Normalize the chi_square to be between 0 and 1. 0 mean the reflectance calculate fit with the mesured
+    """   
+    if R.shape != signal.shape:
+        raise ValueError("R and signal must have the same dimensions")
+    
+    # Prevent division by zero by adding a small epsilon to signal
+    epsilon = 1e-10
+    chi_squared = np.sum(((R - signal) ** 2) / (signal + epsilon))
+    
+    # Calculate the maximum possible chi-square (assuming max deviation)
+    max_deviation = np.sum(((np.max(signal) - signal) ** 2) / (signal + epsilon))
+
+    # Normalize chi-square to be between 0 and 1
+    normalized_chi_sq = chi_squared / max_deviation if max_deviation != 0 else 0
+    
+    return normalized_chi_sq
+
+def Stack_coherency(d_Stack, Mat_Stack, coherency_limit):
+    """
+Parameters
+----------
+d_Stack : List of floats
+    List of thicknesses. 
+Mat_Stack : List of strings
+    List of materials.
+    
+Returns
+-------
+cl : List of string
+    List of "i" or "c" to indicate if a layer is coherent or incoherent.
+coherency : Boolean 
+    True of all layers in the stack are coherent
+    False if at least one or several layers in the stack are incoherent 
+    """
+    
+    # Liste of coherency for function calculate_rat() from solcore package
+    cl = []
+    coherency = True # All thin layers are coherent
+    for i in range(len(d_Stack)):
+        # If thicknesses up to 1000 nm : non coherency. 
+        # If air or vaccum in the stack : non coherency
+        if d_Stack[i] > coherency_limit or Mat_Stack[i] in ["air", "vaccum", "Air", "Vaccum"]:
+            coherency = False 
+            # add ["i"] if a layers is incoherent 
+            cl = cl + ["i"]
+            coherency = False 
+            if i == 0: # If the layers #0 (the substrat) is no coherent SolPOC can solve 
+                coherency = True            
+        else :
+            # add ["c"] if a layers is coherent 
+            cl = cl + ["c"]
+    cl.reverse() # must reverse the list for function calculate_rat() from solcore
+    
+    return cl, coherency
+
+def Made_SolCORE_Stack(d_Stack, Wl, n_Stack, k_Stack):
+    """
+This fonction created a stack used for Solcore package
+Solcore package is used if one layers in incoherent in the stack 
+
+Parameters
+----------
+d_Stack : List of floats
+    List of thicknesses. 
+Wl : numpy array
+    The list of the wavelenght.
+n_Stack : array, in  3 dimensional
+    The real part of the refractive index
+k_Stack : array, in 3 dimensional
+    The complexe part of the refractive index
+    
+Returns
+-------
+stack : solcore.structure.Structure
+    Specific type used by Solcore package
+
+    """    
+    # build the stack from solcore
+    stack = Structure([])
+    d_Stack = d_Stack.flatten().tolist()
+    for i in range(len(d_Stack)-1, -1, -1): # je ballaye la liste à l'envers
+        stack.append([d_Stack[i], Wl, n_Stack[:,i], k_Stack[:,i]])
+    
+    return stack
+
 def RTA_curve(individual, parameters):
     """
 Parameters
@@ -1834,6 +2106,59 @@ A : List
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
     
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    return R , T , A
+
+def RTA_curve_inco(individual, parameters):
+    """
+Parameters
+----------
+individual : numpy array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractif index.
+parameters : Dict
+    Dictionary with contain all "global" variables.
+
+Returns
+-------
+R : List
+    Reflectance of the stack, according the wavelenght list in the parameters.
+T : List
+    Transmittance of the stack, according the wavelenght list in the parameters.
+A : List
+    Absoptance of the stack, according the wavelenght list in the parameters.
+    """
+    Wl = parameters.get('Wl')
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    Mat_Stack = parameters.get('Mat_Stack')
+    
+    if 'coherency_limit' in parameters:
+        coherency_limit = parameters.get('coherency_limit')
+    else : 
+        coherency_limit  = 2000
+        
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+    
+    # Check if one or several layer are coherent
+    # uncoherent if thickness up to 2500 nm or if presence of air or vaccum in the stack
+    cl, coherency =  Stack_coherency(d_Stack.flatten().tolist(), Mat_Stack, coherency_limit) # d_Stack is array 
+    
+    
+    if coherency : # if coherency is True, I use my own function (much more faster)
+        print(" All layers are coherent")
+        R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    else :# if coherency is True, I use my own function (faster)
+
+        print(" At least one layer is incoherent")
+        # Fonction calculate_rat from solcore
+        stack = Made_SolCORE_Stack(d_Stack, Wl, n_Stack, k_Stack)
+        rat_data = calculate_rat(stack, angle = Ang, wavelength = Wl, coherent = False, coherency_list = cl)
+        size = np.shape(rat_data["A_per_layer"])
+        R = rat_data["A_per_layer"][0]
+        T = rat_data["A_per_layer"][size[0]-2]
+        A = 1 - R - T
+        
     return R , T , A
 
 
@@ -3012,11 +3337,10 @@ def Reflectivity_plot(parameters, Experience_results, directory):
     ax2.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()  
     ax2.set_ylim(0, 2) # Change y-axis' scale
-    plt.title("Optimum Reflectivity")
+    plt.title("Optimum Reflectivity", y=1.05)
     # Save the plot.
     plt.savefig(directory + "/" + "Optimum_Reflectivity.png", dpi = 300, bbox_inches='tight')
     plt.show()
-
 
 def Transmissivity_plot(parameters, Experience_results, directory):
     if 'evaluate' in parameters:
@@ -3052,7 +3376,7 @@ def Transmissivity_plot(parameters, Experience_results, directory):
     ax2.tick_params(axis='y', labelcolor=color)
     fig.tight_layout()  
     ax2.set_ylim(0, 2) # Change y-axis' scale
-    plt.title("Optimum Transmissivity")
+    plt.title("Optimum Transmissivity", y=1.05)
     plt.savefig(directory + "/" + "Optimum_Transmissivity.png", dpi = 300, bbox_inches='tight')
     plt.show()
 
@@ -3075,120 +3399,174 @@ def OpticalStackResponse_plot(parameters, Experience_results, directory):
     ax1.set_ylim(0, 1) # Change y-axis scale
     ax1.grid(True)
     plt.legend()
-    plt.savefig(directory + "/" + "OpticalStackResponse.png", dpi = 300, bbox_inches='tight')
+    plt.savefig(directory + "/" + "Optical_Stack_Response.png", dpi = 300, bbox_inches='tight')
     plt.show()
 
-
 def Convergence_plots(parameters, Experience_results, directory):
-    nb_run = Experience_results.get("nb_run")
-    tab_perf = Experience_results.get("tab_perf")
     tab_dev = Experience_results.get("tab_dev")
     algo = parameters.get("algo")
     selection = parameters.get("selection")
     
-    # convergences plots
-    if (nb_run > 2): 
-        tab_perf_save = tab_perf.copy()
-        tab_dev_save = tab_dev.copy()
-        # I search the maximum index in the performance table
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_1 = tab_dev_save[max_index] # I search the associated dev
-        del tab_perf_save[max_index], tab_dev_save[max_index]
-        
-        # I search the maximum, which is second here
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_2 = tab_dev_save[max_index]
-        del tab_perf_save[max_index], tab_dev_save[max_index]
+    normalized_data = tab_dev # normalized_data Type Array of float (nb_run, x)
     
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_3 = tab_dev_save[max_index]
-        del tab_perf_save, tab_dev_save# Deletes the variables
+    if  algo.__name__ == "DEvol":
+        if  selection.__name__ == "selection_max":
+            normalized__data = [1- x  for x in normalized_data]
+
+    # Interpolation de chaque ligne sur 1000 points
+    num_points = 1000
+    interpolated_data = []
+
+    for row in normalized_data:
+        # Filtrer les points non-NaN
+        valid_indices = ~np.isnan(row)
+        valid_points = np.arange(len(row))[valid_indices]
+        valid_values = row[valid_indices]
         
-        if  algo.__name__ == "DEvol":
-            if  selection.__name__ == "selection_max":
-                dev_1 = [1- x  for x in dev_1]
-                dev_2 = [1- x  for x in dev_2]
-                dev_3 = [1- x  for x in dev_3]
-        fig, ax1 = plt.subplots()
-        ax1.set_ylabel('Cost function (-)', color='black')
-        ax1.plot(dev_1, color='black', label = "Best")
-        ax1.plot(dev_2, color='red', label = "Second")
-        ax1.plot(dev_3, color='green', label = "Third")
-        plt.legend()
-        ax1.tick_params(axis='y', labelcolor='black')
-        plt.title("Convergence Plots")
-        plt.savefig(directory + "/" + "ConvergencePlots.png", dpi = 300, bbox_inches='tight')
-        plt.show()
+        # Vérifier s'il y a suffisamment de points pour l'interpolation
+        if len(valid_points) < 2:
+            # Si moins de 2 points valides, remplir avec NaN
+            interpolated_row = np.full(num_points, np.nan)
+        else:
+            # Créer la fonction d'interpolation en utilisant seulement les points valides
+            interp_func = interp1d(valid_points, valid_values, kind='linear', fill_value='extrapolate')
+            
+            # Points où nous voulons interpoler
+            new_points = np.linspace(valid_points[0], valid_points[-1], num_points)
+            
+            # Interpolation
+            interpolated_row = interp_func(new_points)
+        
+        interpolated_data.append(interpolated_row)
+
+    # Convertir en tableau numpy
+    interpolated_data = np.array(interpolated_data)
     
-    # I copy my performance table
-    if (nb_run > 5): 
-        tab_perf_save = tab_perf.copy()
-        tab_dev_save = tab_dev.copy()
-        # I search the maximum index in the performance table
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_1 = tab_dev_save[max_index] # I search the associated dev
-        del tab_perf_save[max_index], tab_dev_save[max_index]
-        
-        # I search the maximum, which is second here
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_2 = tab_dev_save[max_index]
-        del tab_perf_save[max_index], tab_dev_save[max_index]
+    if  algo.__name__ == "DEvol":
+        if  selection.__name__ == "selection_max":
+            interpolated_data = [1- x  for x in interpolated_data]
+
+    # Convertir en tableau numpy
+    tab_dev = np.array(interpolated_data)
+
+    # Trouver les indices des lignes ayant les meilleures valeurs max dans la dernière colonne
+    best_indices = np.argsort(tab_dev[:, -1])[-3:]  # Indices des 6 plus grandes valeurs dans la dernière colonne
     
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_3 = tab_dev_save[max_index]
-        del tab_perf_save[max_index], tab_dev_save[max_index]
+    # Trier les indices pour obtenir les meilleurs en ordre croissant
+    best_indices = best_indices[np.argsort(tab_dev[best_indices, -1])[::-1]]
+    
+    # Préparer les couleurs et labels dans le bon ordre
+    colors = ['black', 'red', 'green']
+    labels = ['1st', '2nd', '3rd']
+
+    # Tracer les courbes correspondantes
+    fig, ax = plt.subplots()
+
+    for i, idx in enumerate(best_indices):
+        ax.plot(np.linspace(0, 100, num_points), interpolated_data[idx], color=colors[i], label=labels[i])
+    labels.reverse()
+    
+    ax.set_ylabel('Cost function (-)')  # Nommer l'axe des ordonnées
+    ax.set_xlabel('Percentage of budget (%)')  # Nommer l'axe des abscisses (étapes)
+    ax.legend()  # Afficher la légende
+    plt.title("Convergence Plots", y=1.05)
+    plt.savefig(directory + "/" + "Convergence_Plots.png", dpi = 300, bbox_inches='tight')
+    plt.show()  # Afficher le graphique
+
+def Convergence_plots_2(parameters, Experience_results, directory):
+    tab_dev = Experience_results.get("tab_dev")
+    algo = parameters.get("algo")
+    selection = parameters.get("selection")
+    
+    normalized_data = tab_dev # normalized_data Type Array of float (nb_run, x)
+    
+    if  algo.__name__ == "DEvol":
+        if  selection.__name__ == "selection_max":
+            normalized__data = [1- x  for x in normalized_data]
+
+    # Interpolation de chaque ligne sur 1000 points
+    num_points = 1000
+    interpolated_data = []
+
+    for row in normalized_data:
+        # Filtrer les points non-NaN
+        valid_indices = ~np.isnan(row)
+        valid_points = np.arange(len(row))[valid_indices]
+        valid_values = row[valid_indices]
         
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_4 = tab_dev_save[max_index]
-        del tab_perf_save[max_index], tab_dev_save[max_index]
+        # Vérifier s'il y a suffisamment de points pour l'interpolation
+        if len(valid_points) < 2:
+            # Si moins de 2 points valides, remplir avec NaN
+            interpolated_row = np.full(num_points, np.nan)
+        else:
+            # Créer la fonction d'interpolation en utilisant seulement les points valides
+            interp_func = interp1d(valid_points, valid_values, kind='linear', fill_value='extrapolate')
+            
+            # Points où nous voulons interpoler
+            new_points = np.linspace(valid_points[0], valid_points[-1], num_points)
+            
+            # Interpolation
+            interpolated_row = interp_func(new_points)
         
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_5 = tab_dev_save[max_index]
-        del tab_perf_save[max_index], tab_dev_save[max_index]
-        
-        max_index = tab_perf_save.index(max(tab_perf_save))
-        dev_6 = tab_dev_save[max_index]
-        del tab_perf_save, tab_dev_save# Deletes the variables  
-        
-        if  algo.__name__ == "DEvol":
-            if  selection.__name__ == "selection_max":
-                dev_1 = [1- x  for x in dev_1]
-                dev_2 = [1- x  for x in dev_2]
-                dev_3 = [1- x  for x in dev_3]
-                dev_4 = [1- x  for x in dev_4]
-                dev_5 = [1- x  for x in dev_5]
-                dev_6 = [1- x  for x in dev_6]
-        fig, ax1 = plt.subplots()
-        ax1.set_ylabel('Cost function (-)', color='black')
-        ax1.plot(dev_1, color='black', label = "1st")
-        ax1.plot(dev_2, color='red', label = "2nd")
-        ax1.plot(dev_3, color='green', label = "3rd")
-        ax1.plot(dev_4, color='blue', label = "4th")
-        ax1.plot(dev_5, color='orange', label = "5th")
-        ax1.plot(dev_6, color='purple', label = "6th")
-        plt.legend()
-        ax1.tick_params(axis='y', labelcolor='black')
-        plt.title("Convergence Plots")
-        plt.savefig(directory + "/" + "ConvergencePlots2.png", dpi = 300, bbox_inches='tight')
-        plt.show()
-    Experience_results.update({'max_index' : max_index})
+        interpolated_data.append(interpolated_row)
+
+    # Convertir en tableau numpy
+    interpolated_data = np.array(interpolated_data)
+    
+    if  algo.__name__ == "DEvol":
+        if  selection.__name__ == "selection_max":
+            interpolated_data = [1- x  for x in interpolated_data]
+
+    # Convertir en tableau numpy
+    tab_dev = np.array(interpolated_data)
+
+    # Trouver les indices des lignes ayant les meilleures valeurs max dans la dernière colonne
+    best_indices = np.argsort(tab_dev[:, -1])[-6:]  # Indices des 6 plus grandes valeurs dans la dernière colonne
+
+    # Trier les indices pour obtenir les meilleurs en ordre croissant
+    best_indices = best_indices[np.argsort(tab_dev[best_indices, -1])[::-1]]
+    # Préparer les couleurs et labels dans le bon ordre
+    colors = ['black', 'red', 'green', 'blue', 'orange', 'purple']
+    labels = ['1st', '2nd', '3rd', '4th', '5th', '6th']
+   
+    # Tracer les courbes correspondantes
+    fig, ax = plt.subplots()
+
+
+    for i, idx in enumerate(best_indices):
+        ax.plot(np.linspace(0, 100, num_points), interpolated_data[idx], color=colors[i], label=labels[i])
+
+    ax.set_ylabel('Cost function (-)')  # Nommer l'axe des ordonnées
+    ax.set_xlabel('Percentage of budget (%)')  # Nommer l'axe des abscisses (étapes)
+    ax.legend()  # Afficher la légende
+    plt.title("Convergence Plots", y=1.05)
+    plt.savefig(directory + "/" + "Convergence_Plots_2.png", dpi = 300, bbox_inches='tight')
+    plt.show()  # Afficher le graphique
 
 
 def Consistency_curve_plot(parameters, Experience_results, directory):#parameters is not used but we put it in arguments to follow the same calling method than other function to be easier to understand and master
     tab_perf = Experience_results["tab_perf"]
+    selection = parameters.get("selection")
 
     # Problem's convergence plot
     tab_perf_sorted = tab_perf.copy()
-    tab_perf_sorted.sort(reverse = True)
+    if selection.__name__ == "selection_max":
+        tab_perf_sorted.sort(reverse = True)
+    if selection.__name__ == "selection_min":
+        tab_perf_sorted.sort(reverse = False)
+        
     fig, ax1 = plt.subplots()
     color = 'black' # Basic colors availables : b g r c m y k w
     if max(tab_perf_sorted) - min(tab_perf_sorted) < 1e-4:
         ax1.set_ylim(np.mean(tab_perf_sorted) - 0.0005, np.mean(tab_perf_sorted) + 0.0005) # Change y-axis' scale
+    
     ax1.set_xlabel('Best cases (left) to worse (right)')
+
+        
     ax1.set_ylabel('Cost function (-)', color=color)
     ax1.plot(tab_perf_sorted, linestyle='dotted', marker ='o', color=color)
     ax1.tick_params(axis='y', labelcolor=color)
-    plt.title("Consistency Curve")
+    plt.title("Consistency Curve", y=1.05)
     plt.savefig(directory + "/" + "ConsistencyCurve.png", dpi = 300, bbox_inches='tight')
     plt.show()
 
@@ -3222,9 +3600,9 @@ def Optimum_thickness_plot(parameters, Experience_results, directory):
     ax.set_xticklabels([str(i) for i in range(1, len(ep))])
     for i, val in enumerate(ep[1:]):
         ax.annotate(str("{:.0f}".format(val)), xy=(i + 1, val), xytext=(i + 1.1, val + 1.1 ))
-    plt.xlabel("Number of layers, subtrate to air")
+    plt.xlabel("Number of layers, substrate to air")
     plt.ylabel("Thickness (nm)")
-    plt.title("Optimum Thickness ")
+    plt.title("Optimum Thickness ", y=1.05)
     plt.savefig(directory + "/" + "Optimum_Thickness_Stack.png", dpi = 300, bbox_inches='tight')
     plt.show()
 
@@ -3254,9 +3632,9 @@ def Optimum_refractive_index_plot(parameters, Experience_results, directory):
             ax.annotate(str("{:.2f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
         # Fix y-axis limits : from 1 to 3 here
         ax.set_ylim((min(n_range)-0.5), (max(n_range)+0.5)) # Change y-axis' scale
-        plt.xlabel("Number of layers, substrat to air")
+        plt.xlabel("Number of layers, substrate to air")
         plt.ylabel("Refractive Index (-)")
-        plt.title("Optimum Refractive Index ")
+        plt.title("Optimum Refractive Index ", y=1.05)
         plt.savefig(directory + "/" + "Optimum_RefractiveIndex_Stack.png", dpi = 300, bbox_inches='tight')
         plt.show()
         return n_list
@@ -3280,10 +3658,10 @@ def Volumetric_parts_plot(parameters, Experience_results, directory):
         for i, val in enumerate(vf[1:]):
             ax.annotate(str("{:.3f}".format(val)), xy=(i +1 , val), xytext=(i+1.05, val +0.05))
         # Fix y-axis limits : from 1 to 3 here 
-        ax.set_ylim((min(vf_range)), (max(vf_range))) # Change y-axis' scale
-        plt.xlabel("Number of layers, substrat to air")
+        #ax.set_ylim((min(vf_range)), (max(vf_range))) # Change y-axis' scale
+        plt.xlabel("Number of layers, substrate to air")
         plt.ylabel("Volumic Fraction (-)")
-        plt.title("Volumic Fraction ")
+        plt.title("Volumic Fraction ", y=1.05)
         plt.savefig(directory + "/" + "Optimum_VolumicFraction.png", dpi = 300, bbox_inches='tight')
         plt.show()
         parameters.update({'vf_range' : vf_range,})
@@ -3613,11 +3991,10 @@ if it's considered as a metal or his vf is it's a Cermet.
     for i in range(len(legend)):
         legend_rectangles.append(mpatches.Rectangle((0, 0), 20, 10, facecolor=legend_color[i], edgecolor='black', label=legend[i]))#plotting rectangles for the legend
     legend = plt.legend(handles=legend_rectangles, loc='lower left', bbox_to_anchor=(1, 0), handleheight=2, handlelength=2.2, ncol=math.ceil(len(Mat_Stack)/14))
-    plt.title("Thin layers thicknesses") #adding title
+    plt.title("Thin layers thicknesses", y=1.05) #adding title
     plt.gca().xaxis.set_ticks([])
     plt.savefig(directory + "/" + "Stack_plot.png", dpi = 300, bbox_inches='tight') #saving figure
     plt.show()
-
 
 def Explain_results(parameters, Experience_results):
     # Go to find the best in all the result
@@ -3635,7 +4012,7 @@ def Explain_results(parameters, Experience_results):
     # Calculation of Rs, Ts, As du max (solar performances)
     Rs, Ts, As = evaluate_RTA_s(Experience_results["tab_best_solution"][max_index], parameters) 
     # Calculation le R, T, A (Reflectivity and other, for plot a curve)
-    R, T, A = RTA_curve(Experience_results["tab_best_solution"][max_index], parameters)
+    R, T, A = RTA_curve_inco(Experience_results["tab_best_solution"][max_index], parameters)
     # I set at least one value other than 0 to avoid errors when calculating the integral.
     
     if all(value == 0 for value in T):
@@ -3730,6 +4107,46 @@ def Explain_results(parameters, Experience_results):
         "Sol_Spec_mod_R_aval_int" : Sol_Spec_mod_R_aval_int,
         "max_index" : max_index
     })
+    
+def Explain_results_fit(parameters, Experience_results):
+    # Go to find the best in all the result
+    if parameters["name_selection"] == "selection_max":
+        max_value = max(Experience_results["tab_perf"]) # finds the maximum
+    if parameters["name_selection"] == "selection_min":
+        max_value = min(Experience_results["tab_perf"]) # finds the minimum 
+    max_index = Experience_results["tab_perf"].index(max_value) # finds the maximum's index (where he is)
+
+    # I've just found my maximum, out of all my runs. It's the best of the best! Congratulations! 
+    
+    Sol_Spec = parameters.get("Sol_Spec")
+    Sol_Spec_int = trapz(Sol_Spec, parameters["Wl"])
+    
+    # Calculation of Rs, Ts, As du max (solar performances)
+    Rs, Ts, As = evaluate_RTA_s(Experience_results["tab_best_solution"][max_index], parameters) 
+    # Calculation le R, T, A (Reflectivity and other, for plot a curve)
+    R, T, A = RTA_curve(Experience_results["tab_best_solution"][max_index], parameters)
+    # I set at least one value other than 0 to avoid errors when calculating the integral.
+    
+    if all(value == 0 for value in T):
+        T[0] = 10**-301
+    if all(value == 0 for value in R):
+         R[0] = 10**-301
+    if all(value == 0 for value in A):
+        A[0] = 10**-301
+        
+    # Update the results
+    Experience_results.update({
+        "Rs" : Rs,
+        "Ts" : Ts,
+        "As" : As,
+        "R" : R,
+        "T" : T,
+        "A" : A,
+        "Sol_Spec_int" : Sol_Spec_int,
+        "Sol_Spec_mod_R" : R * Sol_Spec,
+        "Sol_Spec_mod_T" : T * Sol_Spec,
+        "max_index" : max_index
+    })
 
 def Convergences_txt(parameters, Experience_results, directory):
     # My goal is to pick up some values (with equidistant_value) of the alogorithm convergence (stored in tab_dev)
@@ -3774,7 +4191,7 @@ def Convergences_txt(parameters, Experience_results, directory):
     # I pass the list of list in an array
     tab_perf_dev = np.array(tab_perf_dev, dtype=float)
     # Writing of tab_perf_dev in a txt file
-    np.savetxt(directory + '/Convergence_25.txt', tab_perf_dev, fmt='%.18e', delimiter='  ')
+    np.savetxt(directory + '/Convergence_25.txt', tab_perf_dev, fmt='%.18e', delimiter='  ')    
 
 def Generate_txt(parameters, Experience_results, directory):
     language = Experience_results.get('language')
@@ -3841,6 +4258,58 @@ def Generate_txt(parameters, Experience_results, directory):
         print("Les données RTA du meilleur empillement ont été écrites dans cet ordre")
     if language == "en": 
         print("The RTA data for the best stack were written in the folder")
+
+def Generate_perf_rh_txt(parameters, Experience_results, directory):
+    """
+Write the heliothermal efficiency, the solar absoptance and the thermal emissivity
+of spectral selective coating for thermal absorber into a texte files.
+""" 
+    tab_best_solution = Experience_results.get("tab_best_solution")
+    Wl = parameters.get("Wl")
+    Ang = parameters.get('Ang')
+    C = parameters.get('C')
+    T_air = parameters.get('T_air')
+    T_abs = parameters.get('T_abs')
+    Mat_Stack = parameters.get('Mat_Stack')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    Sol_Spec = parameters.get('Sol_Spec')
+    
+    # Integration of solar spectrum, raw en W/m2
+    I =  trapz(Sol_Spec, Wl)
+    
+    # Created list
+    perf_rh = []
+    
+    for i in range(len(tab_best_solution )):
+        # Calculate the R, T, A of each solution 
+        R, T, A = RTA_curve(Experience_results["tab_best_solution"][i], parameters)
+        
+        # Calculation of the solar absorption 
+        A_s = 0 
+        A_s = SolarProperties(Wl, A, Sol_Spec)
+        # Calculation of the black body
+        BB_shape = BB(T_abs, Wl)
+        # calculation of the emittance of the surface
+        E_BB_T_abs = E_BB(Wl, A, BB_shape)
+        # Calculation of the solar thermal yield. Argument of the function helio_th(A_s, E_BB, T_stack, T_air, C, I,  r_Opt = 0.7, FFabs=1):
+        rH = helio_th(A_s, E_BB_T_abs, T_abs, T_air, C, I,  r_Opt = 0.7, FFabs=1)
+        
+        # Add value in perf_rh as list
+        perf_rh.append([rH, A_s, E_BB_T_abs])
+   
+    # Convert perf_rh in a numpy array
+    perf_rh_np = np.array(perf_rh)
+
+    filename = directory + "/performance_rh.txt"
+    # Open the files with writing write
+    with open(filename, "w") as file:
+        # Parcourir chaque ligne du tableau numpy
+        for row in perf_rh_np:
+            # Convertir la ligne en chaîne de caractères avec un format lisible
+            file.write("\t".join(map(str, row)) + "\n")
+
+    print("The performances of selective coatings were written")
 
 def Optimization_txt(parameters, Experience_results, directory):
     language = Experience_results.get('language')
@@ -4088,18 +4557,19 @@ def Generate_materials_txt(parameters, Experience_results, directory):
     individual = tab_best_solution[max_index]
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack, parameters)
     Wl = parameters.get("Wl")
-    vf = Experience_results.get("vf")
     R = Experience_results.get("R")
     T = Experience_results.get("T")
     A = Experience_results.get("A")
     # I write materials indexes in a text file
     Mats= []
+    # I obtain the vf in individual    
+    vf = individual[len(Mat_Stack):,]
     for i in range(len(Mat_Stack)):
         name = Mat_Stack[i]
         n = n_Stack[:,i]
         k = k_Stack[:,i]
         # plot the graph
-        plt.title("N et k de" + name)
+        plt.title("N et k de" + name, y=1.05)
         plt.plot(Wl, n, label = "n extrapolé")
         plt.plot(Wl, k, label = "k extrapolé")
     # =============================================================================
@@ -4117,10 +4587,10 @@ def Generate_materials_txt(parameters, Experience_results, directory):
         if '-' in name:
             for j in range (i):
                 if name not in Mats:
-                    filename = directory + "/" + str(name) + "_vf=" + str(vf[i]) + ".txt"
+                    filename = directory + "/" + str(name) + "_vf=" + str(round(vf[i],4)) + ".txt"
                     Mats.append(name)
                 elif Mat_Stack[j]==name and j!=i and vf[i]!=vf[j]:
-                    filename = directory + "/" + str(name) + "_vf=" + str(vf[i]) + ".txt"
+                    filename = directory + "/" + str(name) + "_vf=" + str(round(vf[i],4)) + ".txt"
         else:
             if name not in Mats:
                 filename = directory + "/" + str(name) + ".txt"
@@ -4132,17 +4602,69 @@ def Generate_materials_txt(parameters, Experience_results, directory):
         print("The n,k of each material have been writed in a file named as them")
     elif language == "fr":
         print("Les n et k de chaque matériau ont été écrits dans un fichier du même nom")
+
+def Reflectivity_plot_fit(parameters, Experience_results, directory):
+    
+    if 'evaluate' in parameters:
+        evaluate = parameters.get("evaluate")
+    else :
+        raise ValueError("You must use a evaluate fonction")
+    
+    if 'fit' not in evaluate.__name__:
+        raise ValueError("You must use a fit fonction")
+        
+    if 'Signal_fit' in parameters:
+        Signal_fit = parameters.get("Signal_fit")
+    else :
+        raise ValueError("Reflectivity_plot_fit must be used an experimental signal, named 'Signal_fit'")
+        
+    Wl = parameters.get("Wl")
+    R = Experience_results.get("R")
+ 
+    # Reflectivity plot
     fig, ax1 = plt.subplots()
-    color = 'black' # Basic colors available: b g r c m y k w
     ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('Reflectivity, transmissivity or absorptivity (-)', color=color)
-    ax1.plot(Wl, R, 'black', label='Reflectivity')
-    ax1.plot(Wl, T, 'blue', label='Transmissivity')
-    ax1.plot(Wl, A, 'red', label='Absorptivity')
-    ax1.tick_params(axis='y', labelcolor=color)
-    #plt.title("Optical stack respond")
-    ax1.set_ylim(0, 1) # Change y-axis scale
-    ax1.grid(True)
-    plt.legend()
-    plt.savefig(directory + "/" + "OpticalStackRespond.png", dpi = 300, bbox_inches='tight')
+    ax1.set_ylabel('Reflectivity (-)', color="black")
+    ax1.plot(Wl, R, color="black", label = "Measure")
+    ax1.plot(Wl, Signal_fit, color="red", label = "Fit")
+    ax1.legend()
+    ax1.set_ylim(0, 1) # Change y-axis' scale
+    fig.tight_layout()  
+    ax1.legend()
+    plt.title("Reflectivity measured vs fitted", y=1.05)
+    # Save the plot.
+    plt.savefig(directory + "/" + "Optimum_Reflectivity_fit.png", dpi = 300, bbox_inches='tight')
+    plt.show()
+    
+def Transmissivity_plot_fit(parameters, Experience_results, directory):
+    
+    if 'evaluate' in parameters:
+        evaluate = parameters.get("evaluate")
+    else :
+        raise ValueError("You must use a evaluate fonction")
+    
+    if 'fit' not in evaluate.__name__:
+        raise ValueError("You must use a fit fonction")
+        
+    if 'Signal_fit_2' in parameters:
+        Signal_fit = parameters.get("Signal_fit_2")
+    else :
+        raise ValueError("Transmissivity_plot_fit must be used an experimental signal, named 'Signal_fit'")
+        
+    Wl = parameters.get("Wl")
+    T = Experience_results.get("T")
+ 
+    # Reflectivity plot
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Transmissivity (-)', color="black")
+    ax1.plot(Wl, T, color="black", label = "Measure")
+    ax1.plot(Wl, Signal_fit, color="red", label = "Fit")
+    ax1.legend()
+    ax1.set_ylim(0, 1) # Change y-axis' scale
+    fig.tight_layout()  
+    ax1.legend()
+    plt.title("Transmissivity measured vs fitted", y=1.05)
+    # Save the plot.
+    plt.savefig(directory + "/" + "Optimum_Transmissivity_fit.png", dpi = 300, bbox_inches='tight')
     plt.show()
