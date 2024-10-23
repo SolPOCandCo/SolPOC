@@ -12,7 +12,7 @@ def init():
         dst = base_dst + f"_{i}"
         i += 1
     sh.copytree(src, dst)
-    sh.rmtree(os.path.join(dst, '__pycache__'))
+    sh.rmtree(os.path.join(dst, '__pycache__'), ignore_errors=True)
     print(f"SolPOC project directory created at {os.path.abspath(dst)}")
     # Create a placeholder materials directory
     materials_path = os.path.join(dst, 'Materials')
