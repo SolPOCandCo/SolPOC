@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 27 07 2023
-SolPOC v 0.9.5
+SolPOC v 0.9.6
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
