@@ -1,5 +1,5 @@
 numpy
-scipy>=1.14.0
+scipy
 matplotlib
 jupyter
-solcore==5.10.0
+solcore>=5.10.0

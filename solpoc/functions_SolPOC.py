@@ -15,7 +15,11 @@ import importlib
 from importlib import resources as impresources
 import numpy as np
 import math
-from scipy.integrate import trapezoid
+# trapz renamed as trapezoid since scipy 1.14.0
+try:
+    from scipy.integrate import trapezoid
+except ImportError:
+    from scipy.integrate import trapz as trapezoid
 from scipy.interpolate import interp1d
 import random
 import os
