@@ -1,6 +1,6 @@
 # Welcome to our documentation
 
 
-- [Interactive guide to SolPoc](./JupyterNotebook/Readme.md)
-- [Code documentation](./sphinx)
+- [Interactive guide to SolPoc](./JupyterNotebook/readme.md)
+- [Code documentation](./sphinx) (to be published)
 
