@@ -1,4 +1,7 @@
 # Changelog
+## v0.9.6
+
+Pinning the Scipy dependency at >=1.14.0 breaks support for python 3.9. Code was adjusted to be flexible around the `trapz` or `trapezoid` change, so that 3.9 can still be supported.
 
 ## v0.9.5
 ### Dependencies

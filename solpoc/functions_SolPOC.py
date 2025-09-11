@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 27 07 2023
-SolPOC v 0.9.4
+SolPOC v 0.9.6
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
@@ -15,7 +15,11 @@ import importlib
 from importlib import resources as impresources
 import numpy as np
 import math
-from scipy.integrate import trapezoid
+# trapz renamed as trapezoid since scipy 1.14.0
+try:
+    from scipy.integrate import trapezoid
+except ImportError:
+    from scipy.integrate import trapz as trapezoid
 from scipy.interpolate import interp1d
 import random
 import os
