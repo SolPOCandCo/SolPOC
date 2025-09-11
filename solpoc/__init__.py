@@ -75,6 +75,7 @@ from .functions_SolPOC import Made_SolCORE_Stack
 from .functions_SolPOC import Made_Stack
 from .functions_SolPOC import Made_Stack_vf
 from .functions_SolPOC import mutation
+from .functions_SolPOC import mutation_DE
 from .functions_SolPOC import nb_compo
 from .functions_SolPOC import normalized_mse
 from .functions_SolPOC import One_plus_One_ES
@@ -108,5 +109,6 @@ from .functions_SolPOC import valeurs_equidistantes
 from .functions_SolPOC import Volumetric_parts_plot
 from .functions_SolPOC import Wl_selectif
 from .functions_SolPOC import write_stack_period 
+from .functions_SolPOC import X_DE
 
 from .cli import init
