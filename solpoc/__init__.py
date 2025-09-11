@@ -23,6 +23,9 @@ from .functions_SolPOC import BB
 from .functions_SolPOC import Bruggeman
 from .functions_SolPOC import chi_square
 from .functions_SolPOC import children_strangle
+from .functions_SolPOC import choose_material
+from .functions_SolPOC import choose_material_2
+from .functions_SolPOC import choose_material_3
 from .functions_SolPOC import Consistency_curve_plot
 from .functions_SolPOC import Convergence_plots
 from .functions_SolPOC import Convergence_plots_2
@@ -46,6 +49,7 @@ from .functions_SolPOC import evaluate_netW_PV_CSP
 from .functions_SolPOC import evaluate_R
 from .functions_SolPOC import evaluate_R_Brg
 from .functions_SolPOC import evaluate_R_s
+from .functions_SolPOC import evaluate_R_s_AOI
 from .functions_SolPOC import evaluate_rh
 from .functions_SolPOC import evaluate_RTA_s
 from .functions_SolPOC import evaluate_RTR
@@ -53,6 +57,8 @@ from .functions_SolPOC import evaluate_T
 from .functions_SolPOC import evaluate_T_pv
 from .functions_SolPOC import evaluate_T_s
 from .functions_SolPOC import evaluate_T_vis
+from .functions_SolPOC import evaluate_TRT
+from .functions_SolPOC import fill_material_stack
 from .functions_SolPOC import Explain_results
 from .functions_SolPOC import Explain_results_fit
 from .functions_SolPOC import Generate_materials_txt
@@ -81,6 +87,7 @@ from .functions_SolPOC import optimize_ga
 from .functions_SolPOC import optimize_strangle
 from .functions_SolPOC import Optimum_refractive_index_plot
 from .functions_SolPOC import Optimum_thickness_plot
+from .functions_SolPOC import print_material_probabilities
 from .functions_SolPOC import PSO
 from .functions_SolPOC import Reflectivity_plot
 from .functions_SolPOC import Reflectivity_plot_fit

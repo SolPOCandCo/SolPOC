@@ -1120,7 +1120,7 @@ Now note than the first thin layer is a composite layer, made of W and Al2O3 (BK
 We need the refractive index of W AND Al2O3 for the layer 1, and we need to optimise the tickness AND volumic fraction in the W-Al2O3 layer.
 See EMA or Brugeman function for definition of volumuc fraction.
 Each individual is now an array of lenght 6, as exemple : 
-\nindividual = [1.00000000e+06, 40, 125, 0, 0.3, 0]
+\nindividual : [1.00000000e+06, 40, 125, 0, 0.3, 0]
 \nThe [1.00000000e+06, 40, 125] part of the list contain the thickness, in nm
 \nThe [0, 0.3, 0] part of the list contain the volumic fraction, between 0 and 1
 \nk_Stack and n_Stack are array of float, of size (4, 3, 2), noted here (x, y, z) dimension
@@ -1214,7 +1214,17 @@ k_Stack : array
     else:
         d_Stack = np.array(individual)
         d_Stack = d_Stack.reshape(1, len(individual))
-
+     
+    if "Mat_Option" in parameters:
+        Mat_Option= parameters.get('Mat_Option') 
+        Wl = parameters.get('Wl') 
+        d_Stack, x = individual[:-len(Mat_Stack)], individual[-len(Mat_Stack):]
+        Mat_Stack = fill_material_stack(Mat_Stack, x, Mat_Option)
+        n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
+        # As I did in previous versions, I transform d_Strack into an array
+        d_Stack = np.array(d_Stack)
+        d_Stack = d_Stack.reshape(1, len(d_Stack))
+      
     return d_Stack, n_Stack, k_Stack
 
 
@@ -1771,6 +1781,87 @@ P_RTR: Int (float)
         (Sol_Spec_PV_int + Sol_Spec_Th_int)
     return net_PV_CSP
 
+def evaluate_R_s_AOI(individual, parameters):
+    """
+Calculates the average solar reflectance of an individual, for 5 different angles.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, which can be added with volumic fraction or refractive index.
+
+parameters : Dict
+    Dictionary witch contains all parameters. 
+
+Returns
+-------
+R_s : Int (float)
+    The mean solar reflectance for different angle
+    """
+    Wl = parameters.get('Wl')
+    Ang = parameters.get('Ang')
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    Sol_Spec = parameters.get('Sol_Spec')
+    Mat_Stack = parameters.get('Mat_Stack')
+    """
+    Why Individual_to_Stack
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+    
+    # Calculation
+    Ang_list = [0, 10, 20, 30, 40]
+    R_s = []
+    for Ang in Ang_list:
+        R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+        R_s.append(SolarProperties(Wl, R, Sol_Spec))
+        
+    return np.mean(R_s)
+
+def evaluate_TRT(individual, parameters):
+    """
+Calculates the performance according an RTR shape.
+\n1 individual = 1 output of one optimization function = 1 possible solution.
+\nindividual : array
+    individual is an output of optimisation method (algo). 
+    List of thickness in nm, witch can be added with volumic fraction or refractive index.
+
+parameters : Dict
+    Dictionary witch contain all parameters. 
+
+Returns
+-------
+P_RTR: Int (float)
+    Performance according an RTR shape.
+    """  
+    Wl = parameters.get('Wl')#
+    Ang = parameters.get('Ang')#
+    n_Stack = parameters.get('n_Stack')
+    k_Stack = parameters.get('k_Stack')
+    Sol_Spec = parameters.get('Sol_Spec')
+    # The profile is reflective from 0 to Lambda_cut_1
+    Lambda_cut_1 = parameters.get('Lambda_cut_1')
+    # The profile is transparent from Lambda_cut_1 to Lambda_cut_1
+    Lambda_cut_2 = parameters.get('Lambda_cut_2')
+    # Treatment of the optimization of the n(s)
+    Mat_Stack = parameters.get('Mat_Stack')
+    """
+    Why Individual_to_Stack ?
+    individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
+    1 individual ~ 1 list of thickness
+    """
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+    
+    Wl_1 = np.arange(min(Wl),Lambda_cut_1+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
+    Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_2+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
+    # Calculation of the RTA
+    d_Stack = d_Stack.reshape(1, len(individual))
+    R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
+    TRT = np.concatenate([T[0:len(Wl_1)],R[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], T[(len(Wl_2)+len(Wl_1)-1):]])
+    P_TRT = SolarProperties(Wl, TRT, Sol_Spec)
+    
+    return P_TRT
 
 def evaluate_RTA_s(individual, parameters):
     """
@@ -2114,6 +2205,125 @@ normalized_error : float
 
     return normalized_chi_sq
 
+def choose_material(x, materials):
+    """
+    Dispatches the material choice depending on the number of materials.
+    Supports only 2 or 3 materials.
+    
+    Args:
+        x (float): value in [-1,1]
+        materials (list): list of 2 or 3 materials
+    
+    Returns:
+        str: chosen material
+"""
+    if len(materials) == 2:
+        return choose_material_2(x, materials)
+    if len(materials) == 3:
+        return choose_material_3(x, materials)
+    else:
+        raise ValueError(
+            f"choose_material supports only 2 or 3 materials, "
+            f"but got {len(materials)}."
+        )
+    
+def choose_material_2(x, material):
+    """
+    Transforme un nombre x ∈ [-1,1] en un choix aléatoire entre A et B.
+    
+    Args:
+        x (float): valeur dans [-1,1] (pas forcément bornée strictement).
+        A, B: matériaux à choisir.
+        
+    Returns:
+        str: le matériau choisi.
+    """
+    A, B = material
+    # On borne x dans [-1, 1]
+    x = max(-1, min(1, x))
+    
+    # Probabilité d'avoir A
+    pA = (1 - x) / 2  
+    
+    # Tirage
+    if np.random.random() < pA:
+        return A
+    else:
+        return B
+    
+def choose_material_3(x, materials):
+    """
+    Selects a material from three options (A, B, C) based on a continuous variable x ∈ [-1,1].
+
+    Purpose:
+        This function represents a discrete material choice using a continuous variable,
+        allowing numerical optimization algorithms (e.g., Differential Evolution) to handle it,
+        since they operate on real-valued numbers.
+
+    Logic:
+        - Each interval of x defines a probabilistic "transition" between two materials:
+            * x < -1/3 : transition A -> B
+            * -1/3 <= x < 1/3 : transition B -> C
+            * x >= 1/3 : transition A -> C (probability decreases for C)
+        - The value of x determines the probability of selecting one material or the other:
+            * -1 : 100% material A 
+            *  -1/3 : 100% material B 
+            *  +1/3 : 100% material C
+            * +1 : 100% material A
+        - This approach allows continuous optimization while effectively handling discrete choices.
+
+    Args:
+        x (float): continuous value in [-1,1] representing the material choice
+        materials (list): list of three materials [A, B, C]
+
+    Returns:
+        str: chosen material according to the probability defined by x
+    """
+    if len(materials) != 3:
+        raise ValueError("Il faut exactement 3 matériaux (ex: [A,B,C]).")
+    
+    A, B, C = materials
+    x = max(-1, min(1, x))  # borne dans [-1,1]
+    
+    if x < -1/3:
+        # Intervalle A-B
+        t = (x + 1) / (2/3)  # normalise dans [0,1]
+        return A if np.random.random() < (1 - t) else B
+    
+    elif x < 1/3:
+        # Intervalle B-C
+        t = (x + 1/3) / (2/3)
+        return B if np.random.random() < (1 - t) else C
+    
+    else:
+        # Intervalle A-C inversé : probabilité décroissante pour C
+        t = (x - 1/3) / (2/3)  # normalise dans [0,1]
+        return C if np.random.random() < (1 - t) else A
+    
+def fill_material_stack(Mat_Stack, x, Mat_option):
+    """
+    Replace 'UM' in Mat_Stack by a material chosen from Mat_option, 
+    based on the corresponding value in x.
+
+    Args:
+        Mat_Stack (list of str): material stack, may contain "X" placeholders.
+        x (list of float): same length as Mat_Stack, each value in [-1,1].
+        Mat_option (list of str): list of candidate materials (2 or 3 supported).
+
+    Returns:
+        list of str: completed material stack.
+    """
+    if len(Mat_Stack) != len(x):
+        raise ValueError("Mat_Stack and x must have the same length.")
+
+    completed_stack = []
+    for mat, xi in zip(Mat_Stack, x):
+        if mat == "UM":
+            chosen = choose_material(xi, Mat_option)
+            completed_stack.append(chosen)
+        else:
+            completed_stack.append(mat)
+    return completed_stack
 
 def Stack_coherency(d_Stack, Mat_Stack, coherency_limit):
     """
@@ -2640,65 +2850,16 @@ children : List of array
         children.append(individual)
     return children
 
-
-def DEvol(f_cout, f_selection, parameters):
-    """
-Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
-"This DE is a current to best. Hypertuned on the chirped problem.
-Abrupt elimination of individuals not respecting the bounds
-(compare with what happens if you just put back to the edge
-could be a good idea on some problems)"
-
-Parameters
-----------
-
-evaluate : Callable 
-\nevaluation fonction, give in evaluate
-\nselection : Callable
-\nselection fonction, give in selection
-
-Returns
--------
-best_solution : numpy array
-    The best stack of thin film (a list a thickness = individual) which provide the high cost function 
-dev : numpy array
-    The value of the best solution during the optimisation process
-nb_run : Int 
-    The number of epoch
-seed : Int
-    Value of the seed, used in the random number generator
-    """
-    selection = f_selection.__name__,
-
-    # DE settings - potential settings of the function
-    # cr=0.5; # Probability to give parents settings to his child.
-    cr = parameters.get('mutation_rate')
-    f1 = parameters.get('f1')  # f1=0.9;
-    f2 = parameters.get('f2')  # f2=0.8;
-
-    # Following seed problem when using the code, the seed can be manually targeting
-
-    # Option 1
-    if 'seed' in parameters:
-        seed = parameters.get('seed')
-        np.random.seed(seed)
-    else:
-        seed = random.randint(1, 2**32 - 1)
-        np.random.seed(seed)
-
-    # Calculation of the budget :
-    pop_size = parameters.get('pop_size')
-    nb_generation = parameters.get('nb_generation')
-    budget = pop_size * nb_generation
-
-    # I give the population value
-    population = pop_size
-
+def X_DE(parameters):
+    
     # calculation of the X_min(s) and the X_max(s)
     Th_range = parameters.get('Th_range')
-    vf_range = parameters.get('vf_range')
     Th_Substrate = parameters.get('Th_Substrate')
     Mat_Stack = parameters.get('Mat_Stack')
+    
+    if 'Mat_Option' in parameters:
+        Mat_Option= parameters.get('Mat_Option') # Ajout
+    
     if 'nb_layer' in parameters:
         nb_layer = parameters.get('nb_layer')
     else:
@@ -2719,43 +2880,108 @@ seed : Int
         else:
             X_min += [Th_range[0]]
             X_max += [Th_range[1]]
-
-    if 'n_range' in parameters:
-        n_range = parameters.get('n_range')
-        for i in range(nb_layer):
-            X_min += [n_range[0]]
-            X_max += [n_range[1]]
-
-    if 'vf_range' in parameters:
-        vf_range = parameters.get('vf_range')
-        for i in range(len(Mat_Stack)):
-            if "-" in Mat_Stack[i]:
-                X_min += [vf_range[0]]
-                X_max += [vf_range[1]]
-            else:
-                X_min += [vf_range[0]]
-                X_max += [vf_range[0]]
-
-    """
-    idea ; I check all the Mat_stack list. I create an X_max_2. When I found a - 
-    I broadcast between vf[0] and vf[1] between X_max and X min, else Xmin_2 = Xmax_2 = 0 
-    If at the end I have only 0, I do nothing. If I have other values than = 0 , I add the vector'
-    for s in Mat_Stack: 
-        if "-" in s:
-            no_dash = False
-            break
             
-    if no_dash: # If no_dask is true, i go into the loop
-        for i in range(chromosome_size):
-            X_min += [vf_range[0]]
-            X_max += [vf_range[1]]*
-    """
-
+    if 'Mat_Option' in parameters:
+        for i in range(len(Mat_Stack)):
+            X_min += [-1]
+            X_max += [1]
+            
     # I put the lists in array
     X_min = np.array(X_min)
     X_max = np.array(X_max)
-
     # End of the code lines of COPS
+
+    return X_min, X_max
+
+def mutation_DE(omega, k, best, crossover, population, parameters, f1=1, f2=1):
+    """
+    Note:
+    The random numbers used inside mutation_DE remain reproducible because the seed 
+    is already fixed in DEvol3 via np.random.seed(seed). As long as mutation_DE 
+    relies on NumPy's random generator (np.random), it will follow the same seeded 
+    sequence, ensuring consistency across runs.
+    """
+    mutation_DE = parameters.get('mutation_DE')
+    
+    if mutation_DE == "current_to_best":
+        # current to best
+        # y(x) = x + F1 (a-b) + F2(best - x)
+        X = (omega[k] + f1*(omega[np.random.randint(population)] - omega[np.random.randint(
+            population)])+f2*(best-omega[k]))*crossover+(1-crossover)*omega[k]
+    elif mutation_DE == "rand_to_best":
+        # rand to best
+        # y = c + F1 *(a-b) + F2(best - c)
+        X = (omega[np.random.randint(population)] + f1*(omega[np.random.randint(population)]-omega[np.random.randint(
+            population)])+f2*(best-omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
+    elif mutation_DE == "best_1":
+        # best 1
+        X = (best - f1*(omega[np.random.randint(population)] -
+             omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
+    elif mutation_DE == "best_2":
+        # best 2
+        X = (best + f1*(omega[np.random.randint(population)] - omega[np.random.randint(population)] +
+             omega[np.random.randint(population)] - omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
+    elif mutation_DE == "rand_1":
+        # rand
+        a = omega[np.random.randint(population)]
+        b = omega[np.random.randint(population)]
+        c = omega[np.random.randint(population)]
+        X = (a + f1*(b - c))*crossover+(1-crossover)*omega[k]
+    elif mutation_DE == "rand_2":
+        # rand 2
+        a = omega[np.random.randint(population)]
+        b = omega[np.random.randint(population)]
+        c = omega[np.random.randint(population)]
+        d = omega[np.random.randint(population)]
+        X = (a + f1*(a - b + c - d))*crossover+(1-crossover)*omega[k]
+
+    return X
+
+def DEvol(f_cout, f_selection, parameters):
+    """
+    Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
+    "This DE is a current to best. Hypertuned on the chirped problem.
+    Abrupt elimination of individuals not respecting the bounds
+    (compare with what happens if you just put back to the edge
+    could be a good idea on some problems)"
+    
+    Parameters
+    ----------
+    
+    evaluate : Callable 
+    \nevaluation fonction, give in evaluate
+    \nselection : Callable
+    \nselection fonction, give in selection
+    
+    Returns
+    -------
+    best_solution : numpy array
+        The best stack of thin film (a list a thickness = individual) which provide the high cost function 
+    dev : numpy array
+        The value of the best solution during the optimisation process
+    nb_run : Int 
+        The number of epoch
+    seed : Int
+        Value of the seed, used in the random number generator
+    """
+
+    selection = f_selection.__name__,
+    cr = parameters.get('mutation_rate')
+    f1 = parameters.get('f1')  # f1=0.9;
+    f2 = parameters.get('f2')  # f2=0.8;
+    
+    # Calculation of the budget :
+    population = parameters.get('pop_size')
+    budget = parameters.get('budget')
+
+    # Option seed
+    if 'seed' in parameters:
+        seed = parameters.get('seed')
+        np.random.seed(seed)
+    else:
+        seed = np.random.randint(1, 2**32 - 1)
+        np.random.seed(seed)
+    X_min, X_max = X_DE(parameters)
 
     n = X_min.size
 
@@ -2771,7 +2997,6 @@ seed : Int
             cost[k] = f_cout(omega[k], parameters)
         elif selection[0] == "selection_max":
             cost[k] = 1-f_cout(omega[k], parameters)
-
     # Who's the best ?
     who = np.argmin(cost)
     best = omega[who]
@@ -2781,45 +3006,12 @@ seed : Int
     generation = 0
     convergence.append(cost[who])
 
-    mutation_DE = parameters.get('mutation_DE')
-
     # DE loop
     while evaluation < budget-population:
         for k in range(0, population):
             crossover = (np.random.random(n) < cr)
             # *crossover+(1-crossover)*omega[k] : crossover step
-
-            if mutation_DE == "current_to_best":
-                # current to best
-                # y(x) = x + F1 (a-b) + F2(best - x)
-                X = (omega[k] + f1*(omega[np.random.randint(population)] - omega[np.random.randint(
-                    population)])+f2*(best-omega[k]))*crossover+(1-crossover)*omega[k]
-            elif mutation_DE == "rand_to_best":
-                # rand to best
-                # y = c + F1 *(a-b) + F2(best - c)
-                X = (omega[np.random.randint(population)] + f1*(omega[np.random.randint(population)]-omega[np.random.randint(
-                    population)])+f2*(best-omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
-            elif mutation_DE == "best_1":
-                # best 1
-                X = (best - f1*(omega[np.random.randint(population)] -
-                     omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
-            elif mutation_DE == "best_2":
-                # best 2
-                X = (best + f1*(omega[np.random.randint(population)] - omega[np.random.randint(population)] +
-                     omega[np.random.randint(population)] - omega[np.random.randint(population)]))*crossover+(1-crossover)*omega[k]
-            elif mutation_DE == "rand_1":
-                # rand
-                a = omega[np.random.randint(population)]
-                b = omega[np.random.randint(population)]
-                c = omega[np.random.randint(population)]
-                X = (a + f1*(b - c))*crossover+(1-crossover)*omega[k]
-            elif mutation_DE == "rand_2":
-                # rand 2
-                a = omega[np.random.randint(population)]
-                b = omega[np.random.randint(population)]
-                c = omega[np.random.randint(population)]
-                d = omega[np.random.randint(population)]
-                X = (a + f1*(a - b + c - d))*crossover+(1-crossover)*omega[k]
+            X = mutation_DE(omega, k, best, crossover, population,parameters, f1, f2)
 
             if np.prod((X >= X_min)*(X <= X_max)):
                 if selection[0] == "selection_min":
@@ -2832,12 +3024,10 @@ seed : Int
                     omega[k] = X
 
         generation = generation+1
-        # print('generation:',generation,'evaluations:',evaluation)
-        #
         who = np.argmin(cost)
         best = omega[who]
         convergence.append(cost[who])
-
+        
     convergence = convergence[0:generation+1]
 
     return [best, convergence, budget, seed]
@@ -3461,6 +3651,29 @@ seed : Int
 
     return [current_solution, convergence, num_iterations, seed]
 
+def print_material_probabilities(Mat_Stack, x, Mat_option, n_trials=1000):
+    """
+    For each 'X' layer in Mat_Stack, estimate the probability of selecting 
+    each material in Mat_option based on x, using Monte Carlo trials.
+
+    Args:
+        Mat_Stack (list of str): material stack, with 'X' as placeholders.
+        x (list of float): values in [-1,1], same length as Mat_Stack.
+        Mat_option (list of str): candidate materials (2 or 3 supported).
+        n_trials (int): number of random draws per layer.
+    """
+    if len(Mat_Stack) != len(x):
+        raise ValueError("Mat_Stack and x must have the same length.")
+
+    print("=== Estimated material selection probabilities ===")
+    for i, (mat, xi) in enumerate(zip(Mat_Stack, x)):
+        if mat == "Z":
+            results = [choose_material(xi, Mat_option) for _ in range(n_trials)]
+            probs = {m: results.count(m) / n_trials for m in Mat_option}
+            prob_str = ", ".join([f"P({m})={p:.2f}" for m, p in probs.items()])
+            print(f"Layer {i}: x={xi:.4f} → {prob_str}")
+        else:
+            print(f"Layer {i}: {mat} (fixed)")
 
 def Reflectivity_plot(parameters, Experience_results, directory):
     if 'evaluate' in parameters:
