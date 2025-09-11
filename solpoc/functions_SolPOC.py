@@ -1120,7 +1120,7 @@ Now note than the first thin layer is a composite layer, made of W and Al2O3 (BK
 We need the refractive index of W AND Al2O3 for the layer 1, and we need to optimise the tickness AND volumic fraction in the W-Al2O3 layer.
 See EMA or Brugeman function for definition of volumuc fraction.
 Each individual is now an array of lenght 6, as exemple : 
-\nindividual : [1.00000000e+06, 40, 125, 0, 0.3, 0]
+\nindividual = [1.00000000e+06, 40, 125, 0, 0.3, 0]
 \nThe [1.00000000e+06, 40, 125] part of the list contain the thickness, in nm
 \nThe [0, 0.3, 0] part of the list contain the volumic fraction, between 0 and 1
 \nk_Stack and n_Stack are array of float, of size (4, 3, 2), noted here (x, y, z) dimension
