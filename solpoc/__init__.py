@@ -110,6 +110,6 @@ from .functions_SolPOC import valeurs_equidistantes
 from .functions_SolPOC import Volumetric_parts_plot
 from .functions_SolPOC import Wl_selectif
 from .functions_SolPOC import write_stack_period 
-from .functions_SolPOC import X_DE
+from .functions_SolPOC import X_DEvol
 
 from .cli import init

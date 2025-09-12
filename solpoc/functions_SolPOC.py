@@ -1097,10 +1097,7 @@ def get_parameters(
         raise ValueError("""Error : k_Stack is missing. 
     Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
     if budget is None :     
-        raise ValueError("""Warning : budget is missing. Please provide a budget""")
-    if nb_run is None :
-        raise ValueError("""Warning : nb_run is missing. Please provide the number of runs : . 
-    The number of runs is the number of times the optimization process is executed.""")   
+        raise ValueError("""Warning : budget is missing. Please provide a budget""") 
     if cost_function is None :
         raise ValueError("""Warning: the cost function is missing. Please select one.
         All cost functions provided with SolPOC start with 'evaluate'. 
@@ -1135,11 +1132,43 @@ def get_parameters(
         parameters['Th_Substrate'] =  1e6
     else : 
         parameters['Th_Substrate'] =  Th_Substrate
-    if vf_range is None:
-        print("Info: No range for volumique fraction provided. The default range is 0-1.")
-        parameters['vf_range'] = (0, 1)
+    
+    if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
+        """ 
+        This condition checks whether the individual contains volume fractions (vf),
+        which must be separated from the list of layer thicknesses.
+        For example, the list [100, 120, 0.1, 0.5] could be interpreted in two ways:
+        - as four layers with thicknesses of 100, 120, 0.1, and 0.5 nm
+        - or as two layers: 100 nm with 10% vf and 120 nm with 50% vf
+        
+        To distinguish between these two cases, we look at the dimensions of n_Stack and k_Stack.
+        If some layers are mixtures of two materials, n_Stack and k_Stack will have the shape (Wl, nb_layers, 2),
+        meaning there are two materials per layer. In this case, an Effective Medium Approximation (EMA)
+        is required to combine the two materials using the provided vf list.
+        
+        Otherwise, if there is only one material per layer, n_Stack and k_Stack will have the shape (Wl, nb_layers).
+        """
+        print("Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
+        if vf_range is None:
+            parameters["vf_range"] = (0, 1)
+        else : 
+            parameters["vf_range"] = vf_range
     else : 
-        parameters['vf_range'] = vf_range
+        """
+        The presence or absence of volume fractions (vf) determines how some upstream functions behave.
+        For example, X_DEVol (which initializes the population) must create initial individuals : 
+        if vf is present, each individual must include both a list of vf values and a list of layer thicknesses.
+        
+        Therefore, it is necessary to check whether an EMA is required:
+         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
+               → two materials per layer → EMA is required --> vf is required
+                   → apply either the user-defined vf values or default ones
+        else:
+               → only one material per layer → no EMA is needed
+               → set vf_range to None
+        """
+        parameters["vf_range"] = None
+
     if Th_range is None:
         print("Info: No range for thin layers thicknesses. The default range is 0-300 nm.")
         parameters['Th_range'] = (0, 300)
@@ -1158,7 +1187,13 @@ def get_parameters(
         parameters['algo'] =  algo
 
     """ No warming : if parameters do not contain the following value, we continue without informe the user. 
-    If missing --> fill the value and continue """    
+    If missing --> fill the value and continue """  
+    
+    if nb_run is None :
+        parameters['nb_run '] = 1
+    else : 
+        parameters['nb_run '] = nb_run 
+ 
     if name_Sol_Spec is None:
         parameters['name_Sol_Spec'] =  "Unknow"
     else :
@@ -1514,8 +1549,28 @@ k_Stack : array
         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
             raise ValueError(
                 "It is not possible to work with theoretical and composite layers at the same time.")
-
+    
+    if "Mat_Option" in parameters and parameters['nb_layer'] == 0:
+        if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
+            raise ValueError(
+                "It is not possible to optimise a material list and to work with composite layer at the same time")
+    
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
+        """ 
+        # This condition checks whether the individual contains volume fractions (vf),
+        # which must be separated from the list of layer thicknesses.
+        #
+        # For example, the list [100, 120, 0.1, 0.5] could be interpreted in two ways:
+        #  - as four layers with thicknesses of 100, 120, 0.1, and 0.5 nm
+        #  - or as two layers: 100 nm with 10% vf and 120 nm with 50% vf
+        #
+        # To distinguish between these two cases, we look at the dimensions of n_Stack and k_Stack.
+        # If some layers are mixtures of two materials, n_Stack and k_Stack will have the shape (Wl, nb_layers, 2),
+        # meaning there are two materials per layer. In this case, an Effective Medium Approximation (EMA)
+        # is required to combine the two materials using the provided vf list.
+        #
+        # Otherwise, if there is only one material per layer, n_Stack and k_Stack will have the shape (Wl, nb_layers).
+        """
         vf = []
         vf = individual[len(Mat_Stack):len(individual)]
         individual_list = individual.tolist()  # Conversion is a list
@@ -3180,7 +3235,7 @@ children : List of array
         children.append(individual)
     return children
 
-def X_DE(parameters):
+def X_DEvol(parameters):
     
     # calculation of the X_min(s) and the X_max(s)
     Th_range = parameters.get('Th_range')
@@ -3215,7 +3270,17 @@ def X_DE(parameters):
         for i in range(len(Mat_Stack)):
             X_min += [-1]
             X_max += [1]
-            
+    
+    if parameters['vf_range'] != None:
+        vf_range = parameters.get('vf_range')
+        for i in range(len(Mat_Stack)):
+            if "-" in Mat_Stack[i]:
+                X_min += [vf_range[0]]
+                X_max += [vf_range[1]]
+            else:
+                X_min += [vf_range[0]]
+                X_max += [vf_range[0]]
+                
     # I put the lists in array
     X_min = np.array(X_min)
     X_max = np.array(X_max)
@@ -3310,7 +3375,7 @@ def DEvol(f_cout, f_selection, parameters):
         seed = np.random.randint(1, 2**32 - 1)
         np.random.seed(seed)
     # X min et X_max allows to generate the initial population  
-    X_min, X_max = X_DE(parameters)
+    X_min, X_max = X_DEvol(parameters)
     n = X_min.size
 
     # Initialization of the population
@@ -3983,7 +4048,7 @@ def print_material_probabilities(Mat_Stack, x, Mat_option, n_trials=1000):
 
     print("=== Estimated material selection probabilities ===")
     for i, (mat, xi) in enumerate(zip(Mat_Stack, x)):
-        if mat == "Z":
+        if mat == "UM":
             results = [choose_material(xi, Mat_option) for _ in range(n_trials)]
             probs = {m: results.count(m) / n_trials for m in Mat_option}
             prob_str = ", ".join([f"P({m})={p:.2f}" for m, p in probs.items()])
