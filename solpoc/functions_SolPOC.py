@@ -1021,6 +1021,169 @@ Subtrat : List of string
     return Subtrat
 
 
+def get_parameters(
+        Wl = None,
+        Ang = None,
+        Sol_Spec = None,
+        name_Sol_Spec = None,
+        Mat_Stack = None,
+        n_Stack = None, 
+        k_Stack = None,
+        Th_range = None,
+        Th_Substrate = None,
+        vf_range = None,
+        Lambda_cut_1 = None,
+        Lambda_cut_2 = None, 
+        pop_size = None, 
+        budget = None, 
+        crossover_rate = None, 
+        nb_run = None,
+        seed = None,
+        algo = None, 
+        cost_function = None,
+        selection = None,
+        nb_layer = None,
+        n_range = None,
+        d_Stack_Opt = None,
+        ):
+
+    parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
+                  'Ang': Ang,
+                  'Sol_Spec': Sol_Spec,
+                  'name_Sol_Spec': name_Sol_Spec,
+                  'Mat_Stack': Mat_Stack,
+                  'n_Stack': n_Stack,
+                  'k_Stack': k_Stack,
+                  'Th_range': Th_range,
+                  'Th_Substrate': Th_Substrate ,# Substrate thickness, in nm
+                  'vf_range' : vf_range,
+                  'Lambda_cut_1': Lambda_cut_1,
+                  'Lambda_cut_2': Lambda_cut_2,
+                  'pop_size': pop_size,
+                  'budget' : budget,
+                  'crossover_rate' : crossover_rate,
+                  'nb_run': nb_run,
+                  'seed' : seed,
+                  'algo': algo,
+                  'name_algo': algo.__name__,
+                  'evaluate': cost_function,
+                  'selection': selection,
+                  'name_selection': selection.__name__,}  # End of the dict
+    
+    if Wl is None:
+        print("Info: No number of wavelenght provided. The defaut value is 280 to 2500 nm with a 5 nm step.")
+        parameters['Wl'] = np.arange(280, 2505,5)
+    if Ang is None:
+        print("Info: No number incidence angle provided. The defaut value is 0°.")
+        parameters['Ang'] = 0
+    if Sol_Spec is None:
+        print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
+        Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+        Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
+        parameters['Sol_Spec'] = Sol_Spec
+        parameters['name_Sol_Spec'] =  name_Sol_Spec
+    if name_Sol_Spec is None:
+        parameters['name_Sol_Spec'] =  "Unknow"
+    if Mat_Stack is None :
+        raise ValueError(
+        """Warning: you must describe the thin layers stack in Mat_Stack.
+    Example: Mat_Stack = ['SiO2', 'TiO2', 'Si'] """ )
+                         
+    if n_Stack is None :
+        raise ValueError("""Warning : n_Stack is missing. 
+    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
+    if k_Stack is None :
+        raise ValueError("""Warning : k_Stack is missing. 
+    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
+    if Th_range is None:
+        parameters['Th_range'] = (0, 300)
+    if Th_Substrate is None:
+        print("Info: No number of thicknesses for the substrat provided. The defaut value is 1mm.")
+        parameters['Th_Substrate'] =  1e6
+    if vf_range is None:
+        print("Info: No range for volumique fraction provided. The default range is 0-1.")
+        parameters['vf_range'] = (0, 1)     
+             
+    if pop_size is None : 
+        print("Info: No number of population size provided. The default value is 30.")
+        parameters['pop_size'] =  30
+    if budget is None :     
+        raise ValueError("""Warning : budget is missing. Please provide a budget""")
+    if crossover_rate is None:
+        print("Info: No number of crossovervalue provided. the defaut value is 0.5.")
+        parameters['crossover_rate'] =  0.5
+    if Lambda_cut_1 is None:
+        parameters['Lambda_cut_1'] =  500
+    if Lambda_cut_2 is None:
+        parameters['Lambda_cut_1'] =  1000
+
+    if nb_run is None :
+        raise ValueError("""Warning : nb_run is missing. Please provide the number of runs : . 
+    The number of runs is the number of times the optimization process is executed.""")       
+    # if the seed variable exists, i add it in the dictionary
+    # if not, define a seed
+    if seed is not None:
+        parameters['seed'] = seed
+        # Create seed list for multiprocessing
+        parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
+    else:
+        parameters["seed"] = get_seed_from_randint()
+        # Create seed list for multiprocessing
+        parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
+    if algo is None:
+        raise ValueError("""Warning : the optimization method is missing. Please select one : 
+    We recommande to use DEvol : algo = sol.DEvol""")  
+    if cost_function is None :
+        raise ValueError("""Warning: the cost function is missing. Please select one.
+        All cost functions provided with SolPOC start with 'evaluate'. 
+        Read the User Guide for more information about each cost functions, or write your own !""")
+    if selection is None : 
+        print("Info: No selection function provided. Using the default 'selection_max'.")
+        parameters['selection'] = selection_max 
+        parameters['selection_name'] = selection.__name__
+    
+    # Advanced parameters  
+    """
+    A non-nul value for nb_layer enables an optimization where both the thickness and 
+    the real part of the refractive index (n in N = n + i*k) are optimized.
+    
+    It defines how many additional layers are added on top of the existing stack.
+    For example, with Mat_Stack = ["BK7", "TiO2"] and nb_layer = 3,
+    the optimization will use a BK7 substrate, a TiO2 thin film, and 3 additional layers
+    whose thickness and refractive index are to be determined.
+    (Note: the thickness of the TiO2 layer is also optimized.)
+    
+    n_range defines the allowed range of the refractive index values,
+    for example: n_range = (1, 3)
+    """
+    if nb_layer is None:
+        parameters["nb_layer"] = 0 # If nb_layer is 0 or None, no additional layers are added
+    else:
+        parameters["nb_layer"] = nb_layer
+    if n_range is not None: 
+        parameters["n_range"] = n_range  
+    else : 
+        raise ValueError("""Warning: the n_range value is missing """)
+           
+    """
+    d_Stack specifies which layer thicknesses are fixed and which are optimized.
+    
+    - Provide a numerical value to fix the thickness of a layer.
+    - Use "no" to mark a layer as free, meaning its thickness will be optimized automatically.
+    
+    This enables constrained optimization.  
+    Example: if there are three layers, you can write ["no", 40, "no"],
+    which means only the middle layer has a fixed thickness.
+    """
+    if d_Stack_Opt is None or len(d_Stack_Opt) == 0:
+        d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
+        parameters["d_Stack_Opt"] = d_Stack_Opt
+    else:
+        parameters["d_Stack_Opt"] = d_Stack_Opt
+    
+        
+    return parameters
+
 def equidistant_values(lst):
     """
 Returns a small list of y equidistant values from a large list lst.
