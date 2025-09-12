@@ -2970,7 +2970,7 @@ def DEvol(f_cout, f_selection, parameters):
     """
 
     selection = f_selection.__name__,
-    cr = parameters.get('mutation_rate')
+    cr = parameters.get('crossover_rate')
     f1 = parameters.get('f1')  # f1=0.9;
     f2 = parameters.get('f2')  # f2=0.8;
     
