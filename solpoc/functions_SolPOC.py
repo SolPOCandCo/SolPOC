@@ -3094,7 +3094,7 @@ seed : Int
     budget = parameters.get('budget')
     evaluate_rate = parameters.get('evaluate_rate')
     Precision_AlgoG = parameters.get('Precision_AlgoG')
-    nb_generation = budget / pop_size
+    nb_generation = budget // pop_size
 
     # Option 1
     if 'seed' in parameters:
@@ -3580,7 +3580,7 @@ Need  generate_neighbor() and acceptance_probability() functions.
     num_particles = parameters.get('pop_size')
     # number of particules is storage in nb_generation
     budget = parameters.get('budget')
-    num_iterations = budget / num_particles
+    num_iterations = budget // num_particles
     Th_Substrate = parameters.get('Th_Substrate')
 
     selection = selection.__name__,
@@ -5140,7 +5140,7 @@ def Optimization_txt(parameters, Experience_results, directory):
     precision_AlgoG = parameters.get("precision_AlgoG")
     budget = parameters.get("budget")
     nb_run = Experience_results.get('nb_run')
-    cpu_used = parameters.get("cpu_used")
+    cpu_used = Experience_results.get("cpu_used")
     time_real = parameters.get("time_real")
     tab_temps = Experience_results.get("tab_temps")
     seed = parameters.get("seed")
