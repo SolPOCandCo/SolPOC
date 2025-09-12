@@ -18,6 +18,7 @@ except metadata.PackageNotFoundError:
     pass
 
 
+from .functions_SolPOC import apply_mutation_DE
 from .functions_SolPOC import acceptance_probability
 from .functions_SolPOC import BB
 from .functions_SolPOC import Bruggeman
@@ -76,7 +77,6 @@ from .functions_SolPOC import Made_SolCORE_Stack
 from .functions_SolPOC import Made_Stack
 from .functions_SolPOC import Made_Stack_vf
 from .functions_SolPOC import mutation
-from .functions_SolPOC import mutation_DE
 from .functions_SolPOC import nb_compo
 from .functions_SolPOC import normalized_mse
 from .functions_SolPOC import One_plus_One_ES

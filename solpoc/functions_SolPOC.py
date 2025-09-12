@@ -1035,8 +1035,11 @@ def get_parameters(
         Lambda_cut_1 = None,
         Lambda_cut_2 = None, 
         pop_size = None, 
-        budget = None, 
         crossover_rate = None, 
+        f1 = None,
+        f2 = None,
+        mutation_DE = None,
+        budget = None, 
         nb_run = None,
         seed = None,
         algo = None, 
@@ -1045,6 +1048,16 @@ def get_parameters(
         nb_layer = None,
         n_range = None,
         d_Stack_Opt = None,
+        C = None,
+        T_air = None,
+        T_abs = None,
+        Signal_H_eye = None,
+        poids_PV = None,
+        Signal_PV = None,
+        Signal_Th = None,
+        precision_AlgoG = None,
+        mutation_delta = None,
+        evaluate_rate = None,
         ):
 
     parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
@@ -1057,8 +1070,6 @@ def get_parameters(
                   'Th_range': Th_range,
                   'Th_Substrate': Th_Substrate ,# Substrate thickness, in nm
                   'vf_range' : vf_range,
-                  'Lambda_cut_1': Lambda_cut_1,
-                  'Lambda_cut_2': Lambda_cut_2,
                   'pop_size': pop_size,
                   'budget' : budget,
                   'crossover_rate' : crossover_rate,
@@ -1066,60 +1077,129 @@ def get_parameters(
                   'seed' : seed,
                   'algo': algo,
                   'name_algo': algo.__name__,
-                  'evaluate': cost_function,
+                  'cost_function' : cost_function,
+                  'evaluate': cost_function, # the cost function was nammed evaluate in SolPOC v0.9.6. We keep this the ligne iv v0.9.7 for avoid bug
+                  'mutation_DE' : mutation_DE,
                   'selection': selection,
                   'name_selection': selection.__name__,}  # End of the dict
     
+    """ Error : parameters MUST containe the following value . 
+    If missing --> ValueError"""
+    if Mat_Stack is None :
+        raise ValueError(
+        """Error : you must describe the thin layers stack in Mat_Stack.
+    Example: Mat_Stack = ['SiO2', 'TiO2', 'Si'] """ )
+                         
+    if n_Stack is None :
+        raise ValueError("""Error  : n_Stack is missing. 
+    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
+    if k_Stack is None :
+        raise ValueError("""Error : k_Stack is missing. 
+    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
+    if budget is None :     
+        raise ValueError("""Warning : budget is missing. Please provide a budget""")
+    if nb_run is None :
+        raise ValueError("""Warning : nb_run is missing. Please provide the number of runs : . 
+    The number of runs is the number of times the optimization process is executed.""")   
+    if cost_function is None :
+        raise ValueError("""Warning: the cost function is missing. Please select one.
+        All cost functions provided with SolPOC start with 'evaluate'. 
+        Read the User Guide for more information about each cost functions, or write your own !""")
+    
+
+    """ Warning : if parameters do not contain the following value, we continue and informe the user. 
+    If missing --> informe user and continue """
     if Wl is None:
         print("Info: No number of wavelenght provided. The defaut value is 280 to 2500 nm with a 5 nm step.")
         parameters['Wl'] = np.arange(280, 2505,5)
+    else : 
+        parameters['Wl'] = Wl
+        
     if Ang is None:
         print("Info: No number incidence angle provided. The defaut value is 0°.")
         parameters['Ang'] = 0
+    else : 
+        parameters['Ang'] = Ang
+        
     if Sol_Spec is None:
         print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
         Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
         Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
         parameters['Sol_Spec'] = Sol_Spec
         parameters['name_Sol_Spec'] =  name_Sol_Spec
-    if name_Sol_Spec is None:
-        parameters['name_Sol_Spec'] =  "Unknow"
-    if Mat_Stack is None :
-        raise ValueError(
-        """Warning: you must describe the thin layers stack in Mat_Stack.
-    Example: Mat_Stack = ['SiO2', 'TiO2', 'Si'] """ )
-                         
-    if n_Stack is None :
-        raise ValueError("""Warning : n_Stack is missing. 
-    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
-    if k_Stack is None :
-        raise ValueError("""Warning : k_Stack is missing. 
-    Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
-    if Th_range is None:
-        parameters['Th_range'] = (0, 300)
+    else : 
+        parameters['Sol_Spec'] = Sol_Spec
+        parameters['name_Sol_Spec'] =  name_Sol_Spec
     if Th_Substrate is None:
-        print("Info: No number of thicknesses for the substrat provided. The defaut value is 1mm.")
+        print("Info: No substract thicknesses provided. The defaut value is 1 mm.")
         parameters['Th_Substrate'] =  1e6
+    else : 
+        parameters['Th_Substrate'] =  Th_Substrate
     if vf_range is None:
         print("Info: No range for volumique fraction provided. The default range is 0-1.")
-        parameters['vf_range'] = (0, 1)     
-             
+        parameters['vf_range'] = (0, 1)
+    else : 
+        parameters['vf_range'] = vf_range
+    if Th_range is None:
+        print("Info: No range for thin layers thicknesses. The default range is 0-300 nm.")
+        parameters['Th_range'] = (0, 300)
+    else :
+        parameters['Th_range'] = Th_range 
     if pop_size is None : 
         print("Info: No number of population size provided. The default value is 30.")
         parameters['pop_size'] =  30
-    if budget is None :     
-        raise ValueError("""Warning : budget is missing. Please provide a budget""")
+    else : 
+        parameters['pop_size'] =  pop_size
+    
+    if algo is None :     
+        print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
+        parameters['algo'] =  DEvol
+    else :
+        parameters['algo'] =  algo
+
+    """ No warming : if parameters do not contain the following value, we continue without informe the user. 
+    If missing --> fill the value and continue """    
+    if name_Sol_Spec is None:
+        parameters['name_Sol_Spec'] =  "Unknow"
+    else :
+        parameters['name_Sol_Spec'] = name_Sol_Spec
+
+    if algo.__name__ == "DEvol":
+        if f1 is None : 
+            parameters['f1'] =  1.0
+        else : 
+            parameters['f1'] =  f1
+        if f2 is None : 
+            parameters['f2'] =  1.0
+        else : 
+            parameters['f1'] =  f2
+        if mutation_DE is None:
+            parameters['mutation_DE'] =  "rand_1"
+        else : 
+            parameters['mutation_DE'] =  mutation_DE
+              
     if crossover_rate is None:
-        print("Info: No number of crossovervalue provided. the defaut value is 0.5.")
         parameters['crossover_rate'] =  0.5
+    else : 
+        parameters['crossover_rate'] =  crossover_rate
+    
+    """
+    lambda_cut_1 and lambda_cut_2 define the spectral cut-off wavelengths (λ1 and λ2)
+    used to separate the solar spectrum into reflective and transparent zone intp a PV-CSP systeme for the Spectral Splitting coating 
+    Although they are specific to certain cost functions (like evaluate_RTR), multiple cost
+    functions can be used, especialy for the SolPOC communituy
+    --> therefore, default values are set when they are None.
+    """
     if Lambda_cut_1 is None:
         parameters['Lambda_cut_1'] =  500
+    else :
+        parameters['Lambda_cut_1'] =  Lambda_cut_1
     if Lambda_cut_2 is None:
         parameters['Lambda_cut_1'] =  1000
+    else :
+        parameters['Lambda_cut_2'] =  Lambda_cut_2
 
-    if nb_run is None :
-        raise ValueError("""Warning : nb_run is missing. Please provide the number of runs : . 
-    The number of runs is the number of times the optimization process is executed.""")       
+    
     # if the seed variable exists, i add it in the dictionary
     # if not, define a seed
     if seed is not None:
@@ -1130,13 +1210,7 @@ def get_parameters(
         parameters["seed"] = get_seed_from_randint()
         # Create seed list for multiprocessing
         parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
-    if algo is None:
-        raise ValueError("""Warning : the optimization method is missing. Please select one : 
-    We recommande to use DEvol : algo = sol.DEvol""")  
-    if cost_function is None :
-        raise ValueError("""Warning: the cost function is missing. Please select one.
-        All cost functions provided with SolPOC start with 'evaluate'. 
-        Read the User Guide for more information about each cost functions, or write your own !""")
+    
     if selection is None : 
         print("Info: No selection function provided. Using the default 'selection_max'.")
         parameters['selection'] = selection_max 
@@ -1182,7 +1256,93 @@ def get_parameters(
         parameters["d_Stack_Opt"] = d_Stack_Opt
         d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
     
-        
+    if cost_function.__name__ == "evaluate_rh":
+        if C is None:
+            print("Info: You optimise a heliothermal efficiency. No number of solar concentration provided. The defaut value is 80.")
+            parameters["C"] = 80
+        else:
+            parameters["C"] = C
+    
+        if T_air is None:
+            print("Info: You optimise a heliothermal efficiency. No air temperature provided. The defaut value is 293 K.")
+            parameters["T_air"] = 293
+        else:
+            parameters["T_air"] = T_air
+    
+        if T_abs is None:
+            print("Info: You optimise a heliothermal efficiency. No absorber temperature provided. The defaut value is 573 K.")
+            parameters["T_abs"] = 300 + 273
+        else:
+            parameters["T_abs"] = T_abs
+
+    if cost_function.__name__ == "evaluate_T_vis":
+        if Signal_H_eye is None:
+            # Open a file with Human eye response
+            # 'eye' is written fully to avoid confusion with 'e' for emissivity
+            Wl_H_eye, Signal_H_eye, name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
+            # Interpolate the signal on the current wavelength grid
+            Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye)
+            parameters["Sol_Spec"] = Signal_H_eye
+            """
+            Warning : the following line was in SolPOC v0.9.6. It's probably an undected mistake : '
+            parameters["Sol_Spec"] = Signal_H_eye
+            parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye
+            """
+    
+    if cost_function.__name__ == "evaluate_netW_PV_CSP":
+        if poids_PV is None:
+            print("""Info: You are optimizing a PV/CSP mirror using a net power approach.
+            You can provide a weighting factor called 'poids_PV' to adjust the relative contribution 
+            of the PV part compared to the thermal part in the net power calculation.
+            The default value is 3.0, meaning that 1 W absorbed by the PV cells is considered 
+            equivalent to 3 W absorbed by the thermal absorber.""")
+            parameters['poids_PV'] = 3.0
+        else : 
+            parameters['poids_PV'] = poids_PV
+            
+        if Signal_PV  is None:
+            Wl_PV, Signal_PV, name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
+            Signal_PV = np.interp(Wl, Wl_PV, Signal_PV)  # Interpolate the signal
+            parameters["Signal_PV"] = Signal_PV
+        else : 
+            parameters["Signal_PV"] = Signal_PV
+            
+        if Signal_Th is None:
+        # Open a file with thermal absorber shape
+            Wl_Th, Signal_Th, name_Th = open_Spec_Signal('Materials/Thermal_absorber.txt', 1)
+            Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) 
+            # Interpolation
+            # Update the PV cells and the absorber signal within the parameters dict
+            parameters["Signal_Th"] = Signal_Th
+        else :
+            parameters["Signal_Th"] = Signal_Th
+
+    if algo.__name__ == "optimize_ga":
+        if precision_AlgoG is None:
+            precision_AlgoG = 1e-5 
+        if mutation_delta is None:
+            mutation_delta = 15
+        if crossover_rate is None:
+            crossover_rate = 0.9
+        if evaluate_rate is None:
+            evaluate_rate = 0.3
+    
+        parameters["Precision_AlgoG"] = precision_AlgoG
+        parameters["mutation_delta"] = mutation_delta
+        parameters['crossover_rate'] = crossover_rate
+        parameters['evaluate_rate'] = evaluate_rate
+        parameters["Mod_Algo"] = "for"
+
+    if algo.__name__ == "optimize_strangle":
+        if precision_AlgoG is None:
+            precision_AlgoG = 1e-5
+        if evaluate_rate is None:
+            evaluate_rate = 0.3
+    
+        parameters["Precision_AlgoG"] = precision_AlgoG
+        parameters["Mod_Algo"] = "for"
+        parameters['evaluate_rate'] = evaluate_rate
+            
     return parameters
 
 def equidistant_values(lst):
@@ -3063,7 +3223,7 @@ def X_DE(parameters):
 
     return X_min, X_max
 
-def mutation_DE(omega, k, best, crossover, population, parameters, f1=1, f2=1):
+def apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2):
     """
     Note:
     The random numbers used inside mutation_DE remain reproducible because the seed 
@@ -3071,7 +3231,6 @@ def mutation_DE(omega, k, best, crossover, population, parameters, f1=1, f2=1):
     relies on NumPy's random generator (np.random), it will follow the same seeded 
     sequence, ensuring consistency across runs.
     """
-    mutation_DE = parameters.get('mutation_DE')
     
     if mutation_DE == "current_to_best":
         # current to best
@@ -3141,6 +3300,7 @@ def DEvol(f_cout, f_selection, parameters):
     f2 = parameters.get('f2')  # f2=0.8;
     population = parameters.get('pop_size') # population = 30 
     budget = parameters.get('budget') # number of iteration 
+    mutation_DE = parameters.get('mutation_DE')
 
     # Option seed
     if 'seed' in parameters:
@@ -3179,7 +3339,7 @@ def DEvol(f_cout, f_selection, parameters):
         for k in range(0, population):
             crossover = (np.random.random(n) < cr)
             # *crossover+(1-crossover)*omega[k] : crossover step
-            X = mutation_DE(omega, k, best, crossover, population,parameters, f1, f2)
+            X = apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2)
 
             if np.prod((X >= X_min)*(X <= X_max)):
                 if selection[0] == "selection_min":
@@ -4166,7 +4326,7 @@ def Optimum_refractive_index_plot(parameters, Experience_results, directory):
     Mat_Stack = parameters.get("Mat_Stack")
     n_range = parameters.get("n_range")
 
-    if 'nb_layer' in parameters:
+    if 'nb_layer' in parameters and parameters['nb_layer'] != 0:
         # Plot of refractive index
         n_list = tab_best_solution[max_index]
         for i in range(parameters['nb_layer'] + len(Mat_Stack)-1):
@@ -4677,42 +4837,56 @@ def Explain_results(parameters, Experience_results):
         # Calculation of the integration of the useful downstream solar spectrum
         Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * parameters["Signal_Th"]
         Sol_Spec_mod_R_aval_int = trapezoid(Sol_Spec_mod_R_aval, parameters["Wl"])
-    # Update the results
-    Experience_results.update({
-        "Rs": Rs,
-        "Ts": Ts,
-        "As": As,
-        "R": R,
-        "T": T,
-        "A": A,
-        "Sol_Spec_int": Sol_Spec_int,
-        "Sol_Spec_int_1": Sol_Spec_int_1,
-        "Sol_Spec_mod_T": Sol_Spec_mod_T,
-        "Sol_Spec_mod_T_int": Sol_Spec_mod_T_int,
-        "Sol_Spec_mod_R": Sol_Spec_mod_R,
-        "Sol_Spec_mod_R_int": Sol_Spec_mod_R_int,
-        "Sol_Spec_mod_A": Sol_Spec_mod_A,
-        "Sol_Spec_mod_A_int": Sol_Spec_mod_A_int,
-        "Ps_amont": Ps_amont,
-        "Ps_amont_ref": Ps_amont_ref,
-        "Sol_Spec_mod_amont": Sol_Spec_mod_amont,
-        "Sol_Spec_mod_amont_int": Sol_Spec_mod_amont_int,
-        "Sol_Spec_mod_T_amont": Sol_Spec_mod_T_amont,
-        "Sol_Spec_mod_T_amont_int": Sol_Spec_mod_T_amont_int,
-        "Wl_Sol_2": Wl_Sol_2,
-        "Sol_Spec_2": Sol_Spec_2,
-        "name_Sol_Spec_2": name_Sol_Spec_2,
-        "Sol_Spec_int_2": Sol_Spec_int_2,
-        "Sol_Spec_mod_R_2": Sol_Spec_mod_R_2,
-        "Sol_Spec_mod_R_int_2": Sol_Spec_mod_R_int_2,
-        "Ps_aval": Ps_aval,
-        "Ps_aval_ref": Ps_aval_ref,
-        "Sol_Spec_mod_aval": Sol_Spec_mod_aval,
-        "Sol_Spec_mod_aval_int": Sol_Spec_mod_aval_int,
-        "Sol_Spec_mod_R_aval": Sol_Spec_mod_R_aval,
-        "Sol_Spec_mod_R_aval_int": Sol_Spec_mod_R_aval_int,
-        "max_index": max_index
-    })
+    
+    results = {
+    "Rs": Rs,
+    "Ts": Ts,
+    "As": As,
+    "R": R,
+    "T": T,
+    "A": A,
+    "Sol_Spec_int": Sol_Spec_int,
+    "Sol_Spec_int_1": Sol_Spec_int_1,
+    "Sol_Spec_mod_T": Sol_Spec_mod_T,
+    "Sol_Spec_mod_T_int": Sol_Spec_mod_T_int,
+    "Sol_Spec_mod_R": Sol_Spec_mod_R,
+    "Sol_Spec_mod_R_int": Sol_Spec_mod_R_int,
+    "Sol_Spec_mod_A": Sol_Spec_mod_A,
+    "Sol_Spec_mod_A_int": Sol_Spec_mod_A_int,
+    "Wl_Sol_2": Wl_Sol_2,
+    "Sol_Spec_2": Sol_Spec_2,
+    "name_Sol_Spec_2": name_Sol_Spec_2,
+    "Sol_Spec_int_2": Sol_Spec_int_2,
+    "Sol_Spec_mod_R_2": Sol_Spec_mod_R_2,
+    "Sol_Spec_mod_R_int_2": Sol_Spec_mod_R_int_2,
+    "max_index": max_index}
+
+    # Ajout conditionnel pour le upstream si Signal_PV existe
+    if "Signal_PV" in parameters:
+        results.update({
+            "Ps_amont": Ps_amont,
+            "Ps_amont_ref": Ps_amont_ref,
+            "Sol_Spec_mod_amont": Sol_Spec_mod_amont,
+            "Sol_Spec_mod_amont_int": Sol_Spec_mod_amont_int,
+            "Sol_Spec_mod_T_amont": Sol_Spec_mod_T_amont,
+            "Sol_Spec_mod_T_amont_int": Sol_Spec_mod_T_amont_int
+        })
+
+    # Ajout conditionnel pour le downstream si Signal_Th existe
+    if "Signal_Th" in parameters:
+        results.update({
+            "Ps_aval": Ps_aval,
+            "Ps_aval_ref": Ps_aval_ref,
+            "Sol_Spec_mod_aval": Sol_Spec_mod_aval,
+            "Sol_Spec_mod_aval_int": Sol_Spec_mod_aval_int,
+            "Sol_Spec_mod_R_aval": Sol_Spec_mod_R_aval,
+            "Sol_Spec_mod_R_aval_int": Sol_Spec_mod_R_aval_int
+        })
+
+    # Final update
+    Experience_results.update(results)
+
+
 
 
 def Explain_results_fit(parameters, Experience_results):
@@ -5079,17 +5253,19 @@ def Optimization_txt(parameters, Experience_results, directory):
                        str(Th_Substrate) + "\n")
             file.write("Range of thin layer thickness: " +
                        str(Th_range[0]) + " to " + str(Th_range[1]) + " nm" + "\n")
-            file.write("Range of thin layer indices: " +
-                       str(n_range[0]) + " to " + str(n_range[1]) + "\n")
+            if "n_range" in parameters:
+                file.write("Range of thin layer indices: " +
+                           str(n_range[0]) + " to " + str(n_range[1]) + "\n")
             file.write("Incident angle on the stack: " + str(Ang) + "°" + "\n")
-            file.write("Concentration ratio: " + str(C) + "\n")
-            file.write("Air temperature: " + str(T_air) + " K" + "\n")
-            file.write("Absorber temperature: " + str(T_abs) + " K" + "\n")
+            if "C" in parameters:
+                file.write("Concentration ratio: " + str(C) + "\n")
+                file.write("Air temperature: " + str(T_air) + " K" + "\n")
+                file.write("Absorber temperature: " + str(T_abs) + " K" + "\n")
             if evaluate.__name__ == "evaluate_low_e" or evaluate.__name__ == "evaluate_RTR":
                 file.write("For low-e and RTR optimization profiles" + "\n")
-                file.write("UV cutoff wavelength: " +
+                file.write("UV cutoff wavelength lambda_cut_1: " +
                            str(Lambda_cut_1) + " nm" + "\n")
-                file.write("IR cutoff wavelength: " +
+                file.write("IR cutoff wavelength lambda_cut_2: " +
                            str(Lambda_cut_2) + " nm" + "\n")
             if evaluate.__name__ == "evaluate_netW_PV_CSP":
                 file.write(
@@ -5097,12 +5273,20 @@ def Optimization_txt(parameters, Experience_results, directory):
                 file.write("PV fictitious cost: " + str(poids_PV) + "\n")
             file.write("Population size: " + str(pop_size) + "\n")
             file.write("Crossover rate: " + str(crossover_rate) + "\n")
-            file.write("Evaluation rate: " + str(evaluate_rate) + "\n")
-            file.write("Mutation rate: " + str(mutation_rate) + "\n")
-            file.write("Values of f1 and f2: " +
+            if "evaluate_rate" in parameters:
+                file.write("Evaluation rate: " + str(evaluate_rate) + "\n")
+            if "mutation_rate" in parameters:
+                file.write("Mutation rate: " + str(mutation_rate) + "\n")
+            if "f1" in parameters and "f2" in parameters:
+                file.write("Values of f1 and f2: " +
                        str(f1) + " & " + str(f2) + "\n")
-            file.write("Mutation range: " + str(mutation_delta) + "\n")
-            file.write("Precision of the algorithm in auto: " +
+            elif "f1" in parameters:
+                file.write("Values of f1: " +
+                       str(f1) + "\n")
+            if "mutation_delta" in parameters:
+                file.write("Mutation range: " + str(mutation_delta) + "\n")
+            if "precision_AlgoG" in parameters:
+                file.write("Precision of the algorithm in auto: " +
                        str(precision_AlgoG) + "\n")
             file.write("Budget : " + str(budget) + "\n")
             file.write("Number of run: " + str(nb_run) + "\n")
