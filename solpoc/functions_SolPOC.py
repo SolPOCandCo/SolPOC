@@ -2670,12 +2670,13 @@ seed : Int
     Mat_Stack = parameters.get('Mat_Stack')
     mod = parameters.get('Mod_Algo')
     pop_size = parameters.get('pop_size')
+    budget = parameters.get('pop_size')
     crossover_rate = parameters.get('crossover_rate')
     evaluate_rate = parameters.get('evaluate_rate')
     mutation_rate = parameters.get('mutation_rate')
     mutation_delta = parameters.get('mutation_delta')
     Precision_AlgoG = parameters.get('Precision_AlgoG')
-    nb_generation = parameters.get('nb_generation')
+    nb_generation = budget / pop_size
     d_Stack_Opt = parameters.get('d_Stack_Opt')
 
     # Seed
@@ -2766,9 +2767,10 @@ seed : Int
     mod = parameters.get('Mod_Algo')
     # Settings of the optimization
     pop_size = parameters.get('pop_size')
+    budget = parameters.get('budget')
     evaluate_rate = parameters.get('evaluate_rate')
     Precision_AlgoG = parameters.get('Precision_AlgoG')
-    nb_generation = parameters.get('nb_generation')
+    nb_generation = budget / pop_size
 
     # Option 1
     if 'seed' in parameters:
@@ -2969,14 +2971,12 @@ def DEvol(f_cout, f_selection, parameters):
         Value of the seed, used in the random number generator
     """
 
-    selection = f_selection.__name__,
-    cr = parameters.get('crossover_rate')
+    selection = f_selection.__name__, # allow to minimize of maximise the cost function 
+    cr = parameters.get('crossover_rate') # cr = 0.5 
     f1 = parameters.get('f1')  # f1=0.9;
     f2 = parameters.get('f2')  # f2=0.8;
-    
-    # Calculation of the budget :
-    population = parameters.get('pop_size')
-    budget = parameters.get('budget')
+    population = parameters.get('pop_size') # population = 30 
+    budget = parameters.get('budget') # number of iteration 
 
     # Option seed
     if 'seed' in parameters:
@@ -2985,8 +2985,8 @@ def DEvol(f_cout, f_selection, parameters):
     else:
         seed = np.random.randint(1, 2**32 - 1)
         np.random.seed(seed)
+    # X min et X_max allows to generate the initial population  
     X_min, X_max = X_DE(parameters)
-
     n = X_min.size
 
     # Initialization of the population
@@ -2998,13 +2998,13 @@ def DEvol(f_cout, f_selection, parameters):
         # Change, because I usually want to maximize. In the other algorithms, a function
         # selection is used.
         if selection[0] == "selection_min":
-            cost[k] = f_cout(omega[k], parameters)
+            cost[k] = f_cout(omega[k], parameters) # f_cout is the cost function 
         elif selection[0] == "selection_max":
             cost[k] = 1-f_cout(omega[k], parameters)
     # Who's the best ?
     who = np.argmin(cost)
     best = omega[who]
-    # Initializations
+    # save some data
     evaluation = population
     convergence = []
     generation = 0
@@ -3040,33 +3040,32 @@ def DEvol(f_cout, f_selection, parameters):
 def DEvol_Video(f_cout, f_selection, parameters):
     """ 
 Sub version of DE.
-Used by the main author of COPS for provide video of the optimization process. 
+Used by the main author of SolPOC for provide video of the optimization process. 
 The stack tickness is save during the process
     """
     selection = f_selection.__name__,
 
 # DE settings - pontential settings of the function
-    cr = parameters.get('mutation_rate')
+    cr = parameters.get('crossover')
     # cr=0.5; # Probability to give parents settings to his child.
     f1 = parameters.get('f1')
     f2 = parameters.get('f2')
+    # Calculation of the budget :
+    pop_size = parameters.get('pop_size')
+    budget = parameters.get('budget')
+    # I give the population value
+    population = pop_size
     """
     After some problems with Colossus server, I fix the seed into the function.
     Choose one of the different options
     """
-    # Option 1
-    seed = parameters.get('seed')
-    np.random.seed(seed)
-
-    # Calculation of the budget :
-    pop_size = parameters.get('pop_size')
-    nb_generation = parameters.get('nb_generation')
-    # print(nb_generation)
-    budget = pop_size * nb_generation
-   # print(budget)
-
-    # I give the population value
-    population = pop_size
+    # Option seed
+    if 'seed' in parameters:
+        seed = parameters.get('seed')
+        np.random.seed(seed)
+    else:
+        seed = np.random.randint(1, 2**32 - 1)
+        np.random.seed(seed)
 
     # calculation of the X_min(s) and X_max(s)
     Th_range = parameters.get('Th_range')
@@ -3127,13 +3126,6 @@ The stack tickness is save during the process
     who = np.argmin(cost)
     best = omega[who]
 
-    """ 
-    Bug fix on the 27/06/2023. We shouldn't use .append but .copy
-    Reprodiuce the bug
-    
-    best_tab= []
-    best_tab.append(best)
-    """
     # print(best)
     best_tab = np.copy(best)
     # print(best_tab)
@@ -3263,12 +3255,13 @@ Need  generate_neighbor() and acceptance_probability() functions.
     # number of particules is storage in pop_size
     num_particles = parameters.get('pop_size')
     # number of particules is storage in nb_generation
-    num_iterations = parameters.get('nb_generation')
+    budget = parameters.get('budget')
+    num_iterations = budget / num_particles
     Th_Substrate = parameters.get('Th_Substrate')
 
     selection = selection.__name__,
 
-    # Parameters just for PSO. They are NOT optimized for coatings optimization or photonics
+    # Default parameters just for PSO. They are NOT optimized for coatings optimization or photonics
     inertia_weight = 0.8
     cognitive_weight = 1.5
     social_weight = 1.5
@@ -3451,9 +3444,7 @@ Need generate_neighbor() and acceptance_probability() functions.
     Mat_Stack = parameters.get('Mat_Stack')
     Th_Substrate = parameters.get('Th_Substrate')
     # number of iteration of the annealing
-    nb_generation = parameters.get('nb_generation')
-    pop_size = parameters.get('pop_size')
-    budget = pop_size * nb_generation
+    budget  = parameters.get('budget')
     Th_range = parameters.get('Th_range')
 
     # Get the name of the selection function
@@ -3518,7 +3509,7 @@ Need generate_neighbor() and acceptance_probability() functions.
         current_temperature *= cooling_rate
 
     # best_score : score (cost function) of the best solution
-    return [best_solution, convergence, nb_generation, seed]
+    return [best_solution, convergence, budget, seed]
 
 
 def generate_mutant(solution, step_size, Th_range):
@@ -3586,10 +3577,7 @@ seed : Int
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
     Mat_Stack = parameters.get('Mat_Stack')
     # Interation
-    pop_size = parameters.get('pop_size')
-    nb_generation = parameters.get('nb_generation')
-    # print(nb_generation)
-    num_iterations = pop_size * nb_generation
+    num_iterations = parameters.get('budget') 
     Th_Substrate = parameters.get('Th_Substrate')
     Th_range = parameters.get('Th_range')
 
@@ -4810,7 +4798,7 @@ def Optimization_txt(parameters, Experience_results, directory):
     f2 = parameters.get("f2")
     mutation_delta = parameters.get("mutation_delta")
     precision_AlgoG = parameters.get("precision_AlgoG")
-    nb_generation = parameters.get("nb_generation")
+    budget = parameters.get("budget")
     nb_run = Experience_results.get('nb_run')
     cpu_used = parameters.get("cpu_used")
     time_real = parameters.get("time_real")
@@ -4881,7 +4869,7 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("Etendue de la mutation\t" + str(mutation_delta) + "\n")
             file.write("Precision de l'algo en auto\t" +
                        str(precision_AlgoG) + "\n")
-            file.write("Nombre de génération\t" + str(nb_generation) + "\n")
+            file.write("Budget : \t" + str(budget) + "\n")
             file.write("Nb de Lancement\t" + str(nb_run) + "\n")
             file.write("Nb de processeur disponible\t" +
                        str(cpu_count()) + "\n")
@@ -4950,7 +4938,7 @@ def Optimization_txt(parameters, Experience_results, directory):
             file.write("Mutation range: " + str(mutation_delta) + "\n")
             file.write("Precision of the algorithm in auto: " +
                        str(precision_AlgoG) + "\n")
-            file.write("Number of generations: " + str(nb_generation) + "\n")
+            file.write("Budget : " + str(budget) + "\n")
             file.write("Number of run: " + str(nb_run) + "\n")
             file.write("Number of available CPU: " + str(cpu_count()) + "\n")
             file.write("Number of used CPU: " + str(cpu_used) + "\n")
