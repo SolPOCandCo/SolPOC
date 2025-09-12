@@ -62,6 +62,7 @@ from .functions_SolPOC import fill_material_stack
 from .functions_SolPOC import Explain_results
 from .functions_SolPOC import Explain_results_fit
 from .functions_SolPOC import Generate_materials_txt
+from .functions_SolPOC import get_parameters
 from .functions_SolPOC import generate_mutant
 from .functions_SolPOC import generate_neighbor
 from .functions_SolPOC import Generate_perf_rh_txt

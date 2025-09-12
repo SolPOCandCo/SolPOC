@@ -1160,10 +1160,10 @@ def get_parameters(
         parameters["nb_layer"] = 0 # If nb_layer is 0 or None, no additional layers are added
     else:
         parameters["nb_layer"] = nb_layer
-    if n_range is not None: 
-        parameters["n_range"] = n_range  
-    else : 
-        raise ValueError("""Warning: the n_range value is missing """)
+        if n_range is not None: 
+            parameters["n_range"] = n_range  
+        else : 
+            raise ValueError("""Warning: the n_range value is missing """)
            
     """
     d_Stack specifies which layer thicknesses are fixed and which are optimized.
@@ -1176,10 +1176,11 @@ def get_parameters(
     which means only the middle layer has a fixed thickness.
     """
     if d_Stack_Opt is None or len(d_Stack_Opt) == 0:
-        d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
+        d_Stack_Opt = ["no"] * (len(Mat_Stack) - 1)
         parameters["d_Stack_Opt"] = d_Stack_Opt
     else:
         parameters["d_Stack_Opt"] = d_Stack_Opt
+        d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
     
         
     return parameters
@@ -4637,18 +4638,19 @@ def Explain_results(parameters, Experience_results):
     # integration of the A-modified solar spectrum, result in W/m2
     Sol_Spec_mod_A_int = trapezoid(Sol_Spec_mod_A, parameters["Wl"])
     # Calculation of the upstream solar efficiency, for example, the efficiency of the PV solar cell with the modified spectrum
-    Ps_amont = SolarProperties(
-        parameters["Wl"], parameters["Signal_PV"], Sol_Spec_mod_T)
-    # Calculation of the upstream treatment solar efficiency with an unmodified spectrum
-    Ps_amont_ref = SolarProperties(
-        parameters["Wl"], parameters["Signal_PV"], Sol_Spec_1)
-    # Calculation of the integration of the useful upstream solar spectrum
-    Sol_Spec_mod_amont = Sol_Spec_1 * parameters["Signal_PV"]
-    Sol_Spec_mod_amont_int = trapezoid(Sol_Spec_mod_amont, parameters["Wl"])
-    # Calculation of the integration of the useful upstream solar spectrum with T-modified spectrum
-    Sol_Spec_mod_T_amont = Sol_Spec_mod_T * parameters["Signal_PV"]
-    Sol_Spec_mod_T_amont_int = trapezoid(
-        Sol_Spec_mod_T_amont, parameters["Wl"])
+    if "Signal_PV" in parameters:
+        Ps_amont = SolarProperties(
+            parameters["Wl"], parameters["Signal_PV"], Sol_Spec_mod_T)
+        # Calculation of the upstream treatment solar efficiency with an unmodified spectrum
+        Ps_amont_ref = SolarProperties(
+            parameters["Wl"], parameters["Signal_PV"], Sol_Spec_1)
+        # Calculation of the integration of the useful upstream solar spectrum
+        Sol_Spec_mod_amont = Sol_Spec_1 * parameters["Signal_PV"]
+        Sol_Spec_mod_amont_int = trapezoid(Sol_Spec_mod_amont, parameters["Wl"])
+        # Calculation of the integration of the useful upstream solar spectrum with T-modified spectrum
+        Sol_Spec_mod_T_amont = Sol_Spec_mod_T * parameters["Signal_PV"]
+        Sol_Spec_mod_T_amont_int = trapezoid(
+            Sol_Spec_mod_T_amont, parameters["Wl"])
 
     # Downstream
     # Opening the solar spectrum, which may be different from the first one depending on the cases
@@ -4662,18 +4664,19 @@ def Explain_results(parameters, Experience_results):
     Sol_Spec_mod_R_2 = R * Sol_Spec_2
     # integration of the R-modified solar spectrum, result in W/m2
     Sol_Spec_mod_R_int_2 = trapezoid(Sol_Spec_mod_R_2, parameters["Wl"])
+    if "Signal_Th" in parameters:
     # Calculation of the downstream solar efficiency, for example, the efficiency of the thermal absorber
-    Ps_aval = SolarProperties(
-        parameters["Wl"], parameters["Signal_Th"], Sol_Spec_mod_R_2)
-    # Calculation of the downstream treatment solar efficiency with an unmodified spectrum
-    Ps_aval_ref = SolarProperties(
-        parameters["Wl"], parameters["Signal_Th"], Sol_Spec_2)
-    # Calculation of the integration of the useful downstream solar spectrum
-    Sol_Spec_mod_aval = Sol_Spec_2 * parameters["Signal_Th"]
-    Sol_Spec_mod_aval_int = trapezoid(Sol_Spec_mod_aval, parameters["Wl"])
-    # Calculation of the integration of the useful downstream solar spectrum
-    Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * parameters["Signal_Th"]
-    Sol_Spec_mod_R_aval_int = trapezoid(Sol_Spec_mod_R_aval, parameters["Wl"])
+        Ps_aval = SolarProperties(
+            parameters["Wl"], parameters["Signal_Th"], Sol_Spec_mod_R_2)
+        # Calculation of the downstream treatment solar efficiency with an unmodified spectrum
+        Ps_aval_ref = SolarProperties(
+            parameters["Wl"], parameters["Signal_Th"], Sol_Spec_2)
+        # Calculation of the integration of the useful downstream solar spectrum
+        Sol_Spec_mod_aval = Sol_Spec_2 * parameters["Signal_Th"]
+        Sol_Spec_mod_aval_int = trapezoid(Sol_Spec_mod_aval, parameters["Wl"])
+        # Calculation of the integration of the useful downstream solar spectrum
+        Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * parameters["Signal_Th"]
+        Sol_Spec_mod_R_aval_int = trapezoid(Sol_Spec_mod_R_aval, parameters["Wl"])
     # Update the results
     Experience_results.update({
         "Rs": Rs,
