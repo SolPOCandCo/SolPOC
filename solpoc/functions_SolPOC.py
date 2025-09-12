@@ -1510,7 +1510,7 @@ k_Stack : array
     """
 
     # Add in work with vf(s)
-    if 'nb_layer' in parameters:
+    if 'nb_layer' in parameters and parameters['nb_layer'] != 0:
         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
             raise ValueError(
                 "It is not possible to work with theoretical and composite layers at the same time.")
@@ -1526,7 +1526,7 @@ k_Stack : array
         vf = np.array(vf)
         n_Stack, k_Stack = Made_Stack_vf(n_Stack, k_Stack, vf)
 
-    if 'nb_layer' in parameters:
+    if 'nb_layer' in parameters and parameters['nb_layer'] != 0:
         nb_layer = parameters.get('nb_layer')
         for i in range(nb_layer):
             # I check the value of the layer's index
@@ -1543,7 +1543,7 @@ k_Stack : array
         d_Stack = np.array(individual)
         d_Stack = d_Stack.reshape(1, len(individual))
      
-    if "Mat_Option" in parameters:
+    if "Mat_Option" in parameters and parameters['nb_layer'] == 0:
         Mat_Option= parameters.get('Mat_Option') 
         Wl = parameters.get('Wl') 
         d_Stack, x = individual[:-len(Mat_Stack)], individual[-len(Mat_Stack):]
