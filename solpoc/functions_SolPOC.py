@@ -2901,7 +2901,7 @@ def mutation_DE(omega, k, best, crossover, population, parameters, f1=1, f2=1):
     """
     Note:
     The random numbers used inside mutation_DE remain reproducible because the seed 
-    is already fixed in DEvol3 via np.random.seed(seed). As long as mutation_DE 
+    is already fixed in DEvol via np.random.seed(seed). As long as mutation_DE 
     relies on NumPy's random generator (np.random), it will follow the same seeded 
     sequence, ensuring consistency across runs.
     """
