@@ -51,7 +51,7 @@ mutation_DE = "rand_1" # String. Mutaton method for DE optimization method
 budget = 500
 nb_run = 4  # Number of run, the number of time were the probleme is solved
 cpu_used = 4  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
-#­seed = 415  # Seed of the random number generator. Uncomment for fix the seed
+seed = None # Seed of the random number generator. Remplace None for use-it 
 #----------------------------------------------------------------------------#
 #                   SCRIPT PARAMETERS - END                                  #
 #----------------------------------------------------------------------------#
@@ -66,11 +66,14 @@ Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)  # Interpolate the solar spectrum
 # => They then read the necessary variables  with the commande .get
 
 parameters = sol.get_parameters(
+    Mat_Stack=Mat_Stack,
+    algo=algo,
+    cost_function=cost_function,
+    selection=selection,  
     Wl=Wl,
     Ang=Ang,
     Sol_Spec=Sol_Spec,
     name_Sol_Spec=name_Sol_Spec,
-    Mat_Stack=Mat_Stack,
     n_Stack=n_Stack,
     k_Stack=k_Stack,
     Th_range=Th_range,
@@ -79,15 +82,13 @@ parameters = sol.get_parameters(
     Lambda_cut_1=Lambda_cut_1,
     Lambda_cut_2=Lambda_cut_2,
     pop_size=pop_size,
-    budget=budget,
-    crossover_rate=crossover_rate,
-    nb_run=nb_run,
-    algo=algo,
     f1 = f1,
     f2 = f2, 
     mutation_DE = mutation_DE,
-    cost_function=cost_function,
-    selection=selection,
+    crossover_rate=crossover_rate,
+    budget=budget,
+    nb_run=nb_run,
+    seed  = seed
 )
 
 # %%
