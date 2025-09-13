@@ -1058,6 +1058,7 @@ def get_parameters(
         precision_AlgoG = None,
         mutation_delta = None,
         evaluate_rate = None,
+        Mat_Option = None,
         ):
 
     parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
@@ -1217,6 +1218,9 @@ def get_parameters(
         parameters['crossover_rate'] =  0.5
     else : 
         parameters['crossover_rate'] =  crossover_rate
+    
+    if Mat_Option is not None:
+        parameters['Mat_Option'] =  Mat_Option
     
     """
     lambda_cut_1 and lambda_cut_2 define the spectral cut-off wavelengths (λ1 and λ2)
