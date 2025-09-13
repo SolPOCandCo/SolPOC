@@ -1026,9 +1026,11 @@ def get_parameters(
         Ang = None,
         Sol_Spec = None,
         name_Sol_Spec = None,
+        d_Stack = None,
         Mat_Stack = None,
         n_Stack = None, 
         k_Stack = None,
+        vf = None,
         Th_range = None,
         Th_Substrate = None,
         vf_range = None,
@@ -1059,6 +1061,7 @@ def get_parameters(
         mutation_delta = None,
         evaluate_rate = None,
         Mat_Option = None,
+        coherency_limit = None,
         ):
 
     parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
@@ -1077,12 +1080,10 @@ def get_parameters(
                   'nb_run': nb_run,
                   'seed' : seed,
                   'algo': algo,
-                  'name_algo': algo.__name__,
                   'cost_function' : cost_function,
                   'evaluate': cost_function, # the cost function was nammed evaluate in SolPOC v0.9.6. We keep this the ligne iv v0.9.7 for avoid bug
                   'mutation_DE' : mutation_DE,
-                  'selection': selection,
-                  'name_selection': selection.__name__,}  # End of the dict
+                  'selection': selection,}  # End of the dict
     
     """ Error : parameters MUST containe the following value . 
     If missing --> ValueError"""
@@ -1097,13 +1098,6 @@ def get_parameters(
     if k_Stack is None :
         raise ValueError("""Error : k_Stack is missing. 
     Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
-    if budget is None :     
-        raise ValueError("""Warning : budget is missing. Please provide a budget""") 
-    if cost_function is None :
-        raise ValueError("""Warning: the cost function is missing. Please select one.
-        All cost functions provided with SolPOC start with 'evaluate'. 
-        Read the User Guide for more information about each cost functions, or write your own !""")
-    
 
     """ Warning : if parameters do not contain the following value, we continue and informe the user. 
     If missing --> informe user and continue """
@@ -1128,9 +1122,17 @@ def get_parameters(
     else : 
         parameters['Sol_Spec'] = Sol_Spec
         parameters['name_Sol_Spec'] =  name_Sol_Spec
+        
+    if selection is not None :
+        parameters['name_selection'] = selection.__name__
+        
     if Th_Substrate is None:
-        print("Info: No substract thicknesses provided. The defaut value is 1 mm.")
-        parameters['Th_Substrate'] =  1e6
+        if d_Stack is not None : 
+            print("Info: No substract thicknesses provided. The defaut value is the first value of d_Stack.")
+            parameters['Th_Substrate'] =  d_Stack[0]
+        else:       
+            print("Info: No substract thicknesses provided. The defaut value is 1 mm.")
+            parameters['Th_Substrate'] =  1e6
     else : 
         parameters['Th_Substrate'] =  Th_Substrate
     
@@ -1149,11 +1151,16 @@ def get_parameters(
         
         Otherwise, if there is only one material per layer, n_Stack and k_Stack will have the shape (Wl, nb_layers).
         """
-        print("Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
+        
         if vf_range is None:
+            print("Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
             parameters["vf_range"] = (0, 1)
         else : 
             parameters["vf_range"] = vf_range
+        if vf is None : 
+            parameters["vf"] = None
+        else : 
+            parameters["vf"] = vf
     else : 
         """
         The presence or absence of volume fractions (vf) determines how some upstream functions behave.
@@ -1170,6 +1177,8 @@ def get_parameters(
         """
         parameters["vf_range"] = None
 
+    if d_Stack is not None:
+        parameters['d_Stack'] = d_Stack
     if Th_range is None:
         print("Info: No range for thin layers thicknesses. The default range is 0-300 nm.")
         parameters['Th_range'] = (0, 300)
@@ -1180,15 +1189,39 @@ def get_parameters(
         parameters['pop_size'] =  30
     else : 
         parameters['pop_size'] =  pop_size
-    
-    if algo is None :     
-        print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
-        parameters['algo'] =  DEvol
-    else :
-        parameters['algo'] =  algo
+        
+    if algo is not None:
+        if budget is None :     
+            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
+        if cost_function is None :
+            raise ValueError("""Warning: the cost function is missing. Please select one.
+            All cost functions provided with SolPOC start with 'evaluate'. 
+            Read the User Guide for more information about each cost functions, or write your own !""")
+        if selection is None : 
+            print("Info: No selection function provided. Using the default 'selection_max'.")
+            parameters['selection'] = selection_max 
+            parameters['selection_name'] = selection.__name__
+            
+    if cost_function is not None:
+        if algo is None :     
+            print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
+            parameters['algo'] =  DEvol
+        else :
+            parameters['algo'] =  algo
+        if budget is None :     
+            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
+        if selection is None : 
+            print("Info: No selection function provided. Using the default 'selection_max'.")
+            parameters['selection'] = selection_max 
+            parameters['selection_name'] = selection.__name__
 
     """ No warming : if parameters do not contain the following value, we continue without informe the user. 
     If missing --> fill the value and continue """  
+    
+    if budget is None : 
+        parameters['budget'] =  None
+    else : 
+        parameters['budget'] =  budget
     
     if nb_run is None :
         parameters['nb_run '] = 1
@@ -1199,8 +1232,8 @@ def get_parameters(
         parameters['name_Sol_Spec'] =  "Unknow"
     else :
         parameters['name_Sol_Spec'] = name_Sol_Spec
-
-    if algo.__name__ == "DEvol":
+    
+    if algo is not None and algo.__name__ == "DEvol":
         if f1 is None : 
             parameters['f1'] =  1.0
         else : 
@@ -1221,6 +1254,11 @@ def get_parameters(
     
     if Mat_Option is not None:
         parameters['Mat_Option'] =  Mat_Option
+        
+    if coherency_limit is None:
+        parameters['coherency_limit'] = 2000
+    else : 
+        parameters['coherency_limit'] = coherency_limit
     
     """
     lambda_cut_1 and lambda_cut_2 define the spectral cut-off wavelengths (λ1 and λ2)
@@ -1250,10 +1288,6 @@ def get_parameters(
         # Create seed list for multiprocessing
         parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
     
-    if selection is None : 
-        print("Info: No selection function provided. Using the default 'selection_max'.")
-        parameters['selection'] = selection_max 
-        parameters['selection_name'] = selection.__name__
     
     # Advanced parameters  
     """
@@ -1295,7 +1329,7 @@ def get_parameters(
         parameters["d_Stack_Opt"] = d_Stack_Opt
         d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
     
-    if cost_function.__name__ == "evaluate_rh":
+    if cost_function is not None and cost_function.__name__ == "evaluate_rh":
         if C is None:
             print("Info: You optimise a heliothermal efficiency. No number of solar concentration provided. The defaut value is 80.")
             parameters["C"] = 80
@@ -1314,7 +1348,7 @@ def get_parameters(
         else:
             parameters["T_abs"] = T_abs
 
-    if cost_function.__name__ == "evaluate_T_vis":
+    if cost_function is not None and cost_function.__name__ == "evaluate_T_vis":
         if Signal_H_eye is None:
             # Open a file with Human eye response
             # 'eye' is written fully to avoid confusion with 'e' for emissivity
@@ -1328,7 +1362,7 @@ def get_parameters(
             parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye
             """
     
-    if cost_function.__name__ == "evaluate_netW_PV_CSP":
+    if cost_function is not None and cost_function.__name__ == "evaluate_netW_PV_CSP":
         if poids_PV is None:
             print("""Info: You are optimizing a PV/CSP mirror using a net power approach.
             You can provide a weighting factor called 'poids_PV' to adjust the relative contribution 
@@ -1356,7 +1390,7 @@ def get_parameters(
         else :
             parameters["Signal_Th"] = Signal_Th
 
-    if algo.__name__ == "optimize_ga":
+    if algo is not None and algo.__name__ == "optimize_ga":
         if precision_AlgoG is None:
             precision_AlgoG = 1e-5 
         if mutation_delta is None:
@@ -1372,7 +1406,7 @@ def get_parameters(
         parameters['evaluate_rate'] = evaluate_rate
         parameters["Mod_Algo"] = "for"
 
-    if algo.__name__ == "optimize_strangle":
+    if algo is not None and algo.__name__ == "optimize_strangle":
         if precision_AlgoG is None:
             precision_AlgoG = 1e-5
         if evaluate_rate is None:
