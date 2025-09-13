@@ -19,14 +19,16 @@ from multiprocessing import Pool, cpu_count
 # %%  Main : You can start to modified something
 # Comment to be written in the simulation text file
 Comment = "A sentence to be written in the final text file"
-Mat_Stack = ["BK7", "TiO2", "SiO2"]
+Mat_Stack = ["BK7", "Al", "air-SiO2", "TiO2", "SiO2", "TiO2"]
 # Choice of optimisation method
 algo = sol.DEvol  # Callable. Name of the optimization method, callable
 selection = sol.selection_max # Callable. Name of the selection method : selection_max or selection_min
-cost_function = sol.evaluate_R_s # Callable. Name of the cost function
+cost_function = sol.evaluate_T_s # Callable. Name of the cost function
 # %% Important parameters
 # Wavelength domain, here from 280 to 2500 nm with a 5 nm step. Can be change!
 Wl = np.arange(280,2505,5) #np.arange(280, 2505, 5)
+# Open the solar spectrum
+Wl_Sol, Sol_Spec, name_Sol_Spec = sol.open_SolSpec('Materials/SolSpec.txt', 'GT')
 # Thickness of the substrate, in nm
 Th_Substrate = 1e6  # Substrate thickness, in nm
 # Range of thickness (lower bound and upper bound), for the optimisation process
@@ -35,8 +37,6 @@ Th_range = (0, 300)  # in nm.
 vf_range = (0, 1.0)
 # Angle of Incidence (AOI) of the radiation on the stack. 0 degrees is for normal incidence angle
 Ang = 0  # Incidence angle on the thin layers stack, in °
-# Open the solar spectrum
-Wl_Sol, Sol_Spec, name_Sol_Spec = sol.open_SolSpec('Materials/SolSpec.txt', 'GT')
 # %% Optional parameters, necessary for some cost function 
 # Cuting Wavelenght. Data only necessary for low-e, RTR, TRT, or PV_CSP cost functions
 Lambda_cut_1 = 500  # nm
@@ -44,10 +44,11 @@ Lambda_cut_2 = 1000  # nm
 # %% Hyperparameters for optimisation methods
 pop_size = 30  # number of individual per iteration / generation
 crossover_rate = 0.5  # crossover rate (1.0 = 100%) This is Cr for DEvol optimization method
-f1, f2 = 0.9, 0.8  # Hyperparameter for DEvol
-mutation_DE = "rand_1" # String. Mutaton method for DEvol optimization method
+f1, f2 = 0.9, 0.8  # Hyperparameter for mutation in DE
+mutation_DE = "rand_1" # String. Mutaton method for DE optimization method
+# %% Hyperparameters for optimisation methods
 # Number of iteration. 
-budget = 300
+budget = 500
 nb_run = 4  # Number of run, the number of time were the probleme is solved
 cpu_used = 4  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 #­seed = 415  # Seed of the random number generator. Uncomment for fix the seed
@@ -63,7 +64,6 @@ Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)  # Interpolate the solar spectrum
 # parameters is a dictionary containing the problem variables
 # This dictionary is given as input to certain functions
 # => They then read the necessary variables  with the commande .get
-# I add values to the container (dictionary used to transmit variables)
 
 parameters = sol.get_parameters(
     Wl=Wl,
@@ -118,7 +118,6 @@ def run_problem_solution(i):
 
     return best_solution, perf, dev, n_iter, temps, seed
 
-
 # %%
 # Beginning of the main loop. The code must be in this loop to work in multiprocessing
 if __name__ == "__main__":
@@ -143,7 +142,6 @@ if __name__ == "__main__":
 
     Mat_Stack_print = Mat_Stack
 
-    
     for i in range(parameters["nb_layer"]):
             Mat_Stack_print = Mat_Stack_print + ["X"]
     parameters.update({
@@ -156,7 +154,7 @@ if __name__ == "__main__":
     else:
         nb_total_layer = len(Mat_Stack)
 
-        print("The total number layer of the stacj is : " + str(nb_total_layer))
+        print("The total number layer of the stack is : " + str(nb_total_layer))
     parameters.update({
         "nb_total_layer": nb_total_layer
     })
