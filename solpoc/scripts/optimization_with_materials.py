@@ -27,6 +27,8 @@ crossover_rate = 0.5
 f1 = 1.0  # Hyperparameter for the mutation strategie
 mutation_DE = "rand_1" # Mutaiton strategie 
 budget = 500 # budget, number of iteration  
+Mode_choose_material = "sigmoid"
+seed = 2185585551
 # %% You should stop modifying anything :)
 """_________________________________________________________________________"""
 # Open and interpol the refractive index
@@ -56,44 +58,52 @@ parameters = sol.get_parameters(
     budget=budget,
     n_Stack=n_Stack,
     k_Stack=k_Stack,
+    Mode_choose_material = Mode_choose_material,
+    seed = seed
 )
 
+parameters["budget"] = 300
 t1 = time.time()
 best_solution, dev, n_iter, seed = algo(cost_function, selection, parameters)
 t2 = time.time()
-print("The total time is: ", "{:.2f}".format(t2 -t1), "seconds")
+
+print("\n--- BEST SOLUTION AFTER FIRST OPTIMIZATION ---")
+print("The time of part one is: ", "{:.2f}".format(t2 -t1), "seconds")
 d_Stack, x = best_solution[:-len(Mat_Stack)], best_solution[-len(Mat_Stack):]
 print("Best thin layer stack, in nm :",[f"{x:.1f} nm" for x in d_Stack])
 Rs, Ts, As = sol.evaluate_RTA_s(best_solution, parameters) 
 print(f"Solar reflectance : {Rs:.4f}")
-print(sol.fill_material_stack(Mat_Stack, x, Mat_Option))
-sol.print_material_probabilities(Mat_Stack, x, Mat_Option, n_trials=1000)
+sol.print_material_probabilities(Mat_Stack, x, Mat_Option, parameters, n_trials=1000)
 
 tab_results = []  # (Rs, best_solution, mat_stack_utilisé)
 
-limit_2 = 5 
-for i in range(limit_2):
-    print("Launch of second optimization : ", str(i+1) + "/" + str(limit_2))
-    # Génère un nouvel empilement de matériaux pour cette itération
-    current_stack = sol.fill_material_stack(Mat_Stack, x, Mat_Option)
+i_2 = 3
+t1 = time.time()
+for i in range(i_2):
+    print("Launch of second optimization : ", str(i+1) + "/" + str(i_2))
+    # Create a new stack for this iteration 
+    current_stack = sol.fill_material_stack(Mat_Stack, x, Mat_Option, parameters)
     parameters["Mat_Stack"] = current_stack
 
-    # Lance l'optimisation
+    # Run the optimisation 
     best_solution_2, dev, n_iter, seed = algo(cost_function, selection, parameters)
 
-    # Évalue la solution trouvée
+    # Calcul solar properties of the solution
     Rs, Ts, As = sol.evaluate_RTA_s(best_solution_2, parameters)
 
-    # Sauvegarde Rs, la solution et l'empilement utilisé
+    # Save Rs
     tab_results.append((Rs, best_solution_2, current_stack))
 
-# Recherche le meilleur résultat selon Rs
+t2 = time.time()
+
+# Print the best result Rs
 best_Rs, best_sol, best_stack = max(tab_results, key=lambda item: item[0])
 
 # Affiche les résultats de la meilleure solution
 d_Stack_best, x_best = best_sol[:-len(Mat_Stack)], best_sol[-len(Mat_Stack):]
 
 print("\n--- BEST SOLUTION AFTER SECOND OPTIMIZATION ---")
+print("The time of part two is: ", "{:.2f}".format(t2 -t1), "seconds")
 print("Material stack used:", best_stack)
 print("Best thin layer stack, in nm :", [f"{val:.1f} nm" for val in d_Stack_best])
 print(f"Solar reflectance : {best_Rs:.4f}")
