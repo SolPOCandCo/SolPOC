@@ -1062,6 +1062,7 @@ def get_parameters(
         evaluate_rate = None,
         Mat_Option = None,
         coherency_limit = None,
+        Mode_choose_material = None
         ):
 
     parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
@@ -1275,7 +1276,11 @@ def get_parameters(
         parameters['Lambda_cut_1'] =  1000
     else :
         parameters['Lambda_cut_2'] =  Lambda_cut_2
-
+    if Mat_Option is not None:
+        if Mode_choose_material is None:
+            parameters["Mode_choose_material"] = "sigmoid" #mode (str): 'linear', 'sigmoid', or 'gaussian'
+        else :
+            parameters["Mode_choose_material"] = Mode_choose_material
     
     # if the seed variable exists, i add it in the dictionary
     # if not, define a seed
@@ -1640,7 +1645,7 @@ k_Stack : array
         Mat_Option= parameters.get('Mat_Option') 
         Wl = parameters.get('Wl') 
         d_Stack, x = individual[:-len(Mat_Stack)], individual[-len(Mat_Stack):]
-        Mat_Stack = fill_material_stack(Mat_Stack, x, Mat_Option)
+        Mat_Stack = fill_material_stack(Mat_Stack, x, Mat_Option, parameters)
         n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
         # As I did in previous versions, I transform d_Strack into an array
         d_Stack = np.array(d_Stack)
@@ -2626,7 +2631,7 @@ normalized_error : float
 
     return normalized_chi_sq
 
-def choose_material(x, materials):
+def choose_material(x, materials, mode='linear', k= 10, sigma = 0.6):
     """
     Dispatches the material choice depending on the number of materials.
     Supports only 2 or 3 materials.
@@ -2638,41 +2643,53 @@ def choose_material(x, materials):
     Returns:
         str: chosen material
 """
+    # Fonction choose_materials_2 accept 3 mode mode (str): 'linear', 'sigmoid', or 'gaussian'
     if len(materials) == 2:
-        return choose_material_2(x, materials)
+        return choose_material_2(x, materials, mode, k, sigma)
     if len(materials) == 3:
-        return choose_material_3(x, materials)
+        return choose_material_3(x, materials, mode, k, sigma)
     else:
         raise ValueError(
             f"choose_material supports only 2 or 3 materials, "
             f"but got {len(materials)}."
         )
     
-def choose_material_2(x, material):
+def choose_material_2(x, material, mode='linear', k= 10, sigma = 0.6):
     """
-    Transforme un nombre x ∈ [-1,1] en un choix aléatoire entre A et B.
-    
+    Transform x ∈ [-1,1] into a probabilistic choice between material A and B.
+
     Args:
-        x (float): valeur dans [-1,1] (pas forcément bornée strictement).
-        A, B: matériaux à choisir.
-        
+        x (float): value (not necessarily strictly bounded in [-1,1])
+        material (tuple): (A, B)
+        mode (str): 'linear', 'sigmoid', or 'gaussian'
     Returns:
-        str: le matériau choisi.
+        str: the chosen material
     """
     A, B = material
-    # On borne x dans [-1, 1]
-    x = max(-1, min(1, x))
-    
-    # Probabilité d'avoir A
-    pA = (1 - x) / 2  
-    
-    # Tirage
-    if np.random.random() < pA:
-        return A
+    x = np.clip(x, -1, 1)
+
+    if mode == 'linear':
+        # pA decreases linearly from 1 at x=-1 to 0 at x=+1
+        pA = (1 - x) / 2
+
+    elif mode == 'sigmoid':
+        # Smooth transition centered at 0
+        k = 5  # steepness
+        pA = 1 / (1 + np.exp(k * x))
+
+    elif mode == 'gaussian':
+        # Two Gaussians centered at -1 and +1
+        sigma = 0.3
+        gA = np.exp(- (x + 1)**2 / (2*sigma**2))
+        gB = np.exp(- (x - 1)**2 / (2*sigma**2))
+        pA = gA / (gA + gB)
+
     else:
-        return B
-    
-def choose_material_3(x, materials):
+        raise ValueError("mode must be 'linear', 'sigmoid' or 'gaussian'")
+
+    return A if np.random.random() < pA else B
+
+def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
     """
     Selects a material from three options (A, B, C) based on a continuous variable x ∈ [-1,1].
 
@@ -2700,28 +2717,53 @@ def choose_material_3(x, materials):
     Returns:
         str: chosen material according to the probability defined by x
     """
+    
     if len(materials) != 3:
-        raise ValueError("Il faut exactement 3 matériaux (ex: [A,B,C]).")
+        raise ValueError("We need exactly 3 materials into a list (ex: Mat_Option = ['A','B','C']).")
     
-    A, B, C = materials
-    x = max(-1, min(1, x))  # borne dans [-1,1]
+    x = np.clip(x, -1, 1)
     
-    if x < -1/3:
-        # Intervalle A-B
-        t = (x + 1) / (2/3)  # normalise dans [0,1]
-        return A if np.random.random() < (1 - t) else B
-    
-    elif x < 1/3:
-        # Intervalle B-C
-        t = (x + 1/3) / (2/3)
-        return B if np.random.random() < (1 - t) else C
-    
+    # --- Probabilités selon le mode choisi ---
+    if mode == 'linear':
+        if x < -1/3:
+            t = (x + 1) / (2/3)
+            p = [1 - t, t, 0]
+        elif x < 1/3:
+            t = (x + 1/3) / (2/3)
+            p = [0, 1 - t, t]
+        else:
+            t = (x - 1/3) / (2/3)
+            p = [t, 0, 1 - t]
+            
+    elif mode == 'sigmoid':
+        # Sigmoïdes améliorées pour B centrée à 0
+        pA = 1 / (1 + np.exp(k * (x + 0.5)))
+        pC = 1 / (1 + np.exp(-k * (x - 0.5)))
+        pB = 1 - pA - pC
+        pB = np.clip(pB, 0, 1)
+        p = [pA, pB, pC]
+        
+    elif mode == 'gaussian':
+        gA = np.exp(-(x + 1)**2 / (2*sigma**2))
+        gB = np.exp(-x**2 / (2*sigma**2))
+        gC = np.exp(-(x - 1)**2 / (2*sigma**2))
+        tot = gA + gB + gC
+        p = [gA/tot, gB/tot, gC/tot]
+        
     else:
-        # Intervalle A-C inversé : probabilité décroissante pour C
-        t = (x - 1/3) / (2/3)  # normalise dans [0,1]
-        return C if np.random.random() < (1 - t) else A
+        raise ValueError("mode must be 'linear', 'sigmoid', or 'gaussian'")
     
-def fill_material_stack(Mat_Stack, x, Mat_option):
+    # --- Tirage aléatoire selon les probabilités ---
+    r = np.random.random()
+    if r < p[0]:
+        return materials[0]
+    elif r < p[0] + p[1]:
+        return materials[1]
+    else:
+        return materials[2]
+    
+    
+def fill_material_stack(Mat_Stack, x, Mat_option, parameters):
     """
     Replace 'UM' in Mat_Stack by a material chosen from Mat_option, 
     based on the corresponding value in x.
@@ -2736,11 +2778,13 @@ def fill_material_stack(Mat_Stack, x, Mat_option):
     """
     if len(Mat_Stack) != len(x):
         raise ValueError("Mat_Stack and x must have the same length.")
-
+    
+    mode = parameters.get('Mode_choose_material')
+    
     completed_stack = []
     for mat, xi in zip(Mat_Stack, x):
         if mat == "UM":
-            chosen = choose_material(xi, Mat_option)
+            chosen = choose_material(xi, Mat_option, mode = mode)
             completed_stack.append(chosen)
         else:
             completed_stack.append(mat)
@@ -4070,7 +4114,7 @@ seed : Int
 
     return [current_solution, convergence, num_iterations, seed]
 
-def print_material_probabilities(Mat_Stack, x, Mat_option, n_trials=1000):
+def print_material_probabilities(Mat_Stack, x, Mat_option, parameters, n_trials=1000):
     """
     For each 'X' layer in Mat_Stack, estimate the probability of selecting 
     each material in Mat_option based on x, using Monte Carlo trials.
@@ -4083,13 +4127,15 @@ def print_material_probabilities(Mat_Stack, x, Mat_option, n_trials=1000):
     """
     if len(Mat_Stack) != len(x):
         raise ValueError("Mat_Stack and x must have the same length.")
+        
+    mode = parameters.get('Mode_choose_material')
 
     print("=== Estimated material selection probabilities ===")
     for i, (mat, xi) in enumerate(zip(Mat_Stack, x)):
         if mat == "UM":
-            results = [choose_material(xi, Mat_option) for _ in range(n_trials)]
+            results = [choose_material(xi, Mat_option, mode = mode) for _ in range(n_trials)]
             probs = {m: results.count(m) / n_trials for m in Mat_option}
-            prob_str = ", ".join([f"P({m})={p:.2f}" for m, p in probs.items()])
+            prob_str = ", ".join([f"P({m})={p:.3f}" for m, p in probs.items()])
             print(f"Layer {i}: x={xi:.4f} → {prob_str}")
         else:
             print(f"Layer {i}: {mat} (fixed)")
