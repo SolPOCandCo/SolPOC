@@ -28,7 +28,7 @@ f1 = 1.0  # Hyperparameter for the mutation strategie
 mutation_DE = "rand_1" # Mutaiton strategie 
 budget = 500 # budget, number of iteration  
 Mode_choose_material = "sigmoid"
-seed = 2185585551
+#seed = 2185585551
 # %% You should stop modifying anything :)
 """_________________________________________________________________________"""
 # Open and interpol the refractive index
@@ -59,10 +59,11 @@ parameters = sol.get_parameters(
     n_Stack=n_Stack,
     k_Stack=k_Stack,
     Mode_choose_material = Mode_choose_material,
-    seed = seed
+   #seed = seed
 )
 
-parameters["budget"] = 300
+# Update the budget
+parameters["budget"] = 100
 t1 = time.time()
 best_solution, dev, n_iter, seed = algo(cost_function, selection, parameters)
 t2 = time.time()
