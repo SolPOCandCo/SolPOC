@@ -1113,16 +1113,17 @@ def get_parameters(
         parameters['Ang'] = 0
     else : 
         parameters['Ang'] = Ang
-        
-    if Sol_Spec is None:
-        print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
-        Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
-        Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
-        parameters['Sol_Spec'] = Sol_Spec
-        parameters['name_Sol_Spec'] =  name_Sol_Spec
-    else : 
-        parameters['Sol_Spec'] = Sol_Spec
-        parameters['name_Sol_Spec'] =  name_Sol_Spec
+     
+    if not (callable(cost_function) and cost_function.__name__ == "evaluate_R_Brg"):
+        if Sol_Spec is None:
+            print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
+            Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+            Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
+            parameters['Sol_Spec'] = Sol_Spec
+            parameters['name_Sol_Spec'] =  name_Sol_Spec
+        else : 
+            parameters['Sol_Spec'] = Sol_Spec
+            parameters['name_Sol_Spec'] =  name_Sol_Spec
         
     if selection is not None :
         parameters['name_selection'] = selection.__name__
@@ -1242,7 +1243,7 @@ def get_parameters(
         if f2 is None : 
             parameters['f2'] =  1.0
         else : 
-            parameters['f1'] =  f2
+            parameters['f2'] =  f2
         if mutation_DE is None:
             parameters['mutation_DE'] =  "rand_1"
         else : 
@@ -4148,40 +4149,38 @@ def Reflectivity_plot(parameters, Experience_results, directory):
     Sol_Spec = parameters.get("Sol_Spec")
     if 'T_abs' in parameters:
         T_abs = parameters.get("T_abs")
-
     # Reflectivity plot
     fig, ax1 = plt.subplots()
-    color = 'black'  # Basic colors availables : b g r c m y k w
+    color = 'black'
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Reflectivity (-)', color=color)
     if 'evaluate' in parameters and evaluate.__name__ == 'evaluate_rh':
         ax1.set_xscale('log')
+
     ax1.plot(Wl, R, color=color)
     ax1.tick_params(axis='y', labelcolor=color)
-    # Code line to change y-axis, for reflectance
-    # Disabled for automatic scaling
+    ax1.set_ylim(0, 1)
 
-    ax1.set_ylim(0, 1)  # Change y-axis' scale
-    ax2 = ax1.twinx()
-    color = 'tab:red'
-    ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
-    ax2.plot(Wl, Sol_Spec, color=color)
-    if 'evaluate' in parameters and evaluate.__name__ == 'evaluate_rh':
-        BB_shape = BB(T_abs, Wl)
-        # BB_shape is the black body's shape. According to the temperature, the black body's irradiance can be very higher
-        # than solar spectrum. That's why I put the black body at the same height for this chart
-        BB_shape = BB_shape*(max(Sol_Spec)/max(BB_shape))
-        ax2.plot(Wl, BB_shape, color='orange', linestyle='dashed')
+    # -------- Ajout de la condition --------
+    if Sol_Spec is not None:
+        ax2 = ax1.twinx()
+        color = 'tab:red'
+        ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
+        ax2.plot(Wl, Sol_Spec, color=color)
 
-    ax2.tick_params(axis='y', labelcolor=color)
+        if 'evaluate' in parameters and evaluate.__name__ == 'evaluate_rh':
+            BB_shape = BB(T_abs, Wl)
+            BB_shape = BB_shape * (max(Sol_Spec) / max(BB_shape))
+            ax2.plot(Wl, BB_shape, color='orange', linestyle='dashed')
+
+        ax2.tick_params(axis='y', labelcolor=color)
+        ax2.set_ylim(0, 2)
+    # ----------------------------------------
+
     fig.tight_layout()
-    ax2.set_ylim(0, 2)  # Change y-axis' scale
     plt.title("Optimum Reflectivity", y=1.05)
-    # Save the plot.
-    plt.savefig(directory + "/" + "Optimum_Reflectivity.png",
-                dpi=300, bbox_inches='tight')
+    plt.savefig(directory + "/" + "Optimum_Reflectivity.png", dpi=300, bbox_inches='tight')
     plt.show()
-
 
 def Transmissivity_plot(parameters, Experience_results, directory):
     if 'evaluate' in parameters:
