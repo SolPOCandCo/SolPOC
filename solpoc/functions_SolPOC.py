@@ -1060,6 +1060,8 @@ def get_parameters(
         poids_PV = None,
         Signal_PV = None,
         Signal_Th = None,
+        Signal_fit = None,
+        Signal_fit_2 = None,
         precision_AlgoG = None,
         mutation_delta = None,
         evaluate_rate = None,
@@ -1116,7 +1118,8 @@ def get_parameters(
         parameters['Ang'] = 0
     else : 
         parameters['Ang'] = Ang
-     
+    
+    # Normaly, the solar spectra is almost everytime necessary
     if not (callable(cost_function) and cost_function.__name__ == "evaluate_R_Brg"):
         if Sol_Spec is None:
             print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
@@ -1127,9 +1130,6 @@ def get_parameters(
         else : 
             parameters['Sol_Spec'] = Sol_Spec
             parameters['name_Sol_Spec'] =  name_Sol_Spec
-        
-    if selection is not None :
-        parameters['name_selection'] = selection.__name__
         
     if Th_Substrate is None:
         if d_Stack is not None : 
@@ -1156,7 +1156,6 @@ def get_parameters(
         
         Otherwise, if there is only one material per layer, n_Stack and k_Stack will have the shape (Wl, nb_layers).
         """
-        
         if vf_range is None:
             print("Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
             parameters["vf_range"] = (0, 1)
@@ -1181,40 +1180,43 @@ def get_parameters(
                → set vf_range to None
         """
         parameters["vf_range"] = None
-
-    if d_Stack is not None:
-        parameters['d_Stack'] = d_Stack
+        
     if Th_range is None:
         print("Info: No range for thin layers thicknesses. The default range is 0-300 nm.")
         parameters['Th_range'] = (0, 300)
     else :
         parameters['Th_range'] = Th_range 
-    if pop_size is None : 
-        print("Info: No number of population size provided. The default value is 30.")
-        parameters['pop_size'] =  30
-    else : 
-        parameters['pop_size'] =  pop_size
-        
-    if algo is not None:
-        if budget is None :     
-            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
-        if cost_function is None :
-            raise ValueError("""Warning: the cost function is missing. Please select one.
-            All cost functions provided with SolPOC start with 'evaluate'. 
-            Read the User Guide for more information about each cost functions, or write your own !""")
-        if selection is None : 
-            print("Info: No selection function provided. Using the default 'selection_max'.")
-            parameters['selection'] = selection_max 
-            parameters['selection_name'] = selection.__name__
-            
+    
     if cost_function is not None:
         if algo is None :     
             print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
             parameters['algo'] =  DEvol
         else :
             parameters['algo'] =  algo
+            
         if budget is None :     
             raise ValueError("""Warning : budget is missing. Please provide a budget""") 
+            
+        if selection is None : 
+            print("Info: No selection function provided. Using the default 'selection_max'.")
+            parameters['selection'] = selection_max 
+            parameters['selection_name'] = selection.__name__
+
+    if algo is not None:
+        if pop_size is None : 
+            print("Info: No number of population size provided. The default value is 30.")
+            parameters['pop_size'] =  30
+        else : 
+            parameters['pop_size'] =  pop_size
+            
+        if budget is None :     
+            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
+            
+        if cost_function is None :
+            raise ValueError("""Warning: the cost function is missing. Please select one.
+            All cost functions provided with SolPOC start with 'evaluate'. 
+            Read the User Guide for more information about each cost functions, or write your own !""")
+            
         if selection is None : 
             print("Info: No selection function provided. Using the default 'selection_max'.")
             parameters['selection'] = selection_max 
@@ -1222,6 +1224,12 @@ def get_parameters(
 
     """ No warming : if parameters do not contain the following value, we continue without informe the user. 
     If missing --> fill the value and continue """  
+    
+    if selection is not None :
+        parameters['name_selection'] = selection.__name__
+
+    if d_Stack is not None:
+        parameters['d_Stack'] = d_Stack
     
     if budget is None : 
         parameters['budget'] =  None
@@ -1272,15 +1280,24 @@ def get_parameters(
     functions can be used, especialy for the SolPOC communituy
     --> therefore, default values are set when they are None.
     """
-    if Lambda_cut_1 is None:
-        parameters['Lambda_cut_1'] =  500
-    else :
+    
+    if Lambda_cut_1 is not None : 
         parameters['Lambda_cut_1'] =  Lambda_cut_1
-    if Lambda_cut_2 is None:
-        parameters['Lambda_cut_1'] =  1000
-    else :
+    if Lambda_cut_2 is not None : 
         parameters['Lambda_cut_2'] =  Lambda_cut_2
-    if evaluate_low_e.__name__ == "evaluate_low_e":
+        
+    if cost_function.__name__ == "evaluate_RTR" or cost_function.__name__ == "evaluate_TRT":
+        if Lambda_cut_1 is None:
+            parameters['Lambda_cut_1'] =  500
+        else :
+            parameters['Lambda_cut_1'] =  Lambda_cut_1
+            
+        if Lambda_cut_2 is None:
+            parameters['Lambda_cut_2'] =  1000
+        else :
+            parameters['Lambda_cut_2'] =  Lambda_cut_2
+        
+    if cost_function.__name__ == "evaluate_low_e":
         if Lambda_cut_1 is None:
             parameters['Lambda_cut_1'] =  800
         else :
@@ -1303,6 +1320,11 @@ def get_parameters(
         # Create seed list for multiprocessing
         parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
     
+    if Signal_PV is not None : 
+        parameters['Signal_PV'] = Signal_PV
+    
+    if Signal_Th is not None : 
+        parameters['Signal_Th'] = Signal_Th
     
     # Advanced parameters  
     """
@@ -1346,6 +1368,12 @@ def get_parameters(
         parameters["d_Stack_Opt"] = d_Stack_Opt
     else : 
         parameters["d_Stack_Opt"] = d_Stack_Opt
+    
+    if Signal_fit is not None:
+        parameters['Signal_fit'] = Signal_fit
+    
+    if Signal_fit is not None:
+        parameters['Signal_fit_2'] = Signal_fit_2
     
     if cost_function is not None and cost_function.__name__ == "evaluate_rh":
         if C is None:
@@ -1952,8 +1980,8 @@ T_PV: Int (float)
     Ang = parameters.get('Ang')
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
-    Sol_Spec = parameters.get('Sol_Spec_with_PV')
     Mat_Stack = parameters.get('Mat_Stack')
+    Sol_Spec = parameters.get('Sol_Spec') * parameters.get('Signal_PV')
     """
     Why Individual_to_Stack
     individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
@@ -1993,7 +2021,7 @@ T_PV: Int (float)
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
     # Sol_Spec_with_pv = Sol_Spec * Signal_PV
-    Sol_Spec = parameters.get('Sol_Spec_with_PV')
+    Sol_Spec = parameters.get('Sol_Spec') * parameters.get('Signal_PV')
     Mat_Stack = parameters.get('Mat_Stack')
     """
     Why Individual_to_Stack
@@ -2614,13 +2642,9 @@ def evaluate_fit_RT(individual, parameters):
 
     # Calculation of the RTA
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-
+    
     # Normalize the MSE to be between 0 and 1
-    # cost for R
-    # cost_R = chi_square(R, signal)
     cost_R = normalized_mse(R, signal)
-    # cost for T
-    # cost_T = chi_square(T, signal_2)
     cost_T = normalized_mse(T, signal_2)
 
     # Total cost average of R and T
