@@ -81,7 +81,6 @@ parameters = sol.get_parameters(
 print("Start of the program")
 launch_time = datetime.now().strftime("%Hh-%Mm-%Ss")
 
-
 results = []
 for i, seed in enumerate(parameters['seed_list']):
     t1 = time.time()
@@ -143,7 +142,6 @@ ax.plot(tab_perf_sorted, linestyle='dotted', marker='o', color=color)
 ax.set_xlabel('Best cases (left) to worse (right)')
 ax.set_ylabel('Cost function (-)', color=color)
 ax.tick_params(axis='y', labelcolor=color)
-ax.grid(True)  # Ajout de la grille pour plus de lisibilité
 plt.title("Consistency Curve", y=1.05)
 plt.savefig("ConsistencyCurve.png", dpi=300, bbox_inches='tight')
 plt.show()
