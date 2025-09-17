@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on 27 07 2023
-SolPOC v 0.9.6
+Created on 2023-07-27 
+Update on 2025-09-16 
+SolPOC v 0.9.7 
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
@@ -30,6 +31,8 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import Circle
 from solcore.structure import Structure
 from solcore.absorption_calculator import calculate_rat
+from datetime import datetime
+import time 
 
 
 def RTA3C(Wl, d, n, k, Ang=0):
@@ -1277,6 +1280,12 @@ def get_parameters(
         parameters['Lambda_cut_1'] =  1000
     else :
         parameters['Lambda_cut_2'] =  Lambda_cut_2
+    if evaluate_low_e.__name__ == "evaluate_low_e":
+        if Lambda_cut_1 is None:
+            parameters['Lambda_cut_1'] =  800
+        else :
+            parameters['Lambda_cut_1'] =  Lambda_cut_1
+    
     if Mat_Option is not None:
         if Mode_choose_material is None:
             parameters["Mode_choose_material"] = "sigmoid" #mode (str): 'linear', 'sigmoid', or 'gaussian'
@@ -1331,9 +1340,12 @@ def get_parameters(
     if d_Stack_Opt is None or len(d_Stack_Opt) == 0:
         d_Stack_Opt = ["no"] * (len(Mat_Stack) - 1)
         parameters["d_Stack_Opt"] = d_Stack_Opt
-    else:
-        parameters["d_Stack_Opt"] = d_Stack_Opt
+        
+    if parameters["nb_layer"] !=0: 
         d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
+        parameters["d_Stack_Opt"] = d_Stack_Opt
+    else : 
+        parameters["d_Stack_Opt"] = d_Stack_Opt
     
     if cost_function is not None and cost_function.__name__ == "evaluate_rh":
         if C is None:
@@ -1423,6 +1435,47 @@ def get_parameters(
         parameters['evaluate_rate'] = evaluate_rate
             
     return parameters
+
+def run_main(parameters):
+
+    date_time = datetime.now().strftime("%Y-%m-%d-%Hh%M")
+
+    parameters['dawn_of_time'] = time.time()
+  
+    # Writing of the backup folder, with current date/time
+    directory = date_time
+    base_directory = directory
+    count = 2
+    while os.path.exists(directory):
+        directory = f"{base_directory}-{count}"
+        count += 1
+    os.makedirs(directory)
+
+    print("The folder '" + directory + "' has been created.")
+    
+    parameters['directory'] = directory
+
+    Mat_Stack_print = parameters['Mat_Stack'].copy()
+
+    for i in range(parameters["nb_layer"]):
+        Mat_Stack_print.append("X")
+
+    parameters.update({
+        "Mat_Stack_print": Mat_Stack_print
+    })
+
+    print("The thin layer stack is : ", Mat_Stack_print)
+
+    if parameters["nb_layer"] != 0:
+        nb_total_layer = len(parameters['Mat_Stack']) + parameters["nb_layer"]
+    else:
+        nb_total_layer = len(parameters['Mat_Stack'])
+
+    print("The total number layer of the stack is : " + str(nb_total_layer))
+
+    parameters.update({
+        "nb_total_layer": nb_total_layer
+    })
 
 def equidistant_values(lst):
     """
@@ -2025,7 +2078,7 @@ P_low_e: Int (float)
     Sol_Spec = parameters.get('Sol_Spec')
     # The profile is reflective from 0 to Lambda_cut_1
     # The profil is transparent from Lambda_cut_1 to + inf
-    Lambda_cut_1 = parameters.get('Lambda_cut_2')
+    Lambda_cut_1 = parameters.get('Lambda_cut_1')
     d_Stack = np.array(individual)
     # Calculation of the domains
     Wl_1 = np.arange(min(Wl), Lambda_cut_1, (Wl[1]-Wl[0]))
@@ -2331,6 +2384,9 @@ A_s : Float
         coherency_limit = parameters.get('coherency_limit')
     else:
         coherency_limit = 2e4
+        
+    if parameters.get('nb_layer') != 0:
+        Mat_Stack = parameters.get('Mat_Stack_print')
 
     # Check if one or several layer are coherent
     # uncoherent if thickness up to 2500 nm or if presence of air or vaccum in the stack
@@ -2923,10 +2979,13 @@ A : List
         coherency_limit = parameters.get('coherency_limit')
     else:
         coherency_limit = 2000
-
+    
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(
         individual, n_Stack, k_Stack, Mat_Stack,  parameters)
-
+    
+    if parameters.get('nb_layer') != 0:
+        Mat_Stack = parameters.get('Mat_Stack_print')
+    
     # Check if one or several layer are coherent
     # uncoherent if thickness up to 2500 nm or if presence of air or vaccum in the stack
     cl, coherency = Stack_coherency(
@@ -3333,14 +3392,16 @@ def X_DEvol(parameters):
     else:
         nb_layer = 0
 
-    chromosome_size = len(Mat_Stack) + nb_layer - 1  # Number of thin layers
+    chromosome_size = len(Mat_Stack) + (nb_layer*1) - 1  # Number of thin layers
 
     d_Stack_Opt = parameters.get('d_Stack_Opt')
+    # If they are no value, we fill d_Stack_Opt
     if isinstance(d_Stack_Opt, type(None)):
         d_Stack_Opt = ["no"] * chromosome_size
 
     X_min = [Th_Substrate]
     X_max = [Th_Substrate]
+
     for i in range(chromosome_size):
         if isinstance(d_Stack_Opt[i], (int, float)):
             X_min += [d_Stack_Opt[i]]
@@ -3353,6 +3414,12 @@ def X_DEvol(parameters):
         for i in range(len(Mat_Stack)):
             X_min += [-1]
             X_max += [1]
+    
+    if 'n_range' in parameters:
+        n_range = parameters.get('n_range')
+        for i in range(nb_layer):
+            X_min += [n_range[0]]
+            X_max += [n_range[1]]
     
     if parameters['vf_range'] != None:
         vf_range = parameters.get('vf_range')
@@ -4439,7 +4506,7 @@ def Optimum_thickness_plot(parameters, Experience_results, directory):
     Th_range = parameters.get("Th_range")
     # Plot of thickness
     ep = tab_best_solution[max_index]
-    if 'nb_layer' in locals() and parameters['nb_layer'] != 0:
+    if parameters['nb_layer'] != 0:
         ep = np.delete(ep, np.s_[(parameters['nb_layer'] + len(Mat_Stack)):])
 
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:

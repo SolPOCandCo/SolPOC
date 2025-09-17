@@ -97,6 +97,7 @@ from .functions_SolPOC import RTA
 from .functions_SolPOC import RTA3C
 from .functions_SolPOC import RTA_curve
 from .functions_SolPOC import RTA_curve_inco
+from .functions_SolPOC import run_main
 from .functions_SolPOC import selection_max
 from .functions_SolPOC import selection_min
 from .functions_SolPOC import simulated_annealing
