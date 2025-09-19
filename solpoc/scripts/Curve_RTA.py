@@ -87,6 +87,7 @@ ax1.set_xlabel('Wavelength (nm)')
 ax1.set_ylabel('Reflectivity (-)', color=color)
 ax1.plot(Wl, R, color=color)
 ax1.tick_params(axis='y', labelcolor=color)
+ax1.set_ylim(0, 1)
 ax2 = ax1.twinx()  
 color = 'tab:red'
 ax2.set_ylabel('Solar Spectrum (W/m²nm⁻¹)', color=color)
@@ -94,7 +95,7 @@ ax2.plot(Wl, Sol_Spec, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 fig.tight_layout()  
 ax2.set_ylim(0, 2) # Change y-axis scale
-plt.title("Optimum reflectivity")
+plt.title("Optimum reflectivity", y=1.05)
 # Figure save
 plt.savefig(directory + "/" + "Reflectance.png", dpi = 300, bbox_inches='tight')
 plt.show()
@@ -104,6 +105,7 @@ fig, ax1 = plt.subplots()
 color = 'black' # Basic colors available: b g r c m y k w
 ax1.set_xlabel('Wavelength (nm)')
 ax1.set_ylabel('Transmissivity (-)', color=color)
+ax1.set_ylim(0, 1)
 ax1.plot(Wl, T, color=color)
 ax1.tick_params(axis='y', labelcolor=color)
 ax2 = ax1.twinx()  
@@ -113,7 +115,7 @@ ax2.plot(Wl, Sol_Spec, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 fig.tight_layout()  
 ax2.set_ylim(0, 2) # Change y-axis scale
-plt.title("Optimum transmissivity")
+plt.title("Optimum transmissivity", y=1.05)
 plt.savefig(directory + "/" + "Transmittance.png", dpi = 300, bbox_inches='tight')
 plt.show()
 

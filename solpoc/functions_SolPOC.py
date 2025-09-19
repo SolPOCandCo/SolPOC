@@ -1070,7 +1070,7 @@ def get_parameters(
         Mode_choose_material = None
         ):
 
-    parameters = {'Wl': Wl,  # I store a new variable called "Wl", and I give it Wl's value
+    parameters = {'Wl': Wl,  
                   'Ang': Ang,
                   'Sol_Spec': Sol_Spec,
                   'name_Sol_Spec': name_Sol_Spec,
@@ -1078,7 +1078,7 @@ def get_parameters(
                   'n_Stack': n_Stack,
                   'k_Stack': k_Stack,
                   'Th_range': Th_range,
-                  'Th_Substrate': Th_Substrate ,# Substrate thickness, in nm
+                  'Th_Substrate': Th_Substrate ,
                   'vf_range' : vf_range,
                   'pop_size': pop_size,
                   'budget' : budget,
@@ -1285,23 +1285,25 @@ def get_parameters(
         parameters['Lambda_cut_1'] =  Lambda_cut_1
     if Lambda_cut_2 is not None : 
         parameters['Lambda_cut_2'] =  Lambda_cut_2
+    
+    if cost_function is not None: 
+        #  Update for TRT ou RTR 
+        if cost_function.__name__ == "evaluate_RTR" or cost_function.__name__ == "evaluate_TRT":
+            if Lambda_cut_1 is None:
+                parameters['Lambda_cut_1'] =  500
+            else :
+                parameters['Lambda_cut_1'] =  Lambda_cut_1
+                
+            if Lambda_cut_2 is None:
+                parameters['Lambda_cut_2'] =  1000
+            else :
+                parameters['Lambda_cut_2'] =  Lambda_cut_2
         
-    if cost_function.__name__ == "evaluate_RTR" or cost_function.__name__ == "evaluate_TRT":
-        if Lambda_cut_1 is None:
-            parameters['Lambda_cut_1'] =  500
-        else :
-            parameters['Lambda_cut_1'] =  Lambda_cut_1
-            
-        if Lambda_cut_2 is None:
-            parameters['Lambda_cut_2'] =  1000
-        else :
-            parameters['Lambda_cut_2'] =  Lambda_cut_2
-        
-    if cost_function.__name__ == "evaluate_low_e":
-        if Lambda_cut_1 is None:
-            parameters['Lambda_cut_1'] =  800
-        else :
-            parameters['Lambda_cut_1'] =  Lambda_cut_1
+        if cost_function.__name__ == "evaluate_low_e":
+            if Lambda_cut_1 is None:
+                parameters['Lambda_cut_1'] =  800
+            else :
+                parameters['Lambda_cut_1'] =  Lambda_cut_1
     
     if Mat_Option is not None:
         if Mode_choose_material is None:
