@@ -19,7 +19,7 @@ from multiprocessing import Pool, cpu_count
 # %%  Main : You can start to modified something
 # Comment to be written in the simulation text file
 Comment = "A 4 periodic layers of Bragg mirror, deposited on 1mm BK7 glass"
-Mat_Stack = ["BK7", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2"] # or we can use : Mat_Stack = write_stack_period(["BK7"], ["SiO2", "TiO2"], 4)
+Mat_Stack = ["BK7", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2", "SiO2", "TiO2"] # or we can use : Mat_Stack = sol.write_stack_period(["BK7"], ["SiO2", "TiO2"], 4)
 # Choice of optimisation method
 algo = sol.DEvol  # Callable. Name of the optimization method, callable
 selection = sol.selection_max # Callable. Name of the selection method : selection_max or selection_min
