@@ -18,10 +18,10 @@ from multiprocessing import Pool, cpu_count
 #----------------------------------------------------------------------------#
 # %%  Main : You can start to modified something
 # Comment to be written in the simulation text file
-Comment = "A sentence to be written in the final text file"
+Comment = "Exemple of spectral-splitting coating (dichroic mirror) for PV-CST, 20 layers of SiO2/TiO2"
 Mat_Stack = sol.write_stack_period(["BK7"], ["TiO2", "SiO2"], 10)
 # Choice of optimisation method
-algo = sol.PSO # Callable. Name of the optimization method, callable
+algo = sol.DEvol # Callable. Name of the optimization method, callable
 selection = sol.selection_max # Callable. Name of the selection method : selection_max or selection_min
 cost_function = sol.evaluate_TRT # Callable. Name of the cost function
 # %% Important parameters
@@ -32,7 +32,7 @@ Wl_Sol, Sol_Spec, name_Sol_Spec = sol.open_SolSpec('Materials/SolSpec.txt', 'GT'
 # Thickness of the substrate, in nm
 Th_Substrate = 1e6  # Substrate thickness, in nm
 # Range of thickness (lower bound and upper bound), for the optimisation process
-Th_range = (40, 220)  # in nm.
+Th_range = (0, 250)  # in nm.
 # volumic fraction of inclusion in host matrix, must be included in (0,1)
 vf_range = (0, 1.0)
 # Angle of Incidence (AOI) of the radiation on the stack. 0 degrees is for normal incidence angle
@@ -42,13 +42,13 @@ lambda_cut_2 = 1000
 # %% Hyperparameters for optimisation methods
 pop_size = 30  # number of individual per iteration / generation
 crossover_rate = 0.5  # crossover rate (1.0 = 100%) This is Cr for DEvol optimization method
-f1, f2 = 0.9, 0.8  # Hyperparameter for mutation in DE
-mutation_DE = "current_to_best" # String. Mutaton method for DE optimization method
+f1, f2 = 1.0, 1.0  # Hyperparameter for mutation in DE
+mutation_DE = "rand_1" # String. Mutaton method for DE optimization method
 # %% Hyperparameters for optimisation methods
 # Number of iteration. 
-budget = 15000
-nb_run = 12  # Number of run, the number of time were the probleme is solved
-cpu_used = 3  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
+budget = 30000
+nb_run = 4  # Number of run, the number of time were the probleme is solved
+cpu_used = 4  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 seed = None # Seed of the random number generator. Remplace None for use-it 
 #----------------------------------------------------------------------------#
 #                   SCRIPT PARAMETERS - END                                  #
