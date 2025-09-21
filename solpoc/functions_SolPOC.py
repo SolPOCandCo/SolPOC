@@ -255,7 +255,7 @@ RTA calculates the reflectivity, transmissivity and absorptivity using Abélès 
 
 Parameters
 ----------
-l : array
+Wl : array
     Wavelength, in nanometer
 d : array
     Tickness of stack, including the substrat
