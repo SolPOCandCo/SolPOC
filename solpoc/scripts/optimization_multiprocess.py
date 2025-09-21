@@ -42,9 +42,8 @@ pop_size = 30  # number of individual per iteration / generation
 crossover_rate = 0.5  # crossover rate (1.0 = 100%) This is Cr for DEvol optimization method
 f1, f2 = 0.9, 0.8  # Hyperparameter for mutation in DE
 mutation_DE = "current_to_best" # String. Mutaton method for DE optimization method
-# %% Hyperparameters for optimisation methods
-# Number of iteration. 
-budget = 500
+# %% Optimization overseer 
+budget = 500 # Number of iteration. 
 nb_run = 4  # Number of run, the number of time were the probleme is solved
 cpu_used = 4  # Number of CPU used. /!\ be "raisonable", regarding the real number of CPU your computer
 seed = None # Seed of the random number generator. Remplace None for use-it 

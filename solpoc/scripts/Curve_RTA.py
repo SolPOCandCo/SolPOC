@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on 12 09 2024
+Created on 2025-09-11
 SolPOC v 0.9.7
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
@@ -28,7 +28,7 @@ Wl = np.arange(280,2505,5) # /!\. The extreme upper value is excluded
 # Angle of Incidence (AOI) of the radiation on the stack. 0 degrees is for normal incidence angle
 Ang = 0 # in °
 # Solar spectrum opening, here ASTM Global Tilt (GT) Write DC for Direct and Circumsolar
-Wl_Sol , Sol_Spec , name_Sol_Spec= sol.open_SolSpec('Materials/SolSpec.txt', 'GT')
+Wl_Sol , Sol_Spec , name_Sol_Spec = sol.open_SolSpec('Materials/SolSpec.txt', 'GT')
 #----------------------------------------------------------------------------#
 #                   SCRIPT PARAMETERS - END                                  #
 #----------------------------------------------------------------------------#

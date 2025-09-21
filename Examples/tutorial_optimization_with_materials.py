@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-SolPOC v0.9.7
-Created on Tue Sep  9 16:14:27 2025
-@author: agrosjean
+Created on 2025-09-09
+SolPOC v 0.9.7
+@authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
+contact : antoine.grosjean@epf.fr
 """
 # %%
 import numpy as np
