@@ -1,12 +1,40 @@
-Welcome to our JupyterNotebook ! 
+This folder contains example scripts illustrating the use of the SolPOC package.
+The scripts can be run directly after installing the package.
 
-Notebook are an interactive way for beginner to learn who the code work and the physics behind. This Notebook IS NOT for learn how to use the main script in SolPOC. 
-This Notebook is for lear, step by step, how SolPOC work by starting to evaluate the optical respons of your first thin layers stack until your first optimization.
+They allow:
 
-We have split the JupyterNotebook in 7 chapters
+1. A better understanding of the package functionalities.
+2. A comparison of the optical calculations of SolPOC with a reference package (tmm-fast).
+3. Examples of using SolPOC in combination with optimization packages (SciPy and Nevergrad).
+3. Preconfigured scripts (tutorials) corresponding to different use cases.
 
-- Chap 1 is for learn how to calculate reflectivity, transmissivity and absorptivity of a thin layers stack
-- Chap 2 is for learn how to use refractive index of real materias
-- Chap 3 is for learn how to use EMA (Effective Medium Approximation) for model materials as cermet or porous mixture
-- Chap 4 & 5 is for learn how to easly evaluate our thin layers stack, as calculate the solar performances as example 
-- Chap 6 & 7 is for lear how to performe an optimization 
+These practical cases are useful for the SolPOC community and correspond to the examples presented in the User Guide.
+
+Description of the scripts
+
+A. basic_example_solpoc
+This script shows how to use the basic functions of SolPOC.
+It guides the user through the calculation of the reflectivity, transmissivity, and absorptivity of a four-layer thin film stack: Al2O3, Al, Al2O3, and SiO2 deposited on BK7 glass. This basic example is similar to the first chapters of the Jupyter Notebook.
+
+B. SolPOC_and_tmm_with_scipy
+This script illustrates how to use SolPOC with SciPy (tested with version 1.14.1) for thickness optimization, using the SciPy minimize function with the BFGS method.
+Example provided: optimization of the thicknesses of three thin layers forming an antireflective coating on glass.
+The glass is assumed to have a refractive index of n = 1.5. The three thin layers have refractive indices n = 1.7, n = 1.47, and n = 1.37, respectively.
+All layers are considered perfectly transparent (k = 0).
+
+The optical results and execution time are compared with the tmm package version 0.2.1, available on GitHub: https://github.com/MLResearchAtOSRAM/tmm_fast/tree/v0.2.1
+Note: with this version of tmm, functions must be imported manually.
+
+C. SolPOC_and_tmm_with_Nevergrad
+This script shows how to use SolPOC to define a cost function usable with Nevergrad, a black-box optimization package.
+The same cost function was implemented with tmm (v0.2.1) and SolPOC to compare results for solving optical equations.
+Note: to ensure similar comparison conditions between the two packages, the solar spectrum used by the cost function is loaded directly from the file Sol_Spec.npy.
+
+D. Tutorial_XX
+All scripts started with Tutorials_... are various tutorials claim by the solpoc Community 
+These preconfigured scripts illustrate the use of SolPOC to optimize stacks for different use cases.
+They are made for help a no-coder user to use SolPOC for a specific optimization problems. 
+Several examples specific to the solar thermal community are provided: optimization of an antireflective coating, optimization of a thermal absorber, etc.
+
+
+
