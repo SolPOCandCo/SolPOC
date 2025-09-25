@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2025-09-09
+Created on 2025-09-05
 SolPOC v 0.9.7
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
@@ -19,7 +19,7 @@ thin film stack (Al₂O₃, Al, Al₂O₃, and SiO₂) on BK7 glass.
 Wl = np.arange(280, 2505, 5)
 
 """
-Describe the thin layer stack. The first material is the substrate. 
+Describe the thin layer stack. The first material (index 0 in the list) is the substrate. 
 In SolPOC, it is unnecessary to add air (n=1) above the stack.
 SolPOC will automatically search its library for materials identified by a string.
 If the material is not found, it will try to read it locally from refractive index data 
