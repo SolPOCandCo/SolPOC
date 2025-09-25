@@ -1,7 +1,9 @@
-Welcome to the main folder of SolPOC. This folder contain the code with the refractive index necessary for the code. 
+# Welcome to the source code of SolPOC. 
+This folder contains source code + material specifications needed by the package.
 
+## Contents
 
-This folder contain :
-
-- A subfolder name Materials, witch contain data for the code. The data as present as texte files for be readable for the code. Materials folder contain refractive index of real materials; mostly founded is peer reviewed litterature of refractiveindex.info web site. Other data, as solar spectra are also available
-- A `function_SolPOC.py`. This files contain all functions for `CurveRTA.py`and `optimization_multiprocess.py` work. 
+- `Materials` subfolder: contains data for the code. The data as present as texte files for be readable for the code. Materials folder contain refractive index of real materials; mostly founded is peer reviewed literature of [refractiveindex.info](https://refractiveindex.info) web site. Other data, as solar spectra are also available.
+- `scripts` subfolder: contains the starting template script necessary to run optimization as well as a utility script to visualize results.
+- `functions_SolPOC.py`: containing most of the functionality of the package.
+- `cli.py`: command line functions.
