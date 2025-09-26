@@ -1090,6 +1090,7 @@ def get_parameters(
 
     """ Warning : if parameters do not contain the following value, we continue and informe the user. 
     If missing --> informe user and continue """
+    # We select 280 to 2500 with 5 nm, as it's a standart in solar thermal energy (ISO 9050)
     if Wl is None:
         print("Info: No number of wavelenght provided. The defaut value is 280 to 2500 nm with a 5 nm step.")
         parameters['Wl'] = np.arange(280, 2505,5)
@@ -1169,7 +1170,8 @@ def get_parameters(
         parameters['Th_range'] = (0, 300)
     else :
         parameters['Th_range'] = Th_range 
-    
+        
+    # if a cost function is present, it's mean that we want optimize a stack, so we need the following
     if cost_function is not None:
         if algo is None :     
             print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
@@ -1184,7 +1186,8 @@ def get_parameters(
             print("Info: No selection function provided. Using the default 'selection_max'.")
             parameters['selection'] = selection_max 
             parameters['selection_name'] = selection.__name__
-
+            
+    # if a algo is present, it's mean that we want optimize a stack, so we need the following
     if algo is not None:
         if pop_size is None : 
             print("Info: No number of population size provided. The default value is 30.")
@@ -1220,6 +1223,7 @@ def get_parameters(
     if d_Stack is not None:
         parameters['d_Stack'] = d_Stack
     
+    # budge is necessary for optimization method
     if budget is None : 
         parameters['budget'] =  None
     else : 
@@ -1235,6 +1239,7 @@ def get_parameters(
     else :
         parameters['name_Sol_Spec'] = name_Sol_Spec
     
+    # If we have DE optimizer, we need the following : f1, f2 and mutation. We also need crossover
     if algo is not None and algo.__name__ == "DEvol":
         if f1 is None : 
             parameters['f1'] =  1.0
@@ -1248,7 +1253,8 @@ def get_parameters(
             parameters['mutation_DE'] =  "rand_1"
         else : 
             parameters['mutation_DE'] =  mutation_DE
-              
+            
+    # crossover is necessary for several optimize       
     if crossover_rate is None:
         parameters['crossover_rate'] =  0.5
     else : 
@@ -1256,7 +1262,8 @@ def get_parameters(
     
     if Mat_Option is not None:
         parameters['Mat_Option'] =  Mat_Option
-        
+    
+    # cohenrecy limit is need for check if a thin layer is coherent or not. Necessary for lunch RTA_inco
     if coherency_limit is None:
         parameters['coherency_limit'] = 2000
     else : 
@@ -1363,7 +1370,7 @@ def get_parameters(
     if Signal_fit is not None:
         parameters['Signal_fit'] = Signal_fit
     
-    if Signal_fit is not None:
+    if Signal_fit_2 is not None:
         parameters['Signal_fit_2'] = Signal_fit_2
     
     if cost_function is not None and cost_function.__name__ == "evaluate_rh":
