@@ -1070,26 +1070,9 @@ def get_parameters(
         Mode_choose_material = None
         ):
 
-    parameters = {'Wl': Wl,  
-                  'Ang': Ang,
-                  'Sol_Spec': Sol_Spec,
-                  'name_Sol_Spec': name_Sol_Spec,
-                  'Mat_Stack': Mat_Stack,
+    parameters = {'Mat_Stack': Mat_Stack,
                   'n_Stack': n_Stack,
-                  'k_Stack': k_Stack,
-                  'Th_range': Th_range,
-                  'Th_Substrate': Th_Substrate ,
-                  'vf_range' : vf_range,
-                  'pop_size': pop_size,
-                  'budget' : budget,
-                  'crossover_rate' : crossover_rate,
-                  'nb_run': nb_run,
-                  'seed' : seed,
-                  'algo': algo,
-                  'cost_function' : cost_function,
-                  'evaluate': cost_function, # the cost function was nammed evaluate in SolPOC v0.9.6. We keep this the ligne iv v0.9.7 for avoid bug
-                  'mutation_DE' : mutation_DE,
-                  'selection': selection,}  # End of the dict
+                  'k_Stack': k_Stack,}  # End of the dict
     
     """ Error : parameters MUST containe the following value . 
     If missing --> ValueError"""
@@ -1216,17 +1199,23 @@ def get_parameters(
             raise ValueError("""Warning: the cost function is missing. Please select one.
             All cost functions provided with SolPOC start with 'evaluate'. 
             Read the User Guide for more information about each cost functions, or write your own !""")
+        else : 
+            parameters['evaluate'] =  cost_function
             
         if selection is None : 
             print("Info: No selection function provided. Using the default 'selection_max'.")
             parameters['selection'] = selection_max 
-            parameters['selection_name'] = selection.__name__
+            parameters['selection_name'] = parameters['selection'].__name__
 
     """ No warming : if parameters do not contain the following value, we continue without informe the user. 
     If missing --> fill the value and continue """  
     
     if selection is not None :
+        parameters['selection'] = selection
         parameters['name_selection'] = selection.__name__
+    else : 
+        parameters['selection'] = selection_max 
+        parameters['name_selection'] = parameters['selection'].__name__
 
     if d_Stack is not None:
         parameters['d_Stack'] = d_Stack
