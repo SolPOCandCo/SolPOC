@@ -193,7 +193,7 @@ t2 = time.time()
 print("TMM basic solar anti-reflective coating:")
 print("Time calcul", str(t2-t1), "seconde")
 print("Success:", result_AR.success)
-print("Optimized thicknesses [m]:", result_AR.x)
+print("Optimized thicknesses [nm]:", result_AR.x)
 print("Average solar reflectivity:", result_AR.fun)
 
 # ------------------------ Initial thicknesses ------------------------
