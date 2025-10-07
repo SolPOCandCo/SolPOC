@@ -141,7 +141,7 @@ result_AR = minimize(
     AR_coating_solpoc, 
     x_AR, 
     args=(n_Stack, k_Stack, Wl, Ang, Sol_Spec), 
-    method= 'BFGS'
+    method= 'Nelder-Mead'
 )
 t2 = time.time()
 print("SolPOC basic solar antireflectif coating : ")
@@ -186,7 +186,7 @@ result_AR = minimize(
     AR_coating_tmm_nm, 
     x_AR, 
     args=(M, theta, wl, Sol_Spec), 
-    method='BFGS'
+    method='Nelder-Mead'
 )
 t2 = time.time()
 
@@ -209,7 +209,7 @@ result_AR = minimize(
     AR_coating_tmm, 
     x_AR, 
     args=(M, theta, wl, Sol_Spec), 
-    method='BFGS'
+    method='Nelder-Mead'
 )
 t2 = time.time()
 
