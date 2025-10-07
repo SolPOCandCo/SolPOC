@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on 2025-09-05
-SolPOC v 0.9.7
+SolPOC v 0.9.6
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
 """

@@ -2,7 +2,7 @@
 """
 Created on 2023-07-27 
 Update on 2025-09-16 
-SolPOC v 0.9.7 
+SolPOC v 0.9.6 
 @author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
 Stack_plot function by Titouan Fevrier
 contact : antoine.grosjean@epf.fr
