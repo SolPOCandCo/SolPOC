@@ -5,7 +5,7 @@ They allow:
 1.	A better understanding of the package functionalities.
 2.	A comparison of the optical calculations of SolPOC with a reference package (tmm-fast).
 3.	Examples of using SolPOC in combination with optimization packages (SciPy and Nevergrad).
-4.	Pre-configured scripts (tutorials) corresponding to different use cases.
+4.	Pre-configured scripts (template) corresponding to different use cases. 
 5.	A curve-fitting script for comparison with an experimental signal.
 
 These practical cases are useful for the SolPOC community and correspond to the examples presented in the User Guide.
@@ -30,8 +30,9 @@ This script shows how to use SolPOC to define a cost function usable with Neverg
 The same cost function was implemented with tmm (v0.2.1) and SolPOC to compare results for solving optical equations.
 
 Note: to ensure similar comparison conditions between the two packages, the solar spectrum used by the cost function is loaded directly from the file Sol_Spec.npy.
-### D. `tutorial_XX`
-All scripts started with `tutorial_`... are various tutorials demanded by the SolPOC user community.
+### D. `template_XX`
+All scripts started with `template_`... are various template demanded by the SolPOC user community.
+They can act as tutorial for show how a specific probleme can be handle
 These pre-configured scripts illustrate the use of SolPOC to optimize stacks for different use cases.
 They intend to help non-coder users to apply SolPOC for some specific optimization problems.
 Several examples specific to the solar thermal community are provided: optimization of an anti-reflective coating, optimization of a thermal absorber, etc.
