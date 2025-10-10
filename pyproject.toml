@@ -17,7 +17,7 @@ maintainers = [
     {name = "Thalita Drumond", email = "thalita.drumond@epf.fr"},
     {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"},
 ]
-description = "Solar Performances Optimization Code (SolPOC) is an Academic research code, used for solar energy. SolPOC can solve and optimize a stack of thin layers for designed solar mirror, antireflective coating, thermal absorber etc."
+description = "Solar Performances Optimization Code (SolPOC) is an Academic research code, used for solar energy. SolPOC can solve and optimize a stack of thin layers for designed solar mirror, anti-reflective coating, thermal absorber etc."
 
 requires-python = ">=3.9"
 
@@ -46,7 +46,7 @@ Issues = "https://github.com/SolPOCandCo/SolPOC/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ["Examples"]
+exclude = ["Examples", "tests"]
 
 [project.scripts]
 solpoc-init = "solpoc:init"
