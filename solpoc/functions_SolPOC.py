@@ -14,6 +14,7 @@ List of main functions used and developed for SolPOC. For use them without any i
 
 import importlib
 from importlib import resources as impresources
+from typing import List, Tuple, Optional, Callable, Union, Any
 import numpy as np
 import math
 # trapz renamed as trapezoid since scipy 1.14.0
@@ -32,7 +33,7 @@ from matplotlib.patches import Circle
 from solcore.structure import Structure
 from solcore.absorption_calculator import calculate_rat
 from datetime import datetime
-import time 
+import time
 
 
 def RTA3C(Wl, d, n, k, Ang=0):
@@ -1025,66 +1026,177 @@ Subtrat : List of string
 
 
 def get_parameters(
-        Wl = None,
-        Ang = None,
-        Sol_Spec = None,
-        name_Sol_Spec = None,
-        d_Stack = None,
-        Mat_Stack = None,
-        n_Stack = None, 
-        k_Stack = None,
-        vf = None,
-        Th_range = None,
-        Th_Substrate = None,
-        vf_range = None,
-        Lambda_cut_1 = None,
-        Lambda_cut_2 = None, 
-        pop_size = None, 
-        crossover_rate = None, 
-        f1 = None,
-        f2 = None,
-        mutation_DE = None,
-        budget = None, 
-        nb_run = None,
-        seed = None,
-        algo = None, 
-        cost_function = None,
-        selection = None,
-        nb_layer = None,
-        n_range = None,
-        d_Stack_Opt = None,
-        C = None,
-        T_air = None,
-        T_abs = None,
-        Signal_H_eye = None,
-        poids_PV = None,
-        Signal_PV = None,
-        Signal_Th = None,
-        Signal_fit = None,
-        Signal_fit_2 = None,
-        precision_AlgoG = None,
-        mutation_delta = None,
-        evaluate_rate = None,
-        Mat_Option = None,
-        coherency_limit = None,
-        Mode_choose_material = None
-        ):
+    Wl: Optional[np.ndarray] = None,
+    Ang: Optional[float] = None,
+    Sol_Spec: Optional[np.ndarray] = None,
+    name_Sol_Spec: Optional[str] = None,
+    d_Stack: Optional[np.ndarray] = None,
+    Mat_Stack: Optional[List[str]] = None,
+    n_Stack: Optional[np.ndarray] = None,
+    k_Stack: Optional[np.ndarray] = None,
+    vf: Optional[np.ndarray] = None,
+    Th_range: Optional[Tuple[float, float]] = None,
+    Th_Substrate: Optional[float] = None,
+    vf_range: Optional[Tuple[float, float]] = None,
+    Lambda_cut_1: Optional[float] = None,
+    Lambda_cut_2: Optional[float] = None,
+    pop_size: Optional[int] = None,
+    crossover_rate: Optional[float] = None,
+    f1: Optional[float] = None,
+    f2: Optional[float] = None,
+    mutation_DE: Optional[str] = None,
+    budget: Optional[int] = None,
+    nb_run: Optional[int] = 1,
+    seed: Optional[int] = None,
+    algo: Optional[Callable] = None,
+    cost_function: Optional[Callable] = None,
+    selection: Optional[Callable] = None,
+    nb_layer: Optional[int] = None,
+    n_range: Optional[Tuple[float, float]] = None,
+    d_Stack_Opt: Optional[List[Union[float, str]]] = None,
+    C: Optional[float] = None,
+    T_air: Optional[float] = None,
+    T_abs: Optional[float] = None,
+    Signal_H_eye: Optional[np.ndarray] = None,
+    poids_PV: Optional[float] = None,
+    Signal_PV: Optional[np.ndarray] = None,
+    Signal_Th: Optional[np.ndarray] = None,
+    Signal_fit: Optional[np.ndarray] = None,
+    Signal_fit_2: Optional[np.ndarray] = None,
+    precision_AlgoG: Optional[float] = None,
+    mutation_rate: Optional[float] = None,
+    mutation_delta: Optional[float] = None,
+    evaluate_rate: Optional[float] = None,
+    Mat_Option: Optional[dict] = None,
+    coherency_limit: Optional[float] = None,
+    Mode_choose_material: Optional[str] = None
+) -> dict:
+    """
+    This function initializes a dictionary containing the parameters for the thin layer stack optimization process.
 
+    Parameters
+    ----------
+    Wl : ndarray, optional
+        The wavelength grid for the optical calculations. Defaults to None.
+    Ang : float, optional
+        The angle of incidence for the optical calculations. Defaults to None.
+    Sol_Spec : ndarray, optional
+        The solar spectrum for the optical calculations. Defaults to None.
+    name_Sol_Spec : str, optional
+        The name of the solar spectrum. Defaults to None.
+    d_Stack : ndarray, optional
+        The thicknesses of the thin layers in the stack. Defaults to None.
+    Mat_Stack : list, optional
+        The materials of the thin layers in the stack. Defaults to None.
+    n_Stack : ndarray, optional
+        The real part of the refractive index of the thin layers in the stack. Defaults to None.
+    k_Stack : ndarray, optional
+        The imaginary part of the refractive index of the thin layers in the stack. Defaults to None.
+    vf : ndarray, optional
+        The volume fractions of the thin layers in the stack. Defaults to None.
+    Th_range : tuple, optional
+        The range of thicknesses for the thin layers in the stack. Defaults to None.
+    Th_Substrate : float, optional
+        The thickness of the substrate layer. Defaults to None.
+    vf_range : tuple, optional
+        The range of volume fractions for the thin layers in the stack. Defaults to None.
+    Lambda_cut_1 : float, optional
+        The first wavelength cut-off for certain cost functions. Defaults to None.
+    Lambda_cut_2 : float, optional
+        The second wavelength cut-off for certain cost functions. Defaults to None.
+    pop_size : int, optional
+        The size of the population for optimization algorithms. Defaults to None.
+    crossover_rate : float, optional
+        The crossover rate for optimization algorithms. Defaults to None.
+    f1 : float, optional
+        The f1 parameter for the differential evolution optimization algorithm. Defaults to None.
+    f2 : float, optional
+        The f2 parameter for the differential evolution optimization algorithm. Defaults to None.
+    mutation_DE : str, optional
+        The mutation strategy for the differential evolution optimization algorithm. Defaults to None.
+    budget : int, optional
+        The budget for optimization algorithms. Defaults to None.
+    nb_run : int, optional
+        The number of runs for optimization algorithms. Defaults to None.
+    seed : int, optional
+        The seed for random number generation. Defaults to None.
+    algo : callable, optional
+        The optimization algorithm to use. Defaults to None.
+    cost_function : callable, optional
+        The cost function to use for optimization. Defaults to None.
+    selection : callable, optional
+        The selection function to use for optimization. Defaults to None.
+    nb_layer : int, optional
+        The number of additional layers to optimize. Defaults to None.
+    n_range : tuple, optional
+        The range of refractive index values for additional layers. Defaults to None.
+    d_Stack_Opt : list, optional
+        The list of fixed and optimized thicknesses for the thin layers in the stack. Defaults to None.
+    C : float, optional
+        The concentration ratio for certain cost functions. Defaults to None.
+    T_air : float, optional
+        The air temperature for certain cost functions. Defaults to None.
+    T_abs : float, optional
+        The absorber temperature for certain cost functions. Defaults to None.
+    Signal_H_eye : ndarray, optional
+        The signal for the human eye response for certain cost functions. Defaults to None.
+    poids_PV : float, optional
+        The weighting factor for the PV part in the net power calculation for certain cost functions. Defaults to None.
+    Signal_PV : ndarray, optional
+        The signal for the PV cells for certain cost functions. Defaults to None.
+    Signal_Th : ndarray, optional
+        The signal for the thermal absorber for certain cost functions. Defaults to None.
+    Signal_fit : ndarray, optional
+        The signal for the fit function for certain cost functions. Defaults to None.
+    Signal_fit_2 : ndarray, optional
+        The second signal for the fit function for certain cost functions. Defaults to None.
+    precision_AlgoG : float, optional
+        The precision for the genetic optimization algorithm. Defaults to None.
+    mutation_delta : float, optional
+        The mutation delta parameter for the genetic optimization algorithm. Defaults to None.
+    evaluate_rate : float, optional
+        The evaluate rate parameter for the genetic optimization algorithm. Defaults to None.
+    Mat_Option : dict, optional
+        The dictionary of material options for certain cost functions. Defaults to None.
+    coherency_limit : float, optional
+        The coherency limit for certain cost functions. Defaults to None.
+    Mode_choose_material : str, optional
+        The mode for choosing materials for certain cost functions. Defaults to None.
+
+    Raises
+    ------
+    ValueError
+        If `Mat_Stack` is None.
+        If `n_Stack` is None.
+        If `k_Stack` is None.
+        If `budget` is None and `algo` is not None.
+        If `cost_function` is None and `algo` is not None.
+        If `n_range` is None and `nb_layer` is not None.
+
+    Returns
+    -------
+    dict
+        The dictionary of parameters.
+
+    Notes
+    -----
+    This function uses Numpy arrays for efficient mathematical operations.
+    """
     parameters = {'Mat_Stack': Mat_Stack,
                   'n_Stack': n_Stack,
-                  'k_Stack': k_Stack,}  # End of the dict
-    
+                  'k_Stack': k_Stack, }  # End of the dict
+
     """ Error : parameters MUST containe the following value . 
     If missing --> ValueError"""
-    if Mat_Stack is None :
+    if Mat_Stack is None:
         raise ValueError(
-        """Error : you must describe the thin layers stack in Mat_Stack.
-    Example: Mat_Stack = ['SiO2', 'TiO2', 'Si'] """ )
-                         
-    if n_Stack is None :
+            f"""Error : you must describe the thin layers stack in Mat_Stack.
+    Example: Mat_Stack = ['SiO2', 'TiO2', 'Si']""")
+
+    if n_Stack is None:
         raise ValueError("""Error  : n_Stack is missing. 
     Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
-    if k_Stack is None :
+    if k_Stack is None:
         raise ValueError("""Error : k_Stack is missing. 
     Added the following line in your script : n_Stack, k_Stack = sol.Made_Stack(Mat_Stack, Wl)""")
 
@@ -1093,38 +1205,40 @@ def get_parameters(
     # We select 280 to 2500 with 5 nm, as it's a standart in solar thermal energy (ISO 9050)
     if Wl is None:
         print("Info: No number of wavelenght provided. The defaut value is 280 to 2500 nm with a 5 nm step.")
-        parameters['Wl'] = np.arange(280, 2505,5)
-    else : 
+        parameters['Wl'] = np.arange(280, 2505, 5)
+    else:
         parameters['Wl'] = Wl
-        
+
     if Ang is None:
         print("Info: No number incidence angle provided. The defaut value is 0°.")
         parameters['Ang'] = 0
-    else : 
+    else:
         parameters['Ang'] = Ang
-    
+
     # Normaly, the solar spectra is almost everytime necessary
     if not (callable(cost_function) and cost_function.__name__ == "evaluate_R_Brg"):
         if Sol_Spec is None:
-            print("Info: No solar spectram provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
-            Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec('Materials/SolSpec.txt', 'GT')
+            print("Info: No solar spectrum provided. The selected one by defaut is ASTM G173-03 Global Tild, AM 1.5.")
+            Wl_Sol, Sol_Spec, name_Sol_Spec = open_SolSpec(
+                'Materials/SolSpec.txt', 'GT')
             Sol_Spec = np.interp(Wl, Wl_Sol, Sol_Spec)
             parameters['Sol_Spec'] = Sol_Spec
-            parameters['name_Sol_Spec'] =  name_Sol_Spec
-        else : 
+            parameters['name_Sol_Spec'] = name_Sol_Spec
+        else:
             parameters['Sol_Spec'] = Sol_Spec
-            parameters['name_Sol_Spec'] =  name_Sol_Spec
-        
+            parameters['name_Sol_Spec'] = name_Sol_Spec
+
     if Th_Substrate is None:
-        if d_Stack is not None : 
-            print("Info: No substract thicknesses provided. The defaut value is the first value of d_Stack.")
-            parameters['Th_Substrate'] =  d_Stack[0]
-        else:       
+        if d_Stack is not None:
+            print(
+                "Info: No substract thicknesses provided. The defaut value is the first value of d_Stack.")
+            parameters['Th_Substrate'] = d_Stack[0]
+        else:
             print("Info: No substract thicknesses provided. The defaut value is 1 mm.")
-            parameters['Th_Substrate'] =  1e6
-    else : 
-        parameters['Th_Substrate'] =  Th_Substrate
-    
+            parameters['Th_Substrate'] = 1e6
+    else:
+        parameters['Th_Substrate'] = Th_Substrate
+
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
         """ 
         This condition checks whether the individual contains volume fractions (vf),
@@ -1132,29 +1246,30 @@ def get_parameters(
         For example, the list [100, 120, 0.1, 0.5] could be interpreted in two ways:
         - as four layers with thicknesses of 100, 120, 0.1, and 0.5 nm
         - or as two layers: 100 nm with 10% vf and 120 nm with 50% vf
-        
+
         To distinguish between these two cases, we look at the dimensions of n_Stack and k_Stack.
         If some layers are mixtures of two materials, n_Stack and k_Stack will have the shape (Wl, nb_layers, 2),
         meaning there are two materials per layer. In this case, an Effective Medium Approximation (EMA)
         is required to combine the two materials using the provided vf list.
-        
+
         Otherwise, if there is only one material per layer, n_Stack and k_Stack will have the shape (Wl, nb_layers).
         """
         if vf_range is None:
-            print("Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
+            print(
+                "Info: a volumetric fraction range is required. The default value is (0–1), meaning 0–100%.")
             parameters["vf_range"] = (0, 1)
-        else : 
+        else:
             parameters["vf_range"] = vf_range
-        if vf is None : 
+        if vf is None:
             parameters["vf"] = None
-        else : 
+        else:
             parameters["vf"] = vf
-    else : 
+    else:
         """
         The presence or absence of volume fractions (vf) determines how some upstream functions behave.
         For example, X_DEVol (which initializes the population) must create initial individuals : 
         if vf is present, each individual must include both a list of vf values and a list of layer thicknesses.
-        
+
         Therefore, it is necessary to check whether an EMA is required:
          if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
                → two materials per layer → EMA is required --> vf is required
@@ -1164,111 +1279,115 @@ def get_parameters(
                → set vf_range to None
         """
         parameters["vf_range"] = None
-        
+
     if Th_range is None:
         print("Info: No range for thin layers thicknesses. The default range is 0-300 nm.")
         parameters['Th_range'] = (0, 300)
-    else :
-        parameters['Th_range'] = Th_range 
-        
+    else:
+        parameters['Th_range'] = Th_range
+
     # if a cost function is present, it's mean that we want optimize a stack, so we need the following
     if cost_function is not None:
-        if algo is None :     
-            print("Info: You can change the optimization method. The default (are probably the best) is DEvol")
-            parameters['algo'] =  DEvol
-        else :
-            parameters['algo'] =  algo
-            
-        if budget is None :     
-            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
-            
-        if selection is None : 
-            print("Info: No selection function provided. Using the default 'selection_max'.")
-            parameters['selection'] = selection_max 
+        if algo is None:
+            print(
+                "Info: You can change the optimization method. The default (probably the best) is DEvol")
+            parameters['algo'] = DEvol
+        else:
+            parameters['algo'] = algo
+
+        if budget is None:
+            raise ValueError(
+                """Warning : budget is missing. Please provide a budget (in number of iterations)""")
+
+        if selection is None:
+            print(
+                "Info: No selection function provided. Using the default 'selection_max'.")
+            parameters['selection'] = selection_max
             parameters['selection_name'] = selection.__name__
-            
+
     # if a algo is present, it's mean that we want optimize a stack, so we need the following
     if algo is not None:
-        if pop_size is None : 
+        if pop_size is None:
             print("Info: No number of population size provided. The default value is 30.")
-            parameters['pop_size'] =  30
-        else : 
-            parameters['pop_size'] =  pop_size
-            
-        if budget is None :     
-            raise ValueError("""Warning : budget is missing. Please provide a budget""") 
-            
-        if cost_function is None :
+            parameters['pop_size'] = 30
+        else:
+            parameters['pop_size'] = pop_size
+
+        if budget is None:
+            raise ValueError(
+                """Warning : budget is missing. Please provide a budget""")
+
+        if cost_function is None:
             raise ValueError("""Warning: the cost function is missing. Please select one.
-            All cost functions provided with SolPOC start with 'evaluate'. 
+            All cost functions provided with SolPOC start with `evaluate`. 
             Read the User Guide for more information about each cost functions, or write your own !""")
-        else : 
-            parameters['evaluate'] =  cost_function
-            
-        if selection is None : 
-            print("Info: No selection function provided. Using the default 'selection_max'.")
-            parameters['selection'] = selection_max 
+        else:
+            parameters['evaluate'] = cost_function
+
+        if selection is None:
+            print(
+                "Info: No selection function provided. Using the default 'selection_max'.")
+            parameters['selection'] = selection_max
             parameters['selection_name'] = parameters['selection'].__name__
 
     """ No warming : if parameters do not contain the following value, we continue without informe the user. 
-    If missing --> fill the value and continue """  
-    
-    if selection is not None :
+    If missing --> fill the value and continue """
+
+    if selection is not None:
         parameters['selection'] = selection
-        parameters['name_selection'] = selection.__name__
-    else : 
-        parameters['selection'] = selection_max 
-        parameters['name_selection'] = parameters['selection'].__name__
+    else:
+        parameters['selection'] = selection_max
+    parameters['name_selection'] = parameters['selection'].__name__
 
     if d_Stack is not None:
         parameters['d_Stack'] = d_Stack
-    
-    # budge is necessary for optimization method
-    if budget is None : 
-        parameters['budget'] =  None
-    else : 
-        parameters['budget'] =  budget
-    
-    if nb_run is None :
-        parameters['nb_run '] = 1
-    else : 
-        parameters['nb_run '] = nb_run 
- 
+
+    # budget is necessary for optimization method
+    if budget is None:
+        parameters['budget'] = None
+    else:
+        parameters['budget'] = budget
+
+    if nb_run is None:
+        parameters['nb_run'] = 1
+    else:
+        parameters['nb_run'] = nb_run
+
     if name_Sol_Spec is None:
-        parameters['name_Sol_Spec'] =  "Unknow"
-    else :
+        parameters['name_Sol_Spec'] = "Unknow"
+    else:
         parameters['name_Sol_Spec'] = name_Sol_Spec
-    
+
     # If we have DE optimizer, we need the following : f1, f2 and mutation. We also need crossover
     if algo is not None and algo.__name__ == "DEvol":
-        if f1 is None : 
-            parameters['f1'] =  1.0
-        else : 
-            parameters['f1'] =  f1
-        if f2 is None : 
-            parameters['f2'] =  1.0
-        else : 
-            parameters['f2'] =  f2
+        if f1 is None:
+            parameters['f1'] = 1.0
+        else:
+            parameters['f1'] = f1
+        if f2 is None:
+            parameters['f2'] = 1.0
+        else:
+            parameters['f2'] = f2
         if mutation_DE is None:
-            parameters['mutation_DE'] =  "rand_1"
-        else : 
-            parameters['mutation_DE'] =  mutation_DE
-            
-    # crossover is necessary for several optimize       
+            parameters['mutation_DE'] = "rand_1"
+        else:
+            parameters['mutation_DE'] = mutation_DE
+
+    # crossover is necessary for several optimize
     if crossover_rate is None:
-        parameters['crossover_rate'] =  0.5
-    else : 
-        parameters['crossover_rate'] =  crossover_rate
-    
+        parameters['crossover_rate'] = 0.5
+    else:
+        parameters['crossover_rate'] = crossover_rate
+
     if Mat_Option is not None:
-        parameters['Mat_Option'] =  Mat_Option
-    
-    # cohenrecy limit is need for check if a thin layer is coherent or not. Necessary for lunch RTA_inco
+        parameters['Mat_Option'] = Mat_Option
+
+    # cohenrecy limit is need for check if a thin layer is coherent or not. Necessary to launch RTA_inco
     if coherency_limit is None:
         parameters['coherency_limit'] = 2000
-    else : 
+    else:
         parameters['coherency_limit'] = coherency_limit
-    
+
     """
     lambda_cut_1 and lambda_cut_2 define the spectral cut-off wavelengths (λ1 and λ2)
     used to separate the solar spectrum into reflective and transparent zone intp a PV-CSP systeme for the Spectral Splitting coating 
@@ -1276,55 +1395,57 @@ def get_parameters(
     functions can be used, especialy for the SolPOC communituy
     --> therefore, default values are set when they are None.
     """
-    
-    if Lambda_cut_1 is not None : 
-        parameters['Lambda_cut_1'] =  Lambda_cut_1
-    if Lambda_cut_2 is not None : 
-        parameters['Lambda_cut_2'] =  Lambda_cut_2
-    
-    if cost_function is not None: 
-        #  Update for TRT ou RTR 
+
+    if Lambda_cut_1 is not None:
+        parameters['Lambda_cut_1'] = Lambda_cut_1
+    if Lambda_cut_2 is not None:
+        parameters['Lambda_cut_2'] = Lambda_cut_2
+
+    if cost_function is not None:
+        #  Update for TRT ou RTR
         if cost_function.__name__ == "evaluate_RTR" or cost_function.__name__ == "evaluate_TRT":
             if Lambda_cut_1 is None:
-                parameters['Lambda_cut_1'] =  500
-            else :
-                parameters['Lambda_cut_1'] =  Lambda_cut_1
-                
+                parameters['Lambda_cut_1'] = 500
+            else:
+                parameters['Lambda_cut_1'] = Lambda_cut_1
+
             if Lambda_cut_2 is None:
-                parameters['Lambda_cut_2'] =  1000
-            else :
-                parameters['Lambda_cut_2'] =  Lambda_cut_2
-        
+                parameters['Lambda_cut_2'] = 1000
+            else:
+                parameters['Lambda_cut_2'] = Lambda_cut_2
+
         if cost_function.__name__ == "evaluate_low_e":
             if Lambda_cut_1 is None:
-                parameters['Lambda_cut_1'] =  800
-            else :
-                parameters['Lambda_cut_1'] =  Lambda_cut_1
-    
+                parameters['Lambda_cut_1'] = 800
+            else:
+                parameters['Lambda_cut_1'] = Lambda_cut_1
+
     if Mat_Option is not None:
         if Mode_choose_material is None:
-            parameters["Mode_choose_material"] = "sigmoid" #mode (str): 'linear', 'sigmoid', or 'gaussian'
-        else :
+            # mode (str): 'linear', 'sigmoid', or 'gaussian'
+            parameters["Mode_choose_material"] = "sigmoid"
+        else:
             parameters["Mode_choose_material"] = Mode_choose_material
-    
-    # if the seed variable exists, i add it in the dictionary
+
+    # if the seed parameter is given, add it in the dictionary
     # if not, define a seed
     if seed is not None:
         parameters['seed'] = seed
-        # Create seed list for multiprocessing
-        parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
     else:
         parameters["seed"] = get_seed_from_randint()
-        # Create seed list for multiprocessing
-        parameters['seed_list'] = get_seed_from_randint(nb_run,rng=np.random.RandomState(parameters['seed']))
-    
-    if Signal_PV is not None : 
+
+    # Create seed list for multiprocessing
+    if parameters["nb_run"] > 1:
+        parameters['seed_list'] = get_seed_from_randint(
+            nb_run, rng=np.random.RandomState(parameters['seed']))
+
+    if Signal_PV is not None:
         parameters['Signal_PV'] = Signal_PV
-    
-    if Signal_Th is not None : 
+
+    if Signal_Th is not None:
         parameters['Signal_Th'] = Signal_Th
-    
-    # Advanced parameters  
+
+    # Advanced parameters
     """
     A non-nul value for nb_layer enables an optimization where both the thickness and 
     the real part of the refractive index (n in N = n + i*k) are optimized.
@@ -1339,14 +1460,15 @@ def get_parameters(
     for example: n_range = (1, 3)
     """
     if nb_layer is None:
-        parameters["nb_layer"] = 0 # If nb_layer is 0 or None, no additional layers are added
+        # If nb_layer is 0 or None, no additional layers are added
+        parameters["nb_layer"] = 0
     else:
         parameters["nb_layer"] = nb_layer
-        if n_range is not None: 
-            parameters["n_range"] = n_range  
-        else : 
+        if n_range is not None:
+            parameters["n_range"] = n_range
+        else:
             raise ValueError("""Warning: the n_range value is missing """)
-           
+
     """
     d_Stack specifies which layer thicknesses are fixed and which are optimized.
     
@@ -1360,32 +1482,32 @@ def get_parameters(
     if d_Stack_Opt is None or len(d_Stack_Opt) == 0:
         d_Stack_Opt = ["no"] * (len(Mat_Stack) - 1)
         parameters["d_Stack_Opt"] = d_Stack_Opt
-        
-    if parameters["nb_layer"] !=0: 
+
+    if parameters["nb_layer"] != 0:
         d_Stack_Opt = ["no"] * ((len(Mat_Stack) - 1) + nb_layer)
         parameters["d_Stack_Opt"] = d_Stack_Opt
-    else : 
+    else:
         parameters["d_Stack_Opt"] = d_Stack_Opt
-    
+
     if Signal_fit is not None:
         parameters['Signal_fit'] = Signal_fit
-    
+
     if Signal_fit_2 is not None:
         parameters['Signal_fit_2'] = Signal_fit_2
-    
+
     if cost_function is not None and cost_function.__name__ == "evaluate_rh":
         if C is None:
             print("Info: You optimise a heliothermal efficiency. No number of solar concentration provided. The defaut value is 80.")
             parameters["C"] = 80
         else:
             parameters["C"] = C
-    
+
         if T_air is None:
             print("Info: You optimise a heliothermal efficiency. No air temperature provided. The defaut value is 293 K.")
             parameters["T_air"] = 293
         else:
             parameters["T_air"] = T_air
-    
+
         if T_abs is None:
             print("Info: You optimise a heliothermal efficiency. No absorber temperature provided. The defaut value is 573 K.")
             parameters["T_abs"] = 300 + 273
@@ -1396,7 +1518,8 @@ def get_parameters(
         if Signal_H_eye is None:
             # Open a file with Human eye response
             # 'eye' is written fully to avoid confusion with 'e' for emissivity
-            Wl_H_eye, Signal_H_eye, name_H_eye = open_Spec_Signal('Materials/Human_eye.txt', 1)
+            Wl_H_eye, Signal_H_eye, name_H_eye = open_Spec_Signal(
+                'Materials/Human_eye.txt', 1)
             # Interpolate the signal on the current wavelength grid
             Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye)
             parameters["Sol_Spec"] = Signal_H_eye
@@ -1405,7 +1528,7 @@ def get_parameters(
             parameters["Sol_Spec"] = Signal_H_eye
             parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye
             """
-    
+
     if cost_function is not None and cost_function.__name__ == "evaluate_netW_PV_CSP":
         if poids_PV is None:
             print("""Info: You are optimizing a PV/CSP mirror using a net power approach.
@@ -1414,39 +1537,45 @@ def get_parameters(
             The default value is 3.0, meaning that 1 W absorbed by the PV cells is considered 
             equivalent to 3 W absorbed by the thermal absorber.""")
             parameters['poids_PV'] = 3.0
-        else : 
+        else:
             parameters['poids_PV'] = poids_PV
-            
-        if Signal_PV  is None:
-            Wl_PV, Signal_PV, name_PV = open_Spec_Signal('Materials/PV_cells.txt', 1)
-            Signal_PV = np.interp(Wl, Wl_PV, Signal_PV)  # Interpolate the signal
+
+        if Signal_PV is None:
+            Wl_PV, Signal_PV, name_PV = open_Spec_Signal(
+                'Materials/PV_cells.txt', 1)
+            # Interpolate the signal
+            Signal_PV = np.interp(Wl, Wl_PV, Signal_PV)
             parameters["Signal_PV"] = Signal_PV
-        else : 
+        else:
             parameters["Signal_PV"] = Signal_PV
-            
+
         if Signal_Th is None:
-        # Open a file with thermal absorber shape
-            Wl_Th, Signal_Th, name_Th = open_Spec_Signal('Materials/Thermal_absorber.txt', 1)
-            Signal_Th = np.interp(Wl, Wl_Th, Signal_Th) 
+            # Open a file with thermal absorber shape
+            Wl_Th, Signal_Th, name_Th = open_Spec_Signal(
+                'Materials/Thermal_absorber.txt', 1)
+            Signal_Th = np.interp(Wl, Wl_Th, Signal_Th)
             # Interpolation
             # Update the PV cells and the absorber signal within the parameters dict
             parameters["Signal_Th"] = Signal_Th
-        else :
+        else:
             parameters["Signal_Th"] = Signal_Th
 
     if algo is not None and algo.__name__ == "optimize_ga":
         if precision_AlgoG is None:
-            precision_AlgoG = 1e-5 
+            precision_AlgoG = 1e-5
         if mutation_delta is None:
             mutation_delta = 15
         if crossover_rate is None:
             crossover_rate = 0.9
+        if mutation_rate is None:
+            mutation_rate = 0.5
         if evaluate_rate is None:
             evaluate_rate = 0.3
-    
+
         parameters["Precision_AlgoG"] = precision_AlgoG
         parameters["mutation_delta"] = mutation_delta
         parameters['crossover_rate'] = crossover_rate
+        parameters['mutation_rate'] = mutation_rate
         parameters['evaluate_rate'] = evaluate_rate
         parameters["Mod_Algo"] = "for"
 
@@ -1455,19 +1584,20 @@ def get_parameters(
             precision_AlgoG = 1e-5
         if evaluate_rate is None:
             evaluate_rate = 0.3
-    
+
         parameters["Precision_AlgoG"] = precision_AlgoG
         parameters["Mod_Algo"] = "for"
         parameters['evaluate_rate'] = evaluate_rate
-            
+
     return parameters
+
 
 def run_main(parameters):
 
     date_time = datetime.now().strftime("%Y-%m-%d-%Hh%M")
 
     parameters['dawn_of_time'] = time.time()
-  
+
     # Writing of the backup folder, with current date/time
     directory = date_time
     base_directory = directory
@@ -1478,7 +1608,7 @@ def run_main(parameters):
     os.makedirs(directory)
 
     print("The folder '" + directory + "' has been created.")
-    
+
     parameters['directory'] = directory
 
     Mat_Stack_print = parameters['Mat_Stack'].copy()
@@ -1502,6 +1632,7 @@ def run_main(parameters):
     parameters.update({
         "nb_total_layer": nb_total_layer
     })
+
 
 def equidistant_values(lst):
     """
@@ -1672,12 +1803,12 @@ k_Stack : array
         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
             raise ValueError(
                 "It is not possible to work with theoretical and composite layers at the same time.")
-    
+
     if "Mat_Option" in parameters and parameters['nb_layer'] == 0:
         if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
             raise ValueError(
                 "It is not possible to optimise a material list and to work with composite layer at the same time")
-    
+
     if len(n_Stack.shape) == 3 and n_Stack.shape[2] == 2:
         """ 
         # This condition checks whether the individual contains volume fractions (vf),
@@ -1720,17 +1851,17 @@ k_Stack : array
     else:
         d_Stack = np.array(individual)
         d_Stack = d_Stack.reshape(1, len(individual))
-     
+
     if "Mat_Option" in parameters and parameters['nb_layer'] == 0:
-        Mat_Option= parameters.get('Mat_Option') 
-        Wl = parameters.get('Wl') 
+        Mat_Option = parameters.get('Mat_Option')
+        Wl = parameters.get('Wl')
         d_Stack, x = individual[:-len(Mat_Stack)], individual[-len(Mat_Stack):]
         Mat_Stack = fill_material_stack(Mat_Stack, x, Mat_Option, parameters)
         n_Stack, k_Stack = Made_Stack(Mat_Stack, Wl)
         # As I did in previous versions, I transform d_Strack into an array
         d_Stack = np.array(d_Stack)
         d_Stack = d_Stack.reshape(1, len(d_Stack))
-      
+
     return d_Stack, n_Stack, k_Stack
 
 
@@ -2287,6 +2418,7 @@ P_RTR: Int (float)
         (Sol_Spec_PV_int + Sol_Spec_Th_int)
     return net_PV_CSP
 
+
 def evaluate_R_s_AOI(individual, parameters):
     """
 Calculates the average solar reflectance of an individual, for 5 different angles.
@@ -2314,16 +2446,18 @@ R_s : Int (float)
     individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
     1 individual ~ 1 list of thickness
     """
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
-    
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(
+        individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
     # Calculation
     Ang_list = [0, 10, 20, 30, 40]
     R_s = []
     for Ang in Ang_list:
         R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
         R_s.append(SolarProperties(Wl, R, Sol_Spec))
-        
+
     return np.mean(R_s)
+
 
 def evaluate_TRT(individual, parameters):
     """
@@ -2340,9 +2474,9 @@ Returns
 -------
 P_RTR: Int (float)
     Performance according an RTR shape.
-    """  
-    Wl = parameters.get('Wl')#
-    Ang = parameters.get('Ang')#
+    """
+    Wl = parameters.get('Wl')
+    Ang = parameters.get('Ang')
     n_Stack = parameters.get('n_Stack')
     k_Stack = parameters.get('k_Stack')
     Sol_Spec = parameters.get('Sol_Spec')
@@ -2357,17 +2491,20 @@ P_RTR: Int (float)
     individual come from an optimization process, and must be transforme in d_Stack by the Individual_to_Stack function 
     1 individual ~ 1 list of thickness
     """
-    d_Stack, n_Stack, k_Stack = Individual_to_Stack(individual, n_Stack, k_Stack, Mat_Stack,  parameters)
-    
-    Wl_1 = np.arange(min(Wl),Lambda_cut_1+(Wl[1]-Wl[0]),(Wl[1]-Wl[0]))
+    d_Stack, n_Stack, k_Stack = Individual_to_Stack(
+        individual, n_Stack, k_Stack, Mat_Stack,  parameters)
+
+    Wl_1 = np.arange(min(Wl), Lambda_cut_1+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     Wl_2 = np.arange(Lambda_cut_1, Lambda_cut_2+(Wl[1]-Wl[0]), (Wl[1]-Wl[0]))
     # Calculation of the RTA
     d_Stack = d_Stack.reshape(1, len(individual))
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    TRT = np.concatenate([T[0:len(Wl_1)],R[len(Wl_1):(len(Wl_2)+len(Wl_1)-1)], T[(len(Wl_2)+len(Wl_1)-1):]])
+    TRT = np.concatenate([T[0:len(Wl_1)], R[len(Wl_1):(
+        len(Wl_2)+len(Wl_1)-1)], T[(len(Wl_2)+len(Wl_1)-1):]])
     P_TRT = SolarProperties(Wl, TRT, Sol_Spec)
-    
+
     return P_TRT
+
 
 def evaluate_RTA_s(individual, parameters):
     """
@@ -2410,7 +2547,7 @@ A_s : Float
         coherency_limit = parameters.get('coherency_limit')
     else:
         coherency_limit = 2e4
-        
+
     if parameters.get('nb_layer') != 0:
         Mat_Stack = parameters.get('Mat_Stack_print')
 
@@ -2640,7 +2777,7 @@ def evaluate_fit_RT(individual, parameters):
 
     # Calculation of the RTA
     R, T, A = RTA(Wl, d_Stack, n_Stack, k_Stack, Ang)
-    
+
     # Normalize the MSE to be between 0 and 1
     cost_R = normalized_mse(R, signal)
     cost_T = normalized_mse(T, signal_2)
@@ -2710,15 +2847,16 @@ normalized_error : float
 
     return normalized_chi_sq
 
-def choose_material(x, materials, mode='linear', k= 10, sigma = 0.6):
+
+def choose_material(x, materials, mode='linear', k=10, sigma=0.6):
     """
     Dispatches the material choice depending on the number of materials.
     Supports only 2 or 3 materials.
-    
+
     Args:
         x (float): value in [-1,1]
         materials (list): list of 2 or 3 materials
-    
+
     Returns:
         str: chosen material
 """
@@ -2732,8 +2870,9 @@ def choose_material(x, materials, mode='linear', k= 10, sigma = 0.6):
             f"choose_material supports only 2 or 3 materials, "
             f"but got {len(materials)}."
         )
-    
-def choose_material_2(x, material, mode='linear', k= 10, sigma = 0.6):
+
+
+def choose_material_2(x, material, mode='linear', k=10, sigma=0.6):
     """
     Transform x ∈ [-1,1] into a probabilistic choice between material A and B.
 
@@ -2768,6 +2907,7 @@ def choose_material_2(x, material, mode='linear', k= 10, sigma = 0.6):
 
     return A if np.random.random() < pA else B
 
+
 def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
     """
     Selects a material from three options (A, B, C) based on a continuous variable x ∈ [-1,1].
@@ -2796,12 +2936,13 @@ def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
     Returns:
         str: chosen material according to the probability defined by x
     """
-    
+
     if len(materials) != 3:
-        raise ValueError("We need exactly 3 materials into a list (ex: Mat_Option = ['A','B','C']).")
-    
+        raise ValueError(
+            "We need exactly 3 materials into a list (ex: Mat_Option = ['A','B','C']).")
+
     x = np.clip(x, -1, 1)
-    
+
     # --- Probabilités selon le mode choisi ---
     if mode == 'linear':
         if x < -1/3:
@@ -2813,7 +2954,7 @@ def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
         else:
             t = (x - 1/3) / (2/3)
             p = [t, 0, 1 - t]
-            
+
     elif mode == 'sigmoid':
         # Sigmoïdes améliorées pour B centrée à 0
         pA = 1 / (1 + np.exp(k * (x + 0.5)))
@@ -2821,17 +2962,17 @@ def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
         pB = 1 - pA - pC
         pB = np.clip(pB, 0, 1)
         p = [pA, pB, pC]
-        
+
     elif mode == 'gaussian':
         gA = np.exp(-(x + 1)**2 / (2*sigma**2))
         gB = np.exp(-x**2 / (2*sigma**2))
         gC = np.exp(-(x - 1)**2 / (2*sigma**2))
         tot = gA + gB + gC
         p = [gA/tot, gB/tot, gC/tot]
-        
+
     else:
         raise ValueError("mode must be 'linear', 'sigmoid', or 'gaussian'")
-    
+
     # --- Tirage aléatoire selon les probabilités ---
     r = np.random.random()
     if r < p[0]:
@@ -2840,8 +2981,8 @@ def choose_material_3(x, materials, mode='linear', k=15, sigma=0.33):
         return materials[1]
     else:
         return materials[2]
-    
-    
+
+
 def fill_material_stack(Mat_Stack, x, Mat_option, parameters):
     """
     Replace 'UM' in Mat_Stack by a material chosen from Mat_option, 
@@ -2857,17 +2998,18 @@ def fill_material_stack(Mat_Stack, x, Mat_option, parameters):
     """
     if len(Mat_Stack) != len(x):
         raise ValueError("Mat_Stack and x must have the same length.")
-    
+
     mode = parameters.get('Mode_choose_material')
-    
+
     completed_stack = []
     for mat, xi in zip(Mat_Stack, x):
         if mat == "UM":
-            chosen = choose_material(xi, Mat_option, mode = mode)
+            chosen = choose_material(xi, Mat_option, mode=mode)
             completed_stack.append(chosen)
         else:
             completed_stack.append(mat)
     return completed_stack
+
 
 def Stack_coherency(d_Stack, Mat_Stack, coherency_limit):
     """
@@ -3001,13 +3143,13 @@ A : List
         coherency_limit = parameters.get('coherency_limit')
     else:
         coherency_limit = 2000
-    
+
     d_Stack, n_Stack, k_Stack = Individual_to_Stack(
         individual, n_Stack, k_Stack, Mat_Stack,  parameters)
-    
+
     if parameters.get('nb_layer') != 0:
         Mat_Stack = parameters.get('Mat_Stack_print')
-    
+
     # Check if one or several layer are coherent
     # uncoherent if thickness up to 2500 nm or if presence of air or vaccum in the stack
     cl, coherency = Stack_coherency(
@@ -3399,22 +3541,24 @@ children : List of array
         children.append(individual)
     return children
 
+
 def X_DEvol(parameters):
-    
+
     # calculation of the X_min(s) and the X_max(s)
     Th_range = parameters.get('Th_range')
     Th_Substrate = parameters.get('Th_Substrate')
     Mat_Stack = parameters.get('Mat_Stack')
-    
+
     if 'Mat_Option' in parameters:
-        Mat_Option= parameters.get('Mat_Option') # Ajout
-    
+        Mat_Option = parameters.get('Mat_Option')  # Ajout
+
     if 'nb_layer' in parameters:
         nb_layer = parameters.get('nb_layer')
     else:
         nb_layer = 0
 
-    chromosome_size = len(Mat_Stack) + (nb_layer*1) - 1  # Number of thin layers
+    chromosome_size = len(Mat_Stack) + (nb_layer*1) - \
+        1  # Number of thin layers
 
     d_Stack_Opt = parameters.get('d_Stack_Opt')
     # If they are no value, we fill d_Stack_Opt
@@ -3431,18 +3575,18 @@ def X_DEvol(parameters):
         else:
             X_min += [Th_range[0]]
             X_max += [Th_range[1]]
-            
+
     if 'Mat_Option' in parameters:
         for i in range(len(Mat_Stack)):
             X_min += [-1]
             X_max += [1]
-    
+
     if 'n_range' in parameters:
         n_range = parameters.get('n_range')
         for i in range(nb_layer):
             X_min += [n_range[0]]
             X_max += [n_range[1]]
-    
+
     if parameters['vf_range'] != None:
         vf_range = parameters.get('vf_range')
         for i in range(len(Mat_Stack)):
@@ -3452,13 +3596,14 @@ def X_DEvol(parameters):
             else:
                 X_min += [vf_range[0]]
                 X_max += [vf_range[0]]
-                
+
     # I put the lists in array
     X_min = np.array(X_min)
     X_max = np.array(X_max)
     # End of the code lines of COPS
 
     return X_min, X_max
+
 
 def apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2):
     """
@@ -3468,7 +3613,7 @@ def apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2
     relies on NumPy's random generator (np.random), it will follow the same seeded 
     sequence, ensuring consistency across runs.
     """
-    
+
     if mutation_DE == "current_to_best":
         # current to best
         # y(x) = x + F1 (a-b) + F2(best - x)
@@ -3503,6 +3648,7 @@ def apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2
 
     return X
 
+
 def DEvol(f_cout, f_selection, parameters):
     """
     Main author : A.Moreau, Photon team, University of Clermont Auvergne, France and Antoine Grosjean
@@ -3510,15 +3656,15 @@ def DEvol(f_cout, f_selection, parameters):
     Abrupt elimination of individuals not respecting the bounds
     (compare with what happens if you just put back to the edge
     could be a good idea on some problems)"
-    
+
     Parameters
     ----------
-    
+
     evaluate : Callable 
     \nevaluation fonction, give in evaluate
     \nselection : Callable
     \nselection fonction, give in selection
-    
+
     Returns
     -------
     best_solution : numpy array
@@ -3531,12 +3677,13 @@ def DEvol(f_cout, f_selection, parameters):
         Value of the seed, used in the random number generator
     """
 
-    selection = f_selection.__name__, # allow to minimize of maximise the cost function 
-    cr = parameters.get('crossover_rate') # cr = 0.5 
+    # allow to minimize of maximise the cost function
+    selection = f_selection.__name__,
+    cr = parameters.get('crossover_rate')  # cr = 0.5
     f1 = parameters.get('f1')  # f1=0.9;
     f2 = parameters.get('f2')  # f2=0.8;
-    population = parameters.get('pop_size') # population = 30 
-    budget = parameters.get('budget') # number of iteration 
+    population = parameters.get('pop_size')  # population = 30
+    budget = parameters.get('budget')  # number of iteration
     mutation_DE = parameters.get('mutation_DE')
 
     # Option seed
@@ -3546,7 +3693,7 @@ def DEvol(f_cout, f_selection, parameters):
     else:
         seed = np.random.randint(1, 2**32 - 1)
         np.random.seed(seed)
-    # X min et X_max allows to generate the initial population  
+    # X min et X_max allows to generate the initial population
     X_min, X_max = X_DEvol(parameters)
     n = X_min.size
 
@@ -3559,7 +3706,8 @@ def DEvol(f_cout, f_selection, parameters):
         # Change, because I usually want to maximize. In the other algorithms, a function
         # selection is used.
         if selection[0] == "selection_min":
-            cost[k] = f_cout(omega[k], parameters) # f_cout is the cost function 
+            # f_cout is the cost function
+            cost[k] = f_cout(omega[k], parameters)
         elif selection[0] == "selection_max":
             cost[k] = 1-f_cout(omega[k], parameters)
     # Who's the best ?
@@ -3576,7 +3724,8 @@ def DEvol(f_cout, f_selection, parameters):
         for k in range(0, population):
             crossover = (np.random.random(n) < cr)
             # *crossover+(1-crossover)*omega[k] : crossover step
-            X = apply_mutation_DE(omega, k, best, crossover, population, mutation_DE, f1, f2)
+            X = apply_mutation_DE(omega, k, best, crossover,
+                                  population, mutation_DE, f1, f2)
 
             if np.prod((X >= X_min)*(X <= X_max)):
                 if selection[0] == "selection_min":
@@ -3592,7 +3741,7 @@ def DEvol(f_cout, f_selection, parameters):
         who = np.argmin(cost)
         best = omega[who]
         convergence.append(cost[who])
-        
+
     convergence = convergence[0:generation+1]
 
     return [best, convergence, budget, seed]
@@ -4005,7 +4154,7 @@ Need generate_neighbor() and acceptance_probability() functions.
     Mat_Stack = parameters.get('Mat_Stack')
     Th_Substrate = parameters.get('Th_Substrate')
     # number of iteration of the annealing
-    budget  = parameters.get('budget')
+    budget = parameters.get('budget')
     Th_range = parameters.get('Th_range')
 
     # Get the name of the selection function
@@ -4138,7 +4287,7 @@ seed : Int
     # Stack : refractive index of the materials. Each colonne is a different layer. Each lign is a different wavelenght. Z axe (if present) is for mixture material
     Mat_Stack = parameters.get('Mat_Stack')
     # Interation
-    num_iterations = parameters.get('budget') 
+    num_iterations = parameters.get('budget')
     Th_Substrate = parameters.get('Th_Substrate')
     Th_range = parameters.get('Th_range')
 
@@ -4204,6 +4353,7 @@ seed : Int
 
     return [current_solution, convergence, num_iterations, seed]
 
+
 def print_material_probabilities(Mat_Stack, x, Mat_option, parameters, n_trials=1000):
     """
     For each 'X' layer in Mat_Stack, estimate the probability of selecting 
@@ -4217,18 +4367,20 @@ def print_material_probabilities(Mat_Stack, x, Mat_option, parameters, n_trials=
     """
     if len(Mat_Stack) != len(x):
         raise ValueError("Mat_Stack and x must have the same length.")
-        
+
     mode = parameters.get('Mode_choose_material')
 
     print("=== Estimated material selection probabilities ===")
     for i, (mat, xi) in enumerate(zip(Mat_Stack, x)):
         if mat == "UM":
-            results = [choose_material(xi, Mat_option, mode = mode) for _ in range(n_trials)]
+            results = [choose_material(xi, Mat_option, mode=mode)
+                       for _ in range(n_trials)]
             probs = {m: results.count(m) / n_trials for m in Mat_option}
             prob_str = ", ".join([f"P({m})={p:.3f}" for m, p in probs.items()])
             print(f"Layer {i}: x={xi:.4f} → {prob_str}")
         else:
             print(f"Layer {i}: {mat} (fixed)")
+
 
 def Reflectivity_plot(parameters, Experience_results, directory):
     if 'evaluate' in parameters:
@@ -4268,8 +4420,10 @@ def Reflectivity_plot(parameters, Experience_results, directory):
 
     fig.tight_layout()
     plt.title("Optimum Reflectivity", y=1.05)
-    plt.savefig(directory + "/" + "Optimum_Reflectivity.png", dpi=300, bbox_inches='tight')
+    plt.savefig(directory + "/" + "Optimum_Reflectivity.png",
+                dpi=300, bbox_inches='tight')
     plt.show()
+
 
 def Transmissivity_plot(parameters, Experience_results, directory):
     if 'evaluate' in parameters:
@@ -4973,7 +5127,8 @@ if it's considered as a metal or his vf is it's a Cermet.
     legend_rectangles = []
     for i in range(len(legend)):
         legend_rectangles.append(mpatches.Rectangle(
-            (0, 0), 20, 10, facecolor=legend_color[i], edgecolor='black', label=legend[i]))  # plotting rectangles for the legend
+            # plotting rectangles for the legend
+            (0, 0), 20, 10, facecolor=legend_color[i], edgecolor='black', label=legend[i]))
     legend = plt.legend(handles=legend_rectangles, loc='lower left', bbox_to_anchor=(
         1, 0), handleheight=2, handlelength=2.2, ncol=math.ceil(len(Mat_Stack)/14))
     plt.title("Thin layers thicknesses", y=1.05)  # adding title
@@ -5043,7 +5198,8 @@ def Explain_results(parameters, Experience_results):
             parameters["Wl"], parameters["Signal_PV"], Sol_Spec_1)
         # Calculation of the integration of the useful upstream solar spectrum
         Sol_Spec_mod_amont = Sol_Spec_1 * parameters["Signal_PV"]
-        Sol_Spec_mod_amont_int = trapezoid(Sol_Spec_mod_amont, parameters["Wl"])
+        Sol_Spec_mod_amont_int = trapezoid(
+            Sol_Spec_mod_amont, parameters["Wl"])
         # Calculation of the integration of the useful upstream solar spectrum with T-modified spectrum
         Sol_Spec_mod_T_amont = Sol_Spec_mod_T * parameters["Signal_PV"]
         Sol_Spec_mod_T_amont_int = trapezoid(
@@ -5062,7 +5218,7 @@ def Explain_results(parameters, Experience_results):
     # integration of the R-modified solar spectrum, result in W/m2
     Sol_Spec_mod_R_int_2 = trapezoid(Sol_Spec_mod_R_2, parameters["Wl"])
     if "Signal_Th" in parameters:
-    # Calculation of the downstream solar efficiency, for example, the efficiency of the thermal absorber
+        # Calculation of the downstream solar efficiency, for example, the efficiency of the thermal absorber
         Ps_aval = SolarProperties(
             parameters["Wl"], parameters["Signal_Th"], Sol_Spec_mod_R_2)
         # Calculation of the downstream treatment solar efficiency with an unmodified spectrum
@@ -5073,30 +5229,31 @@ def Explain_results(parameters, Experience_results):
         Sol_Spec_mod_aval_int = trapezoid(Sol_Spec_mod_aval, parameters["Wl"])
         # Calculation of the integration of the useful downstream solar spectrum
         Sol_Spec_mod_R_aval = Sol_Spec_mod_R_2 * parameters["Signal_Th"]
-        Sol_Spec_mod_R_aval_int = trapezoid(Sol_Spec_mod_R_aval, parameters["Wl"])
-    
+        Sol_Spec_mod_R_aval_int = trapezoid(
+            Sol_Spec_mod_R_aval, parameters["Wl"])
+
     results = {
-    "Rs": Rs,
-    "Ts": Ts,
-    "As": As,
-    "R": R,
-    "T": T,
-    "A": A,
-    "Sol_Spec_int": Sol_Spec_int,
-    "Sol_Spec_int_1": Sol_Spec_int_1,
-    "Sol_Spec_mod_T": Sol_Spec_mod_T,
-    "Sol_Spec_mod_T_int": Sol_Spec_mod_T_int,
-    "Sol_Spec_mod_R": Sol_Spec_mod_R,
-    "Sol_Spec_mod_R_int": Sol_Spec_mod_R_int,
-    "Sol_Spec_mod_A": Sol_Spec_mod_A,
-    "Sol_Spec_mod_A_int": Sol_Spec_mod_A_int,
-    "Wl_Sol_2": Wl_Sol_2,
-    "Sol_Spec_2": Sol_Spec_2,
-    "name_Sol_Spec_2": name_Sol_Spec_2,
-    "Sol_Spec_int_2": Sol_Spec_int_2,
-    "Sol_Spec_mod_R_2": Sol_Spec_mod_R_2,
-    "Sol_Spec_mod_R_int_2": Sol_Spec_mod_R_int_2,
-    "max_index": max_index}
+        "Rs": Rs,
+        "Ts": Ts,
+        "As": As,
+        "R": R,
+        "T": T,
+        "A": A,
+        "Sol_Spec_int": Sol_Spec_int,
+        "Sol_Spec_int_1": Sol_Spec_int_1,
+        "Sol_Spec_mod_T": Sol_Spec_mod_T,
+        "Sol_Spec_mod_T_int": Sol_Spec_mod_T_int,
+        "Sol_Spec_mod_R": Sol_Spec_mod_R,
+        "Sol_Spec_mod_R_int": Sol_Spec_mod_R_int,
+        "Sol_Spec_mod_A": Sol_Spec_mod_A,
+        "Sol_Spec_mod_A_int": Sol_Spec_mod_A_int,
+        "Wl_Sol_2": Wl_Sol_2,
+        "Sol_Spec_2": Sol_Spec_2,
+        "name_Sol_Spec_2": name_Sol_Spec_2,
+        "Sol_Spec_int_2": Sol_Spec_int_2,
+        "Sol_Spec_mod_R_2": Sol_Spec_mod_R_2,
+        "Sol_Spec_mod_R_int_2": Sol_Spec_mod_R_int_2,
+        "max_index": max_index}
 
     # Ajout conditionnel pour le upstream si Signal_PV existe
     if "Signal_PV" in parameters:
@@ -5122,8 +5279,6 @@ def Explain_results(parameters, Experience_results):
 
     # Final update
     Experience_results.update(results)
-
-
 
 
 def Explain_results_fit(parameters, Experience_results):
@@ -5516,15 +5671,15 @@ def Optimization_txt(parameters, Experience_results, directory):
                 file.write("Mutation rate: " + str(mutation_rate) + "\n")
             if "f1" in parameters and "f2" in parameters:
                 file.write("Values of f1 and f2: " +
-                       str(f1) + " & " + str(f2) + "\n")
+                           str(f1) + " & " + str(f2) + "\n")
             elif "f1" in parameters:
                 file.write("Values of f1: " +
-                       str(f1) + "\n")
+                           str(f1) + "\n")
             if "mutation_delta" in parameters:
                 file.write("Mutation range: " + str(mutation_delta) + "\n")
             if "precision_AlgoG" in parameters:
                 file.write("Precision of the algorithm in auto: " +
-                       str(precision_AlgoG) + "\n")
+                           str(precision_AlgoG) + "\n")
             file.write("Budget : " + str(budget) + "\n")
             file.write("Number of run: " + str(nb_run) + "\n")
             file.write("Number of available CPU: " + str(cpu_count()) + "\n")
