@@ -4,7 +4,7 @@ SolPOC (Solar Performance Optimization Code) is a simple and fast code running u
 SolPOC is a Python code designed to solve Maxwell's equations in a multilayered thin film structure.
 The code is specifically designed for research in coatings, thin film deposition, and materials research for solar energy applications (thermal and PV).
 The code uses a stable method to quickly calculate reflectivity, transmissivity, and absorptivity from a stack of thin films over a full solar spectrum. SolPOC comes with several optimization methods, a multiprocessing pool, and a comprehensive database of refractive indices for real materials.
-In the end, SolPOC is simple to use for no-coder users thanks to main script, which regroup all necessary variables and automatically save important results in text files and PNG images.
+In the end, SolPOC is simple to use for no-coder users thanks to template scripts, which regroup all necessary variables and automatically save important results in text files and PNG images.
 
 The code are tested under Windows, using different IDE. 
 This code can be used for scientific research or academic educations. 
@@ -14,12 +14,11 @@ This code can be used for scientific research or academic educations.
 - Working with thin layers stack ranging from a substrate (without thin film) to an 'infinite' stack of thin films. 
 - Work with refractive index data of real materials, found in peer-reviewed papers.  
 - Optimize stack optical performances according to several cost functions, including cost functions for building and solar thermal uses. 
-- Propose 6 different optimization methods based on Evolutionary Algorithm (EA) 
-- Work with multiprocessing (using more of 1 CPU), using a pool
+- Propose different optimization methods based on Evolutionary Algorithm (EA) 
 - Work with a spectral range from UV to IR (typically 280 nm to 30 µm, can be modified by the users) 
 - Automatically write results (`.txt` files and `.png` images) to a folder 
 - Use Effective Medium Approximation methods (EMA) to model the optical behavior of material mixtures (dielectric mixtures, metal-ceramic composites, porous materials, etc.). 
-- Propose a simplified user interface, bringing together useful variables in a few lines of code.
+- Propose template scripts which bringing together useful variables in a few lines of code.
 
 ## Installation
 ### From PyPI (Python Package Index)
