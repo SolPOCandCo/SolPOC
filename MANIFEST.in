@@ -1,5 +1,9 @@
 include *.md
 include solpoc/Materials/*.txt
-include-recursive solpoc *.md *.txt
+recursive-include solpoc *.md *.txt
+recursive-exclude docs * 
+recursive-exclude venv * 
+recursive-exclude tests * 
+recursive-exclude Examples * 
 global-exclude */__pycache__/*
 global-exclude *.pyc
