@@ -16,9 +16,10 @@ from multiprocessing import Pool, cpu_count
 #----------------------------------------------------------------------------#
 #                   SCRIPT PARAMETERS - START                                #
 #----------------------------------------------------------------------------#
-# %%  Main : You can start to modified something
+# %%  Main : You can start modifying parameters from this point on
 # Comment to be written in the simulation text file
 Comment = "A sentence to be written in the final text file"
+# Ordered list of materials used in the stack
 Mat_Stack = ["BK7", "Al", "air-SiO2", "TiO2", "SiO2", "TiO2"]
 # Choice of optimisation method
 algo = sol.DEvol  # Callable. Name of the optimization method, callable

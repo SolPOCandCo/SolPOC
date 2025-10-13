@@ -1,3 +1,3 @@
 This folder contains :
-- The main script `template_optimization.py`. This is how SolPOC is suppose to be used. Open the `template_optimization.py`and change the parameters between the two lines.If you do not know the thin layers thicknesses and want optimized then, use this script. 
-- A `Curve_RTA.py` file. This file is NOT for optimization. Its role is to plot the RTA (meaning reflectivity, transmissivity and absorptivity) curves of the thin layer stack. If you know the thin layers thicknesses, use this script. 
+- The main script `template_optimization.py`. This is how SolPOC is suppose to be used. Open the `template_optimization.py`and change the parameters between the two lines. If you do not know the thin layer thicknesses and want them optimized, use this script. 
+- A `Curve_RTA.py` file. This file is NOT for optimization. Its role is to plot the RTA (meaning reflectivity, transmissivity and absorptivity) curves of the thin layer stack, once layer thicknesses have been specified. If you know the thin layer thicknesses, use this script. 

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2023-07-27 
-Update on 2025-09-16 
-SolPOC v 0.9.6 
-@author: A.Grosjean, A.Soum-Glaude, A.Moreau & P.Bennet
-Stack_plot function by Titouan Fevrier
+Created on 2023-07-27
+Updated on 2025-09-16
+SolPOC v 0.9.6
+@authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
 
-A specific presentation of the docstrings has been added to allow Sphinx software to generate a full documentation of this document
+Other contributors:
+    - ``Stack_plot`` function by Titouan Fevrier
+    - Numpy-style formatted docstrings for automatic sphinx doc generation by Titouan Fevrier
 
-List of main functions used and developed for SolPOC. For use them without any implementation work see the other Python script
+Description:
+    This module contains the main functions used in and developed for SolPOC.
+
 """
 
 import importlib
