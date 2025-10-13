@@ -1,4 +1,57 @@
 # Changelog
+## v0.9.7
+This update was mainly carried out to address reviewers’ comments for the publication of a research article.
+
+### 1. Package structure and management changes
+
+- Added the script `basic_example_solpoc` to illustrate a simple example of how to use the package.
+
+- Added two scripts comparing SolPOC with SciPy and Nevergrad against TMM (another optical package):
+  1. `SolPOC_and_tmm_with_nevergrad.py`
+  2. `SolPOC_and_tmm_with_scipy.py`
+
+- Introduced a new variable `budget` to define the optimization method’s iteration budget. 
+Previously, the `budget` was computed as `pop_size * nb_generation`. This approach, inherited from older code versions, was inaccurate and confusing.
+
+- In `DEvol`, the crossover rate (Cr) was previously defined by the variable `mutation_rate`, which was incorrect and misleading.
+DEvol now uses `crossover_rate` to define Cr, making the code more explicit.
+
+- Removed result folders (code outputs ; when run an Template scripts, as an Template SolPOC create a folder with the results, txt files, png etc) in the Examples folder from the package to reduce clutter. The code output is now available through a [Zenodo repository](https://zenodo.org/records/17340621).
+
+- Renamed "tutorial" scripts to "Template" to clarify that they are intended as usage examples only.
+Similarly, renamed "optimisation_multiprocessing" scripts to "template_optimization" to:emphasize that these are example templates, not mandatory usage; reduce focus on the multiprocessing aspect.
+
+- Replaced "from solpoc import *" with "import solpoc as sol" in all scripts for cleaner and safer imports.
+This change is reverberate on the different scripts 
+
+- Added the function get_parameters_stack to handle and auto-fill the parameters dictionary. This made several scripts lighter and easier to understand.
+
+- Added the function run_main to manage the parameter dictionary, reducing redundancy in automation scripts.
+
+- In the "optimization" Template, the function Simulation_amont_aval_txt (used for result processing) is now commented out by default.
+It is no longer executed automatically. This function performs specific calculations related to solar flux distribution after spectral splitting.
+This prevents standard users from generating overly specific outputs. However, it remains useful for ongoing research projects involving non-programmer users, who can easily uncomment the line to restore this functionality.
+
+- The seed value can now be set to `None`, which is more intuitive for some users.
+Previously, it had to be either commented out or explicitly assigned.
+
+### 2. Added and modified functions
+
+- Added a "cost" function for optimizing spectrally selective stacks using a TRT profile.
+
+- Added a `get_parameters` function to manage and auto-fill the parameters dictionary.
+
+- Added functions for material optimization in layer stacks:  
+	1. `choose_materials`, `choose_material2`, `choose_materials3`  
+	2. `print_material_probability`  
+	3. added material "UM" to the material list  
+	4. updated `individual_to_stack` and `Made_Stack` functions  
+
+- Improved DEvol readability by adding sub-functions:  
+	1. `apply_mutation_DE` to handle mutation strategies  
+	2. `x_DEvol` to initialize the DEvol population  
+
+
 ## v0.9.6
 
 Pinning the Scipy dependency at >=1.14.0 breaks support for python 3.9. Code was adjusted to be flexible around the `trapz` or `trapezoid` change, so that 3.9 can still be supported.
