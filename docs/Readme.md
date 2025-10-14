@@ -2,5 +2,5 @@
 
 - [User Guide (PDF)](./UserGuide.pdf)
 - [Interactive guide to SolPoc](./InteractiveGuideNotebooks/readme.md)
-- [Code documentation](./sphinx) (to be published)
+- [Code documentation](https://solpocandco.github.io/SolPOC/) (generated via Sphinx)
 
