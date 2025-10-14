@@ -2,7 +2,7 @@
 """
 Created on 2023-07-27
 Updated on 2025-09-16
-SolPOC v 0.9.6
+SolPOC v 0.9.7
 @authors: A.Grosjean (main author, EPF, France), A.Soum-Glaude (PROMES-CNRS, France), A.Moreau (UGA, France) & P.Bennet (UGA, France)
 contact : antoine.grosjean@epf.fr
 
@@ -1527,7 +1527,7 @@ def get_parameters(
             Signal_H_eye = np.interp(Wl, Wl_H_eye, Signal_H_eye)
             parameters["Sol_Spec"] = Signal_H_eye
             """
-            Warning : the following line was in SolPOC v0.9.6. It's probably an undected mistake : '
+            Warning : the following line was in SolPOC v0.9.7. It's probably an undected mistake : '
             parameters["Sol_Spec"] = Signal_H_eye
             parameters["Sol_Spec_with_Human_eye"] = Signal_H_eye
             """

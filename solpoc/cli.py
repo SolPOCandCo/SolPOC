@@ -1,5 +1,5 @@
 """
-SolPOC v 0.9.6
+SolPOC v 0.9.7
 """
 import os
 import shutil as sh

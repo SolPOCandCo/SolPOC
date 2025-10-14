@@ -1,7 +1,7 @@
 """
-SolPOC v 0.9.6
+SolPOC v 0.9.7
 """
-__version__ = "0.9.6"
+__version__ = "0.9.7"
 
 from .functions_SolPOC import apply_mutation_DE
 from .functions_SolPOC import acceptance_probability
