@@ -3,6 +3,7 @@ name: Deploy Sphinx documentation to Pages
 on:
   push:
     branches: [master] # branch to trigger deployment
+  workflow_dispatch:
 
 # Cancel any in-progress job or run
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency
