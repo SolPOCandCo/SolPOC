@@ -1,3 +1,6 @@
+"""
+SolPOC v 0.9.6
+"""
 import os
 import shutil as sh
 from importlib import resources
