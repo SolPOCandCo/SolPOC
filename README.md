@@ -99,7 +99,7 @@ This code section defines the problem to be optimized and sets the main paramete
 If launched correctly, the code optimizes the given problem and outputs numeric and graphical results. It automatically writes the results to a folder, named with the date and time of execution with several pictures and texts files. 
 
 > [!TIP]
-> Please refer to the [User Guide](.docs/UserGuide.pdf) (section 3.11 and Appendix 2) for a complete list of parameters available for customization.
+> Please refer to the [User Guide](docs/UserGuide.pdf) (section 3.11 and Appendix 2) for a complete list of parameters available for customization.
 
 ## Support
 SolPOC has been tested under Windows, using Spyder, Visual Studio or PyCharm as IDEs. 
