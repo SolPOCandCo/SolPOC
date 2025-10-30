@@ -25,8 +25,8 @@ algo = sol.DEvol  # Callable. Name of the optimization method, callable
 selection = sol.selection_max # Callable. Name of the selection method : selection_max or selection_min
 cost_function = sol.evaluate_rh # Callable. Name of the cost function
 # %% Important parameters
-# Wavelength domain, here from 280 to 2500 nm with a 5 nm step. Can be change!
-Wl = sol.Wl_selectif() #np.arange(280, 2505, 5)
+# Wavelength domain, here from 280 to 30µm with a 5 nm step 280-2.5µm, 2.5µm -> 30µm : 50 nm. Can be change!
+Wl = sol.Wl_selectif() #
 # Open the solar spectrum
 Wl_Sol, Sol_Spec, name_Sol_Spec = sol.open_SolSpec('Materials/SolSpec.txt', 'DC')
 # Thickness of the substrate, in nm
