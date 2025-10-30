@@ -159,9 +159,10 @@ Do not hesitate to contact us, for help, academic projects or cited to current v
 The main author and maintainer of the code is Antoine Grosjean, EPF, France (antoine.grosjean@epf.fr). 
 
 Here is a list of major contributors to SolPOC : 
+* Thalita Drumond (@thalitadru)
 * Pauline Bennet, UCA, France (@Ellawin)
 * Antoine Moreau, UCA, France  (@AnMoreau)
 * Andrey Soum-Glaude, PROMES-CNRS, France
   
-Many thanks to Thalita Drumond (@thalitadru), Titouan Février and Antoine Gademer from EPF, France. 
+Many thanks to , Titouan Février and Antoine Gademer from EPF, France. 
 We would like to thank to Denis Langevin Université Clermont Auvergne France and Amine Mahammou, PROMES-CNRS, France
