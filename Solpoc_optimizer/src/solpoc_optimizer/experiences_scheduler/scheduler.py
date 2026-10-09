@@ -72,7 +72,7 @@ Launch :
 
 
 try:
-    from solpoc_optimizer.new_functions import function_R_s_weighted as test
+    from solpoc import function_R_s_weighted as test
 except ImportError as error:
     print(
         "WARNING: function_R_s_weighted module not found. "
