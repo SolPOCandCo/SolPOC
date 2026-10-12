@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solpoc-optimizer"
+version = "0.1.0"
+description = "Experiment scheduler and optimizer for SolPOC"
+readme = "README.md"
+requires-python = ">=3.9"
+
+authors = [
+    {name = "Antoine Grosjean", email = "antoine.grosjean@epf.fr"},
+    {name = "Guillaume de Montgolfier", email = "guillaume.demontgolfier@epfedu.fr"},
+    {name = "Yassine Garbi", email = "yasinne.garbi@epfeu=du.fr"},
+    {name = "Emile Zanna", email = "emile.zanna@epfedu.fr"},
+    {name = "Victor Eymard", email = "victor.eymard@epfedu.fr"},
+    {name = "Maxence Baissas", email = "maxence.baissas@epfedu.fr"},
+    {name = "Thalita Drumond", email = "thalita.drumond@epf.fr"}
+]
+
+dependencies = [
+    "solpoc>=0.9.7",
+    "numpy",
+    "matplotlib"
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "pytest",
+    "pytest-cov",
+    "twine"
+]
+
+[project.scripts]
+solpoc-optimize = "solpoc_optimizer.cli:main"
+solpoc-interface = "solpoc_optimizer.interface.interface:main"
+solpoc-optimizer-init = "solpoc_optimizer.init_project:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["solpoc_optimizer*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
